@@ -36,10 +36,10 @@
 	"job_cpu_sustain": 0,
 	"job_log_max_size": 0,
 	"job_env": {},
+	"job_error_snapshots": true,
 	
 	"new_server_stale_threshold": 3600,
 	"hostname_display_strip": "\\.[\\w\\-]+\\.\\w+$",
-	
 	"tick_precision_ms": 50,
 	
 	"hooks": {
