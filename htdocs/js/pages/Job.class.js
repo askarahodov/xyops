@@ -340,7 +340,7 @@ Page.Job = class Job extends Page.Base {
 		var opts = {
 			query: 'jobs:' + job.id,
 			offset: 0,
-			limit: config.items_per_page,
+			limit: config.items_per_page, // no pagination, so this is just a sanity limit
 			sort_by: '_id',
 			sort_dir: -1,
 			ttl: 1
@@ -848,7 +848,7 @@ Page.Job = class Job extends Page.Base {
 		var tline = ((job.state == 'complete') && (job.elapsed > 300)) ? 'minute' : 'second';
 		this.charts = {};
 		
-		this.charts.cpu = new Chart({
+		this.charts.cpu = this.createChart({
 			"canvas": '#c_live_cpu',
 			"title": "CPU Usage %",
 			"dataType": "integer",
@@ -862,7 +862,7 @@ Page.Job = class Job extends Page.Base {
 		});
 		this.charts.cpu.addLayers( this.getChartLayers(timelines[tline], 'cpu', this.charts.cpu) );
 		
-		this.charts.mem = new Chart({
+		this.charts.mem = this.createChart({
 			"canvas": '#c_live_mem',
 			"title": "Memory Usage",
 			"dataType": "bytes",
@@ -876,7 +876,7 @@ Page.Job = class Job extends Page.Base {
 		});
 		this.charts.mem.addLayers( this.getChartLayers(timelines[tline], 'memRss', this.charts.mem) );
 		
-		this.charts.disk = new Chart({
+		this.charts.disk = this.createChart({
 			"canvas": '#c_live_disk',
 			"title": "I/O Activity",
 			"dataType": "bytes",
@@ -892,7 +892,7 @@ Page.Job = class Job extends Page.Base {
 		});
 		this.charts.disk.addLayers( this.getChartLayers(timelines[tline], 'disk', this.charts.disk) );
 		
-		this.charts.net = new Chart({
+		this.charts.net = this.createChart({
 			"canvas": '#c_live_net',
 			"title": "Network Transfer",
 			"dataType": "bytes",

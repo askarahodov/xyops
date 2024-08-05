@@ -663,12 +663,13 @@ Page.Events = class Events extends Page.Base {
 			];
 		} );
 		
-		this.div.find('#d_ve_queued').show().find('> .box_content').html( html );
+		this.div.find('#d_ve_queued').show().find('> .box_content').removeClass('loading').html( html );
 	}
 	
 	jobQueueNav(offset) {
 		// user clicked on queued job pagination nav
 		this.queueOffset = offset;
+		this.div.find('#d_ve_queued > .box_content').addClass('loading');
 		this.getQueuedJobs();
 	}
 	
@@ -713,7 +714,7 @@ Page.Events = class Events extends Page.Base {
 			];
 		} );
 		
-		this.div.find('#d_ve_active > .box_content').html(html);
+		this.div.find('#d_ve_active > .box_content').removeClass('loading').html(html);
 	}
 	
 	doAbortJob(id) {
@@ -779,6 +780,7 @@ Page.Events = class Events extends Page.Base {
 	jobActiveNav(offset) {
 		// user clicked on active job pagination nav
 		this.activeOffset = offset;
+		this.div.find('#d_ve_active > .box_content').addClass('loading');
 		this.renderActiveJobs();
 	}
 	
@@ -849,7 +851,7 @@ Page.Events = class Events extends Page.Base {
 			];
 		} );
 		
-		this.div.find('#d_ve_history > .box_content').html( html );
+		this.div.find('#d_ve_history > .box_content').removeClass('loading').html( html );
 		
 		// populate dynamic summary info values
 		if (resp.rows.length) {
@@ -910,35 +912,35 @@ Page.Events = class Events extends Page.Base {
 		// one time setup for all 5 charts
 		this.charts = {};
 		
-		this.charts.perf = new Chart({
+		this.charts.perf = this.createChart({
 			"canvas": '#c_ve_perf',
 			"title": "Performance History",
 			"dataType": "seconds",
 			// "dataSuffix": " sec"
 		});
 		
-		this.charts.cpu = new Chart({
+		this.charts.cpu = this.createChart({
 			"canvas": '#c_ve_cpu',
 			"title": "CPU History",
 			"dataType": "integer",
 			"dataSuffix": "%"
 		});
 		
-		this.charts.mem = new Chart({
+		this.charts.mem = this.createChart({
 			"canvas": '#c_ve_mem',
 			"title": "Memory History",
 			"dataType": "bytes",
 			"dataSuffix": ""
 		});
 		
-		this.charts.disk = new Chart({
+		this.charts.disk = this.createChart({
 			"canvas": '#c_ve_disk',
 			"title": "I/O History",
 			"dataType": "bytes",
 			"dataSuffix": "/sec"
 		});
 		
-		this.charts.net = new Chart({
+		this.charts.net = this.createChart({
 			"canvas": '#c_ve_net',
 			"title": "Network History",
 			"dataType": "bytes",
@@ -1091,7 +1093,7 @@ Page.Events = class Events extends Page.Base {
 	jobHistoryNav(offset) {
 		// intercept click on job history table pagination nav
 		this.args.offset = offset;
-		this.div.find('#d_ve_history > .box_content').html( '<div class="loading_container"><div class="loading"></div></div>' );
+		this.div.find('#d_ve_history > .box_content').addClass('loading');
 		this.fetchJobHistory();
 	}
 	
@@ -1158,12 +1160,13 @@ Page.Events = class Events extends Page.Base {
 			];
 		} );
 		
-		this.div.find('#d_ve_upcoming > .box_content').html(html);
+		this.div.find('#d_ve_upcoming > .box_content').removeClass('loading').html(html);
 	}
 	
 	jobUpcomingNav(offset) {
 		// user clicked on upcoming job pagination nav
 		this.upcomingOffset = offset;
+		this.div.find('#d_ve_upcoming > .box_content').addClass('loading');
 		this.renderUpcomingJobs();
 	}
 	

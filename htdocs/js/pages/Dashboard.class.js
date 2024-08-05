@@ -290,7 +290,7 @@ Page.Dashboard = class Dashboard extends Page.Base {
 			];
 		} );
 		
-		this.div.find('#d_dash_active > .box_content').html(html);
+		this.div.find('#d_dash_active > .box_content').removeClass('loading').html(html);
 	}
 	
 	doAbortJob(id) {
@@ -357,6 +357,7 @@ Page.Dashboard = class Dashboard extends Page.Base {
 	jobActiveNav(offset) {
 		// user clicked on active job pagination nav
 		this.activeOffset = offset;
+		this.div.find('#d_dash_active > .box_content').addClass('loading')
 		this.renderActiveJobs();
 	}
 	
@@ -422,7 +423,7 @@ Page.Dashboard = class Dashboard extends Page.Base {
 			];
 		} );
 		
-		this.div.find('#d_dash_queued').show().find('> .box_content').html( html );
+		this.div.find('#d_dash_queued').show().find('> .box_content').removeClass('loading').html( html );
 	}
 	
 	doFlushQueue(id) {
@@ -444,6 +445,7 @@ Page.Dashboard = class Dashboard extends Page.Base {
 	jobQueueNav(offset) {
 		// user clicked on queued event pagination nav
 		this.queueOffset = offset;
+		this.div.find('#d_dash_queued > .box_content').addClass('loading');
 		this.renderQueueSummary();
 	}
 	
@@ -503,12 +505,13 @@ Page.Dashboard = class Dashboard extends Page.Base {
 			];
 		} );
 		
-		this.div.find('#d_dash_upcoming > .box_content').html(html);
+		this.div.find('#d_dash_upcoming > .box_content').removeClass('loading').html(html);
 	}
 	
 	jobUpcomingNav(offset) {
 		// user clicked on upcoming job pagination nav
 		this.upcomingOffset = offset;
+		this.div.find('#d_dash_upcoming > .box_content').addClass('loading');
 		this.renderUpcomingJobs();
 	}
 	
@@ -588,7 +591,7 @@ Page.Dashboard = class Dashboard extends Page.Base {
 		};
 		
 		config.quick_monitors.forEach( function(def, idx) {
-			var chart = new Chart({
+			var chart = self.createChart({
 				"canvas": '#c_dash_' + def.id,
 				"title": def.title,
 				"dataType": def.type,

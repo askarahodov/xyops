@@ -296,6 +296,7 @@ Page.Alerts = class Alerts extends Page.Base {
 		// special hook for intercepting pagination clicks
 		// FUTURE: history.replaceState to update the URI with new offset
 		this.args.offset = offset;
+		this.div.find('#d_search_results .box_content').addClass('loading');
 		this.doSearch();
 	}
 	
@@ -441,7 +442,7 @@ Page.Alerts = class Alerts extends Page.Base {
 		var opts = {
 			query: 'alerts:' + alert.id,
 			offset: 0,
-			limit: config.items_per_page,
+			limit: config.items_per_page, // no pagination, so this is just a sanity limit
 			sort_by: '_id',
 			sort_dir: -1,
 			ttl: 1
@@ -546,11 +547,12 @@ Page.Alerts = class Alerts extends Page.Base {
 		// fetch history of alert on current server
 		var self = this;
 		var alert = this.alert;
+		if (!this.alertHistoryOffset) this.alertHistoryOffset = 0;
 		
 		var opts = {
 			query: 'alert:' + alert.alert + ' server:' + alert.server,
-			offset: 0,
-			limit: config.items_per_page,
+			offset: this.alertHistoryOffset,
+			limit: config.alt_items_per_page,
 			sort_by: '_id',
 			sort_dir: -1,
 			ttl: 1
@@ -572,10 +574,11 @@ Page.Alerts = class Alerts extends Page.Base {
 			resp: resp,
 			cols: cols,
 			offset: 0,
-			limit: config.items_per_page,
+			limit: config.alt_items_per_page,
 			sort_by: '_id',
 			sort_dir: -1,
-			data_type: 'alert'
+			data_type: 'alert',
+			pagination_link: '$P().alertHistoryNav'
 		};
 		
 		html += this.getPaginatedGrid( grid_args, function(item, idx) {
@@ -590,7 +593,14 @@ Page.Alerts = class Alerts extends Page.Base {
 			];
 		}); // grid
 		
-		$('#d_va_history > div.box_content').html( html );
+		$('#d_va_history > div.box_content').removeClass('loading').html( html );
+	}
+	
+	alertHistoryNav(offset) {
+		// intercept click on job history table pagination nav
+		this.alertHistoryOffset = offset;
+		this.div.find('#d_va_history > .box_content').addClass('loading');
+		this.getAlertHistory();
 	}
 	
 	showDeleteAlertDialog() {

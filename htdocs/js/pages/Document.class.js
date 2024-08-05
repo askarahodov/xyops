@@ -26,8 +26,7 @@ Page.Document = class Document extends Page.Base {
 			app.showSidebar(true);
 			
 			// highlight our pseudo-tab
-			$('.sidebar .section_item').removeClass('active').addClass('inactive');
-			$('#tab_Document_' + args.id).removeClass('inactive').addClass('active');
+			app.highlightTab( 'Document_' + args.id );
 		}
 		else if (app.getPref('session_id')) {
 			// user has cookie

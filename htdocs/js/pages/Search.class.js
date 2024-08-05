@@ -28,8 +28,7 @@ Page.Search = class Search extends Page.Base {
 			delete args.icon;
 			
 			// possibly highlight search preset tab
-			$('.sidebar .section_item').removeClass('active').addClass('inactive');
-			$('#tab_Search_' + args.preset.replace(/\W+/g, '')).removeClass('inactive').addClass('active');
+			app.highlightTab( 'Search_' + args.preset.replace(/\W+/g, '') );
 			
 			// expand section if applicable
 			var $sect = $('#tab_Search_' + args.preset.replace(/\W+/g, '')).parent().prev();
@@ -477,6 +476,7 @@ Page.Search = class Search extends Page.Base {
 		// special hook for intercepting pagination clicks
 		// FUTURE: history.replaceState to update the URI with new offset
 		this.args.offset = offset;
+		this.div.find('#d_search_results .box_content').addClass('loading');
 		this.doSearch();
 	}
 	
