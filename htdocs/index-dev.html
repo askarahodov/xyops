@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
 	<meta charset="utf-8">
-	<title>Loading...</title>
+	<title>Orchestra</title>
 	<meta name="description" content="A complete task scheduler and server monitoring system.">
 	<meta name="author" content="Joseph Huckaby / PixlCore">
 	<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1.0, user-scalable=no">
@@ -20,6 +20,8 @@
 	<link rel="stylesheet" href="css/style.css">
 	<link rel="stylesheet" href="css/search.css">
 	<link rel="stylesheet" href="css/materialdesignicons.min.css">
+	<link rel="stylesheet" href="codemirror/lib/codemirror.css">
+	<link rel="stylesheet" href="codemirror/theme/shadowfox.css">
 	<!-- BUILD: COMBINE_STYLE_END -->
 </head>
 
@@ -110,6 +112,17 @@
 	<script src="js/external/jquery.min.js"></script>
 	
 	<!-- BUILD: COMBINE_SCRIPT_START -->
+	<script src="codemirror/lib/codemirror.js"></script>
+	<script src="codemirror/addon/mode/overlay.js"></script>
+	<script src="codemirror/addon/runmode/runmode.js"></script>
+	<script src="codemirror/mode/javascript/javascript.js"></script>
+	<script src="codemirror/mode/htmlmixed/htmlmixed.js"></script>
+	<script src="codemirror/mode/clike/clike.js"></script>
+	<script src="codemirror/mode/meta.js"></script>
+	<script src="codemirror/mode/shell/shell.js"></script>
+	<script src="codemirror/mode/php/php.js"></script>
+	<script src="codemirror/mode/python/python.js"></script>
+	
 	<script src="js/external/chart.min.js"></script>
 	<script src="js/external/zeroupload.min.js"></script>
 	<script src="js/external/marked.min.js"></script>
