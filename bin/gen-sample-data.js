@@ -81,7 +81,7 @@ request.json( 'https://random-data-api.com/api/company/random_company?size=100',
 			break;
 			
 			case 2:
-				event.plugin = 'urlplug';
+				event.plugin = 'httpplug';
 				event.params = {
 					method: 'GET',
 					url: 'https://github.com/jhuckaby/performa-satellite/releases/latest/download/performa-satellite-linux-x64',
