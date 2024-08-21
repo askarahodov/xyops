@@ -1190,7 +1190,7 @@ Page.Base = class Base extends Page {
 		html += this.getCompactTable(targs, function(item, idx) {
 			var actions = [];
 			actions.push( '<span class="link" onMouseUp="$P().editResLimit('+idx+')"><b>Edit</b></span>' );
-			actions.push( '<span class="link" onMouseUp="$P().deleteResLimit('+idx+')"><b>Delete</b></span>' );
+			actions.push( '<span class="link danger" onMouseUp="$P().deleteResLimit('+idx+')"><b>Delete</b></span>' );
 			
 			var nice_title = '';
 			var nice_desc = '';
@@ -1217,19 +1217,23 @@ Page.Base = class Base extends Page {
 				
 				case 'job':
 					nice_title = "Max Jobs";
-					nice_desc = "" + commify(item.amount) + " concurrent";
+					if (!item.amount) nice_desc = "None";
+					else nice_desc = "Up to " + commify(item.amount) + " concurrent " + pluralize("job", item.amount);
 				break;
 				
 				case 'retry':
 					nice_title = "Max Retries";
-					nice_desc = "Up to " + commify(item.amount);
-					if (item.duration) nice_desc += " (" + get_text_from_seconds(item.duration, false, true) + " delay)";
+					if (!item.amount) nice_desc = "No retries will be attempted";
+					else {
+						nice_desc = "Up to " + commify(item.amount);
+						if (item.duration) nice_desc += " (" + get_text_from_seconds(item.duration, false, true) + " delay)";
+					}
 				break;
 				
 				case 'queue':
 					nice_title = "Max Queue";
-					if (!item.amount) nice_desc = "Unlimited queue length";
-					else nice_desc = "Up to " + commify(item.amount) + " jobs allowed in queue";
+					if (!item.amount) nice_desc = "No jobs allowed in queue";
+					else nice_desc = "Up to " + commify(item.amount) + " " + pluralize("job", item.amount) + " allowed in queue";
 				break;
 			} // switch item.type
 			
@@ -1429,14 +1433,14 @@ Page.Base = class Base extends Page {
 				case 'job':
 					$('#d_erl_byte_amount').hide();
 					$('#d_erl_raw_amount').show();
-					$('#s_erl_raw_amount_cap').html('Enter the max number to concurrent jobs to allow.');
+					$('#s_erl_raw_amount_cap').html('Enter the maximum number to concurrent jobs to allow.');
 					$('#d_erl_duration').hide();
 				break;
 				
 				case 'retry':
 					$('#d_erl_byte_amount').hide();
 					$('#d_erl_raw_amount').show();
-					$('#s_erl_raw_amount_cap').html('Enter the maximum number of retries to allow before failing the job.');
+					$('#s_erl_raw_amount_cap').html('Enter the maximum number of retries to attempt before failing the job.');
 					$('#d_erl_duration').show();
 					$('#s_erl_duration_cap').html('Optionally set a delay to wait between retries.');
 				break;
@@ -1444,7 +1448,7 @@ Page.Base = class Base extends Page {
 				case 'queue':
 					$('#d_erl_byte_amount').hide();
 					$('#d_erl_raw_amount').show();
-					$('#s_erl_raw_amount_cap').html('Enter the maximum queue length to allow (0 is unlimited).');
+					$('#s_erl_raw_amount_cap').html('Enter the maximum number of queued jobs to allow.');
 					$('#d_erl_duration').hide();
 				break;
 			} // switch new_type
