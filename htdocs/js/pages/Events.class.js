@@ -687,7 +687,7 @@ Page.Events = class Events extends Page.Base {
 				self.getNiceTargetList(job.targets),
 				self.getShortDateTime( job.started ),
 				self.getNiceJobElapsedTime(job, true),
-				'<span class="link" onClick="$P().doAbortJob(\'' + job.id + '\')"><b>Abort Job</b></a>'
+				'<span class="link danger" onClick="$P().doAbortJob(\'' + job.id + '\')"><b>Abort Job</b></a>'
 			];
 		} );
 		
@@ -738,7 +738,7 @@ Page.Events = class Events extends Page.Base {
 				'<div id="d_ve_jt_progress_' + job.id + '">' + self.getNiceJobProgressBar(job) + '</div>',
 				'<div id="d_ve_jt_remaining_' + job.id + '">' + self.getNiceJobRemainingTime(job, false) + '</div>',
 				
-				'<span class="link" onClick="$P().doAbortJob(\'' + job.id + '\')"><b>Abort Job</b></a>'
+				'<span class="link danger" onClick="$P().doAbortJob(\'' + job.id + '\')"><b>Abort Job</b></a>'
 			];
 		} );
 		
@@ -1183,7 +1183,7 @@ Page.Events = class Events extends Page.Base {
 				nice_source,
 				self.getShortDateTime( job.epoch ),
 				'<i class="mdi mdi-clock-outline">&nbsp;</i>' + get_text_from_seconds( countdown, false, true ),
-				'<span class="link" onClick="$P().doSkipUpcomingJob(' + idx + ')"><b>Skip Job...</b></span>'
+				'<span class="link danger" onClick="$P().doSkipUpcomingJob(' + idx + ')"><b>Skip Job...</b></span>'
 				// '<a href="#Job?id=' + job.id + '">Details</a>'
 			];
 		} );
@@ -1457,7 +1457,7 @@ Page.Events = class Events extends Page.Base {
 		this.deletePageSnapshot();
 		this.deletePageDraft();
 		
-		Nav.go( 'Events?sub=list' );
+		Nav.go( 'Events?sub=view&id=' + this.event.id );
 		app.showMessage('success', "The event was saved successfully.");
 	}
 	
@@ -1609,11 +1609,14 @@ Page.Events = class Events extends Page.Base {
 		var algo_items = [
 			{ id:'random', title:"Random", icon:"dice-5-outline" },
 			{ id:'round_robin', title:"Round Robin", icon:"radius-outline" },
-			{ id:'least_cpu', title:"Least CPU Usage", icon:"chip" },
-			{ id:'least_mem', title:"Least Memory Usage", icon:"memory" },
 			{ id:'prefer_first', title:"Prefer First (Alphabetically)", icon:"sort-ascending" },
-			{ id:'prefer_last', title:"Prefer Last (Alphabetically)", icon:"sort-descending" }
-		];
+			{ id:'prefer_last', title:"Prefer Last (Alphabetically)", icon:"sort-descending" },
+			{ id:'least_cpu', title:"Least CPU Usage", icon:"chip" },
+			{ id:'least_mem', title:"Least Memory Usage", icon:"memory" }
+		].
+		concat(
+			this.buildOptGroup( app.monitors, "Least Monitor Value:", 'chart-line' )
+		);
 		
 		html += this.getFormRow({
 			label: 'Algorithm:',
@@ -1624,6 +1627,7 @@ Page.Events = class Events extends Page.Base {
 				options: algo_items,
 				value: event.algo || '',
 				default_icon: 'arrow-decision',
+				'data-nudgeheight': 1
 				// 'data-shrinkwrap': 1
 			}),
 			caption: 'Select the desired algorithm for choosing a server from the target list.'
@@ -1882,7 +1886,7 @@ Page.Events = class Events extends Page.Base {
 		html += this.getCompactTable(targs, function(item, idx) {
 			var actions = [];
 			actions.push( '<span class="link" onMouseUp="$P().editTiming('+idx+')"><b>Edit</b></span>' );
-			actions.push( '<span class="link" onMouseUp="$P().deleteTiming('+idx+')"><b>Delete</b></span>' );
+			actions.push( '<span class="link danger" onMouseUp="$P().deleteTiming('+idx+')"><b>Delete</b></span>' );
 			
 			var { nice_icon, nice_type, nice_desc } = self.prepTimingDisplay(item);
 			
@@ -2042,14 +2046,15 @@ Page.Events = class Events extends Page.Base {
 					{ id: 'continuous', title: "Continuous", icon: 'all-inclusive' },
 					{ id: 'single', title: "Single Shot", icon: 'alarm-check' },
 					
-					{ id: 'catchup', title: "Catch-Up", icon: 'run-fast' /* , group: "Options" */ },
+					{ id: 'catchup', title: "Catch-Up", icon: 'run-fast', group: "Options" },
 					{ id: 'destruct', title: "Self-Destruct", icon: 'fire' },
 					{ id: 'range', title: "Range", icon: 'calendar-range-outline' },
 					{ id: 'blackout', title: "Blackout", icon: 'circle' },
 					{ id: 'delay', title: "Delay", icon: 'chat-sleep-outline' }
 				],
 				value: tmode,
-				'data-shrinkwrap': 1
+				'data-shrinkwrap': 1,
+				'data-nudgeheight': 1
 			}),
 			caption: 'Select the desired type for the timing rule.'
 		});
