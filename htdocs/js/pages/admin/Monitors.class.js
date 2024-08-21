@@ -426,7 +426,7 @@ Page.Monitors = class Monitors extends Page.Base {
 					['delta', "Calculate as Delta"],
 					['delta_div', "Calculate as Delta and Divide by Time"],
 				],
-				value: monitor.data_type
+				value: delta_value
 			}),
 			caption: 'Optionally interpret the data value as a delta, and optionally divided by time.  This is mainly for values that continually count upwards, but we want to graph the difference over time, instead of the absolute value.'
 		});
