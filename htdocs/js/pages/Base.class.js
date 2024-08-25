@@ -2222,4 +2222,136 @@ Page.Base = class Base extends Page {
 		return data;
 	}
 	
+	// Event/Job Plugin Parameters
+	
+	renderPluginParams(sel) {
+		// show summary of plugin param values in event
+		var self = this;
+		var item = this.job || this.event;
+		var params = item.params || {};
+		var plugin = find_object( app.plugins, { id: item.plugin } );
+		var html = '';
+		
+		if (!plugin || !plugin.params.length) {
+			this.div.find(sel).hide();
+			return;
+		}
+		
+		var ctype_icons = {
+			text: "form-textbox",
+			textarea: "form-textarea",
+			checkbox: "checkbox-marked-outline",
+			select: "form-dropdown",
+			hidden: "eye-off-outline"
+		};
+		var none = '<span>(None)</span>';
+		
+		html += '<div class="summary_grid">';
+		
+		plugin.params.forEach( function(param, idx) {
+			var elem_value = (param.id in params) ? params[param.id] : param.value;
+			var elem_icon = ctype_icons[param.type];
+			if (param.type == 'hidden') return;
+			
+			html += '<div>'; // grid unit
+			html += '<div class="info_label">' + (param.locked ? '<i class="mdi mdi-lock-outline">&nbsp;</i>' : '') + param.title + '</div>';
+			html += '<div class="info_value">';
+			
+			switch (param.type) {
+				case 'text':
+					if (elem_value.length) {
+						html += '<i class="link mdi mdi-' + elem_icon + '" onClick="$P().copyPluginParamValue(' + idx + ')" title="Copy to Clipboard">&nbsp;</i>';
+						html += elem_value.length ? elem_value : none;
+					}
+					else html += none;
+				break;
+				
+				case 'textarea':
+					if (elem_value.length) {
+						html += '<i class="link mdi mdi-' + elem_icon + '" onClick="$P().copyPluginParamValue(' + idx + ')" title="Copy to Clipboard">&nbsp;</i>';
+						html += '<span class="link" onClick="$P().viewPluginParamValue(' + idx + ')">Click to View...</span>';
+					}
+					else html += none;
+				break;
+				
+				case 'checkbox':
+					// html += self.getFormCheckbox({ id: elem_id, label: param.title, checked: !!elem_value, disabled: elem_dis });
+					elem_icon = elem_value ? 'checkbox-marked-outline' : 'checkbox-blank-outline';
+					html += '<i class="mdi mdi-' + elem_icon + '">&nbsp;</i>';
+					if (elem_value) html += 'Yes';
+					else html += '<span>No</span>'; 
+				break;
+				
+				case 'select':
+					html += '<i class="link mdi mdi-' + elem_icon + '" onClick="$P().copyPluginParamValue(' + idx + ')" title="Copy to Clipboard">&nbsp;</i>';
+					html += elem_value;
+				break;
+			} // switch type
+			
+			html += '</div>'; // info_value
+			html += '</div>'; // grid unit
+		} ); // foreach param
+		
+		html += '</div>'; // summary_grid
+		
+		this.div.find(sel).show();
+		this.div.find( sel + ' > .box_title').html( plugin.title + " Parameters" );
+		this.div.find( sel + ' > .box_content').html( html );
+	}
+	
+	copyPluginParamValue(idx) {
+		// copy specific plugin param value to the clipboard
+		var item = this.job || this.event;
+		var plugin = find_object( app.plugins, { id: item.plugin } );
+		var param = plugin.params[idx];
+		var elem_value = (param.id in item.params) ? item.params[param.id] : param.value;
+		
+		copyToClipboard(elem_value);
+		
+		app.showMessage('info', "Parameter value copied to your clipboard.");
+	}
+	
+	viewPluginParamValue(idx) {
+		// popup dialog to show multi-line text box param value
+		var item = this.job || this.event;
+		var plugin = find_object( app.plugins, { id: item.plugin } );
+		var param = plugin.params[idx];
+		var elem_value = (param.id in item.params) ? item.params[param.id] : param.value;
+		
+		this.viewCodeAuto( param.title, elem_value );
+	}
+	
+	viewCodeAuto(title, data) {
+		// popup dialog to show pretty-printed code (auto-detect)
+		var self = this;
+		var value = this._temp_code = ((typeof(data) == 'string') ? data : JSON.stringify(data, null, "\t"));
+		var html = '';
+		
+		html += '<div class="code_viewer">';
+		html += '<pre><code class="hljs">' + app.highlightAuto(value) + '</code></pre>';
+		html += '</div>';
+		
+		var buttons_html = "";
+		buttons_html += '<div class="button" onMouseUp="$P().copyCodeToClipboard()">Copy to Clipboard</div>';
+		buttons_html += '<div class="button primary" onMouseUp="Dialog.confirm_click(true)">Close</div>';
+		
+		Dialog.showSimpleDialog(title, html, buttons_html);
+		
+		// special mode for key capture
+		Dialog.active = 'confirmation';
+		Dialog.confirm_callback = function(result) { 
+			if (result) Dialog.hide(); 
+		};
+		Dialog.onHide = function() {
+			delete self._temp_code;
+		};
+	}
+	
+	copyCodeToClipboard() {
+		// copy code currently being displayed in dialog to clipboard
+		if (this._temp_code) {
+			copyToClipboard(this._temp_code);
+			app.showMessage('info', "The data was copied to your clipboard.");
+		}
+	}
 };
