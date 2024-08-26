@@ -58,7 +58,7 @@ Page.APIKeys = class APIKeys extends Page.Base {
 		html += this.getBasicGrid( this.api_keys, cols, 'key', function(item, idx) {
 			var actions = [
 				'<span class="link" onMouseUp="$P().edit_api_key('+idx+')"><b>Edit</b></span>',
-				'<span class="link" onMouseUp="$P().delete_api_key('+idx+')"><b>Delete</b></span>'
+				'<span class="link danger" onMouseUp="$P().delete_api_key('+idx+')"><b>Delete</b></span>'
 			];
 			return [
 				'<b>' + self.getNiceAPIKey(item, true) + '</b>',

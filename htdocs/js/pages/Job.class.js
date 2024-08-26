@@ -1481,7 +1481,7 @@ Page.Job = class Job extends Page.Base {
 			var actions = [
 				'<a href="' + url + '" target="_blank"><b>View</b></a>',
 				'<a href="' + url + '?download=1"><b>Download</b></a>',
-				'<span class="link" onMouseUp="$P().do_delete_file(' + idx + ')"><b>Delete</b></span>'
+				'<span class="link danger" onMouseUp="$P().do_delete_file(' + idx + ')"><b>Delete</b></span>'
 			];
 			
 			var tds = [

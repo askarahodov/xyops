@@ -67,7 +67,7 @@ Page.Categories = class Categories extends Page.Base {
 		html += this.getBasicGrid( this.categories, cols, 'category', function(item, idx) {
 			var classes = [], actions = [];
 			actions.push( '<span class="link" onMouseUp="$P().edit_category('+idx+')"><b>Edit</b></span>' );
-			actions.push( '<span class="link" onMouseUp="$P().delete_category('+idx+')"><b>Delete</b></span>' );
+			actions.push( '<span class="link danger" onMouseUp="$P().delete_category('+idx+')"><b>Delete</b></span>' );
 			
 			var cat_events = find_objects( app.events, { category: item.id } );
 			var num_events = cat_events.length;

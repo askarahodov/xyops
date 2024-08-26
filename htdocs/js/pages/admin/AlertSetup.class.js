@@ -60,7 +60,7 @@ Page.AlertSetup = class AlertSetup extends Page.Base {
 		html += this.getBasicGrid( this.alerts, cols, 'alert', function(item, idx) {
 			var actions = [];
 			actions.push( '<span class="link" onMouseUp="$P().edit_alert('+idx+')"><b>Edit</b></span>' );
-			actions.push( '<span class="link" onMouseUp="$P().delete_alert('+idx+')"><b>Delete</b></span>' );
+			actions.push( '<span class="link danger" onMouseUp="$P().delete_alert('+idx+')"><b>Delete</b></span>' );
 			
 			var tds = [
 				'<div class="td_drag_handle" style="cursor:default">' + self.getFormCheckbox({

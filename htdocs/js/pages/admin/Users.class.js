@@ -62,7 +62,7 @@ Page.Users = class Users extends Page.Base {
 		html += this.getPaginatedGrid( resp, cols, 'user', function(user, idx) {
 			var actions = [
 				'<span class="link" onMouseUp="$P().edit_user('+idx+')"><b>Edit</b></span>',
-				'<span class="link" onMouseUp="$P().delete_user('+idx+')"><b>Delete</b></span>'
+				'<span class="link danger" onMouseUp="$P().delete_user('+idx+')"><b>Delete</b></span>'
 			];
 			var avatar_url = '';
 			if (user.avatar) avatar_url = user.avatar.replace(/^\w+\:/, '');

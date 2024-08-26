@@ -74,7 +74,7 @@ Page.Plugins = class Plugins extends Page.Base {
 		html += this.getBasicGrid( this.plugins, cols, 'plugin', function(item, idx) {
 			var actions = [];
 			actions.push( '<span class="link" onMouseUp="$P().edit_plugin('+idx+')"><b>Edit</b></span>' );
-			actions.push( '<span class="link" onMouseUp="$P().delete_plugin('+idx+')"><b>Delete</b></span>' );
+			actions.push( '<span class="link danger" onMouseUp="$P().delete_plugin('+idx+')"><b>Delete</b></span>' );
 			
 			var plugin_events = find_objects( app.events, { plugin: item.id } );
 			var num_events = plugin_events.length;
@@ -486,7 +486,7 @@ Page.Plugins = class Plugins extends Page.Base {
 		html += this.getCompactTable(targs, function(item, idx) {
 			var actions = [];
 			actions.push( '<span class="link" onMouseUp="$P().editParam('+idx+')"><b>Edit</b></span>' );
-			actions.push( '<span class="link" onMouseUp="$P().deleteParam('+idx+')"><b>Delete</b></span>' );
+			actions.push( '<span class="link danger" onMouseUp="$P().deleteParam('+idx+')"><b>Delete</b></span>' );
 			
 			var nice_type = self.ctype_labels[item.type];
 			var nice_icon = self.ctype_icons[item.type];

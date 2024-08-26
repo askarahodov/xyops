@@ -55,7 +55,7 @@ Page.Tags = class Tags extends Page.Base {
 		html += this.getBasicGrid( this.tags, cols, 'tag', function(item, idx) {
 			var actions = [];
 			actions.push( '<span class="link" onMouseUp="$P().edit_tag('+idx+')"><b>Edit</b></span>' );
-			actions.push( '<span class="link" onMouseUp="$P().delete_tag('+idx+')"><b>Delete</b></span>' );
+			actions.push( '<span class="link danger" onMouseUp="$P().delete_tag('+idx+')"><b>Delete</b></span>' );
 			
 			return [
 				'<b>' + self.getNiceTag(item, '#Tags?sub=edit&id=' + item.id) + '</b>',

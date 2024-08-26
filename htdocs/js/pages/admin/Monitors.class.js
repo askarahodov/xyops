@@ -63,7 +63,7 @@ Page.Monitors = class Monitors extends Page.Base {
 		html += this.getBasicGrid( this.monitors, cols, 'monitor', function(item, idx) {
 			var actions = [];
 			actions.push( '<span class="link" onMouseUp="$P().edit_monitor('+idx+')"><b>Edit</b></span>' );
-			actions.push( '<span class="link" onMouseUp="$P().delete_monitor('+idx+')"><b>Delete</b></span>' );
+			actions.push( '<span class="link danger" onMouseUp="$P().delete_monitor('+idx+')"><b>Delete</b></span>' );
 			
 			var tds = [
 				'<div class="td_drag_handle" draggable="true" title="Drag to reorder"><i class="mdi mdi-menu"></i></div>',

@@ -67,7 +67,7 @@ Page.Groups = class Groups extends Page.Base {
 		html += this.getBasicGrid( this.groups, cols, 'group', function(item, idx) {
 			var actions = [];
 			actions.push( '<span class="link" onMouseUp="$P().edit_group('+idx+')"><b>Edit</b></span>' );
-			actions.push( '<span class="link" onMouseUp="$P().delete_group('+idx+')"><b>Delete</b></span>' );
+			actions.push( '<span class="link danger" onMouseUp="$P().delete_group('+idx+')"><b>Delete</b></span>' );
 			
 			var nice_match = '';
 			if (item.hostname_match == '(?!)') nice_match = '(None)';
