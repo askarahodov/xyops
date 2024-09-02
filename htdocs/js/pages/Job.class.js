@@ -39,14 +39,6 @@ Page.Job = class Job extends Page.Base {
 		
 		if (!this.active) return; // sanity
 		
-// job.state = 'active';
-// job.progress = 0.5;
-// job.started = app.epoch - 120;
-// delete job.complete;
-// delete job.completed;
-// delete job.code;
-// delete job.description;
-		
 		// sanity
 		if (!job.timelines) job.timelines = {};
 		if (!job.timelines.second) job.timelines.second = [];
@@ -55,7 +47,7 @@ Page.Job = class Job extends Page.Base {
 		var event = find_object(app.events, { id: job.event }) || { title: job.event };
 		var icon = '';
 		
-		if (job.state == 'complete') {
+		if (job.final) {
 			// complete
 			this.live = false;
 			icon = 'timer-' + (job.code ? 'alert' : 'check') + '-outline';
@@ -80,7 +72,7 @@ Page.Job = class Job extends Page.Base {
 			{ icon: icon, title: "Job #" + job.id }
 		];
 		
-		if (job.state == 'complete') {
+		if (job.final) {
 			// job is complete
 			var jargs = this.getJobResultArgs(job);
 			nav_items.push(
@@ -109,7 +101,7 @@ Page.Job = class Job extends Page.Base {
 		
 		var html = '';
 		
-		if (job.state == 'complete') {
+		if (job.final) {
 			// show completion banner at top
 			var banner_class = 'success';
 			if (job.code) {
@@ -159,13 +151,22 @@ Page.Job = class Job extends Page.Base {
 			html += '<div class="box_title">';
 				// html += 'Job Summary';
 				
-				if (job.state == 'complete') {
+				if (job.final) {
 					// job is complete
 					html += '<span>Job Summary</span>';
 					
-					html += '<div class="button right" onMouseUp="$P().do_confirm_run_again()"><i class="mdi mdi-run-fast">&nbsp;</i>Run Again</div>';
-					html += '<div class="button right secondary" onClick="$P().do_view_job_data()"><i class="mdi mdi-code-json">&nbsp;</i>View JSON...</div>';
-					html += '<div class="button right danger" onMouseUp="$P().do_delete_job()"><i class="mdi mdi-trash-can-outline">&nbsp;</i>Delete Job...</div>';
+					// html += '<div class="button right" onClick="$P().do_confirm_run_again()"><i class="mdi mdi-run-fast">&nbsp;</i>Run Again</div>';
+					// html += '<div class="button right secondary" onClick="$P().do_view_job_data()"><i class="mdi mdi-code-json">&nbsp;</i>View JSON...</div>';
+					// html += '<div class="button right danger" onClick="$P().do_delete_job()"><i class="mdi mdi-trash-can-outline">&nbsp;</i>Delete Job...</div>';
+					
+					html += '<div class="button icon right" title="Run Again" onClick="$P().do_confirm_run_again()"><i class="mdi mdi-run-fast"></i></div>';
+					
+					html += '<div class="button icon right secondary" title="Add Comment..." onClick="$P().do_add_comment()"><i class="mdi mdi-comment-processing-outline"></i></div>';
+					html += '<div class="button icon right secondary" title="Edit Tags..." onClick="$P().do_edit_tags()"><i class="mdi mdi-tag-plus-outline"></i></div>';
+					
+					html += '<div class="button icon right secondary" title="View JSON..." onClick="$P().do_view_job_data()"><i class="mdi mdi-code-json"></i></div>';
+					html += '<div class="button icon right danger" title="Delete Job..." onClick="$P().do_delete_job()"><i class="mdi mdi-trash-can-outline"></i></div>';
+					
 					html += '<div class="clear"></div>';
 				}
 				else {
@@ -245,7 +246,7 @@ Page.Job = class Job extends Page.Base {
 					html += '</div>';
 					
 					html += '<div>';
-						if (job.state == 'complete') {
+						if (job.final) {
 							html += '<div class="info_label">Job Completed</div>';
 							html += '<div class="info_value">' + this.getNiceDateTime( job.completed, true ) + '</div>';
 						}
@@ -290,6 +291,16 @@ Page.Job = class Job extends Page.Base {
 			html += '</div>'; // box_content
 		html += '</div>'; // box
 		
+		// actions (hidden unless needed)
+		html += '<div class="box toggle" id="d_job_actions" style="display:none">';
+			html += '<div class="box_title">';
+				html += '<i></i><span>Job Actions</span>';
+			html += '</div>';
+			html += '<div class="box_content table">';
+				// html += '<div class="loading_container"><div class="loading"></div></div>';
+			html += '</div>'; // box_content
+		html += '</div>'; // box
+		
 		// alerts (hidden unless needed)
 		html += '<div class="box toggle" id="d_job_alerts" style="display:none">';
 			html += '<div class="box_title">';
@@ -301,7 +312,7 @@ Page.Job = class Job extends Page.Base {
 		html += '</div>'; // box
 		
 		// additional jobs (completed job only)
-		if ((job.state == 'complete') && job.jobs && job.jobs.length) {
+		if (job.final && job.jobs && job.jobs.length) {
 			html += '<div class="box toggle" id="d_job_add_jobs>';
 				html += '<div class="box_title">';
 					html += '<i></i><span>Additional Jobs</span>';
@@ -331,7 +342,7 @@ Page.Job = class Job extends Page.Base {
 		html += '</div>'; // box
 		
 		// uploaded files (completed job only)
-		if ((job.state == 'complete') && job.files && job.files.length) {
+		if (job.final && job.files && job.files.length) {
 			html += '<div class="box toggle" id="d_job_files">';
 				html += '<div class="box_title">';
 					html += '<i></i><span>Job Files</span>';
@@ -345,7 +356,7 @@ Page.Job = class Job extends Page.Base {
 		// job log
 		html += '<div class="box">';
 			html += '<div class="box_title">';
-				if (job.state == 'complete') {
+				if (job.final) {
 					html += 'Job Output (' + get_text_from_bytes(job.log_file_size || 0) + ')';
 					if (job.log_file_size) {
 						html += '<div class="button right" onMouseUp="$P().do_view_job_log()"><i class="mdi mdi-open-in-new">&nbsp;</i>View Raw...</div>';
@@ -411,7 +422,7 @@ Page.Job = class Job extends Page.Base {
 		
 		this.div.html(html);
 		
-		if (job.state != 'complete') {
+		if (!job.final) {
 			// in progress
 			this.updateLiveJobStats();
 			this.setupLiveJobLog();
@@ -422,12 +433,78 @@ Page.Job = class Job extends Page.Base {
 			this.getAdditionalJobs();
 			// this.showJobData();
 			this.renderPluginParams('#d_job_params');
+			this.renderJobActions();
 		}
 		
 		this.setupCharts();
 		this.updateUserContent();
 		this.getJobAlerts();
 		this.setupToggleBoxes();
+	}
+	
+	renderJobActions() {
+		// render details on executed job actions
+		var self = this;
+		var job = this.job;
+		if (!this.active) return; // sanity
+		
+		// decorate actions with idx, for linking
+		(job.actions || []).forEach( function(action, idx) { action.idx = idx; } );
+		
+		// we're only interested in actions that actually fired (and aren't hidden)
+		var actions = this.actions = (job.actions || []).filter( function(action) { return !!(action.date && !action.hidden); } );
+		
+		if (!actions.length) {
+			$('#d_job_actions').hide();
+			return;
+		}
+		
+		var cols = ["Trigger", "Type", "Description", "Date/Time", "Elapsed", "Result", "Actions"];
+		var html = '';
+		
+		var grid_args = {
+			rows: sort_by(actions, 'trigger'), // sort in place, so idx works below
+			cols: cols,
+			data_type: 'action'
+		};
+		
+		html += this.getBasicGrid( grid_args, function(item, idx) {
+			var disp = self.getJobActionDisplayArgs(item, true); // trigger, type, text, desc, icon
+			
+			var link = 'n/a';
+			if (item.loc) link = '<a href="' + item.loc + '">View Details...</a>';
+			else if (item.description || item.details) link = '<span class="link" onClick="$P().viewJobActionDetails(' + idx + ')">View Details...</span>';
+			
+			return [
+				'<b><i class="mdi mdi-eye-outline">&nbsp;</i>' + disp.trigger + '</b>',
+				'<i class="mdi mdi-' + disp.icon + '">&nbsp;</i>' + disp.type,
+				disp.desc,
+				self.getNiceDateTime(item.date, true),
+				'<i class="mdi mdi-clock-check-outline">&nbsp;</i>' + get_text_from_ms_round( Math.floor(item.elapsed_ms), true),
+				self.getNiceJobResult(item), // yes, this works for actions too
+				'<b>' + link + '</b>'
+			];
+		}); // grid
+		
+		$('#d_job_actions > div.box_content').html( html );
+		$('#d_job_actions').show();
+	}
+	
+	viewJobActionDetails(idx) {
+		// popup dialog to show action results
+		var self = this;
+		var action = this.actions[idx];
+		var disp = self.getJobActionDisplayArgs(action); // trigger, type, text, desc, icon
+		var details = action.details || "";
+		
+		if (action.description) {
+			details = "**Result:** " + action.description + "\n\n" + details;
+		}
+		
+		var title = "Job Action Details: " + disp.type;
+		if (action.code) title = '<span style="color:var(--red);">' + title + '</span>';
+		
+		this.viewMarkdownAuto( title, details.trim() );
 	}
 	
 	getJobAlerts() {
@@ -702,7 +779,7 @@ Page.Job = class Job extends Page.Base {
 		var job = this.job;
 		var $cont = this.div.find('#d_live_job_log');
 		
-		if (job.state != 'complete') return; // sanity
+		if (!job.final) return; // sanity
 		if (this.live) return; // more sanity
 		
 		if (!job.log_file_size) {
@@ -961,7 +1038,7 @@ Page.Job = class Job extends Page.Base {
 		var self = this;
 		var job = this.job;
 		var timelines = job.timelines;
-		var tline = ((job.state == 'complete') && (job.elapsed > 300)) ? 'minute' : 'second';
+		var tline = (job.final && (job.elapsed > 300)) ? 'minute' : 'second';
 		this.charts = {};
 		
 		this.charts.cpu = this.createChart({
@@ -1410,7 +1487,7 @@ Page.Job = class Job extends Page.Base {
 		
 		// special case: if we're sitting on the very last snapshot in the array
 		// and jumping forward, and the job is in progress, switch to real-time
-		if ((idx == len - 1) && (delta > 0) && (job.state != 'complete')) {
+		if ((idx == len - 1) && (delta > 0) && (!job.final)) {
 			this.snapEpoch = null;
 		}
 		else {
@@ -1672,14 +1749,18 @@ Page.Job = class Job extends Page.Base {
 	
 	getJobJSON() {
 		// get pretty-printed and pruned job json
-		var stub = copy_object(this.job);
+		var job = deep_copy_object(this.job);
 		
-		delete stub.activity;
-		delete stub.timelines;
-		delete stub.table;
-		delete stub.html;
+		delete job.activity;
+		delete job.timelines;
+		delete job.table;
+		delete job.html;
 		
-		return JSON.stringify(stub, null, "\t");
+		(job.actions || []).forEach( function(action) {
+			delete action.details;
+		} );
+		
+		return JSON.stringify(job, null, "\t");
 	}
 	
 	showJobData() {
@@ -1781,6 +1862,7 @@ Page.Job = class Job extends Page.Base {
 		delete this.redraw;
 		delete this.metaRowCount;
 		delete this.live;
+		delete this.actions;
 		
 		// destroy charts if applicable
 		if (this.charts) {
