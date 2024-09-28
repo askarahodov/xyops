@@ -169,7 +169,7 @@
 	},
 	
 	"Storage": {
-		"engine": "Filesystem",
+		"engine": "Hybrid",
 		"list_page_size": 100,
 		"hash_page_size": 100,
 		"concurrency": 32,
@@ -177,6 +177,11 @@
 		"network_transactions": false,
 		"trans_auto_recover": true,
 		"log_event_types": { "get": 1, "put": 1, "head": 1, "delete": 1, "expire_set": 1, "perf_min": 1, "commit":1, "index":1, "unindex":1, "search":1, "sort":1, "maint": 1 },
+		
+		"Hybrid": {
+			"docEngine": "SQLite",
+			"binaryEngine": "Filesystem"
+		},
 		
 		"Filesystem": {
 			"base_dir": "data",
@@ -201,7 +206,7 @@
 			},
 			"backups": {
 				"enabled": true,
-				"dir": "backups",
+				"dir": "data/backups",
 				"filename": "backup-[yyyy]-[mm]-[dd]-[hh]-[mi]-[ss].db",
 				"compress": true,
 				"keep": 7
@@ -252,6 +257,7 @@
 		"free_accounts": false,
 		"sort_global_users": false,
 		"use_bcrypt": true,
+		"mail_logger": true,
 		"valid_username_match": "^[\\w\\-\\.]+$",
 		
 		"email_templates": {
@@ -269,6 +275,10 @@
 			"tag_jobs": 1,
 			"comment_jobs": 1
 		}
+	},
+	
+	"Debug": {
+		"enabled": true
 	}
 	
 }
