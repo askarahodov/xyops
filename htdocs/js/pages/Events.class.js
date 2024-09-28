@@ -1576,6 +1576,13 @@ Page.Events = class Events extends Page.Base {
 		this.deletePageSnapshot();
 		this.deletePageDraft();
 		
+		// update in-memory copy, to prevent race condition on view page
+		var idx = find_object_idx(app.events, { id: this.event.id });
+		if (idx > -1) {
+			this.event.modified = app.epoch;
+			merge_hash_into( app.events[idx], this.event );
+		}
+		
 		Nav.go( 'Events?sub=view&id=' + this.event.id );
 		app.showMessage('success', "The event was saved successfully.");
 	}
