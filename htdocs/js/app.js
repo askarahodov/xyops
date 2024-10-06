@@ -25,42 +25,6 @@ app.extend({
 	
 	colors: ["#008FFB", "#00E396", "#FEB019", "#FF4560", "#775DD0", "#3F51B5", "#4CAF50", "#546E7A", "#D4526E", "#A5978B", "#C7F464", "#81D4FA", "#2B908F", "#F9A3A4", "#90EE7E", "#FA4443", "#449DD1", "#F86624", "#69D2E7", "#EA3546", "#662E9B", "#C5D86D", "#D7263D", "#1B998B", "#2E294E", "#F46036", "#E2C044", "#662E9B", "#F86624", "#F9C80E", "#EA3546", "#43BCCD", "#5C4742", "#A5978B", "#8D5B4C", "#5A2A27", "#C4BBAF", "#A300D6", "#7D02EB", "#5653FE", "#2983FF", "#00B1F2", "#03A9F4", "#33B2DF", "#4ECDC4", "#13D8AA", "#FD6A6A", "#F9CE1D", "#FF9800"],
 	
-	activity_types: {
-		'^apikey': { icon: 'key-variant', label: 'API Key' },	
-		
-		'^user_create': { icon: 'account-plus', label: 'User' },
-		'^user_update': { icon: 'account-edit', label: 'User' },
-		'^user_login': { icon: 'account-key', label: 'User' },
-		'^user_password': { icon: 'account-key', label: 'User' },
-		'^user': { icon: 'account', label: 'User' },
-		
-		'^error': { icon: 'alert-decagram', label: 'Error' },
-		'^warning': { icon: 'alert-circle', label: 'Warning' },
-		'^notice': { icon: 'information-outline', label: 'Notice' },
-		'^group': { icon: 'server-network', label: 'Group' },
-		'^command': { icon: 'console', label: 'Command' },
-		'^server': { icon: 'server', label: 'Server' },
-		'^master': { icon: 'database', label: 'Master' },
-		'^peer': { icon: 'database', label: 'Master' },
-		'^monitor': { icon: 'chart-line', label: 'Monitor' },
-		
-		'^alert_new': { icon: 'progress-alert', label: 'Alert' },
-		'^alert_cleared': { icon: 'alert-circle-outline', label: 'Alert' },
-		'^alert': { icon: 'bell-outline', label: 'Alert' },
-		
-		'^tag': { icon: 'tag-outline', label: 'Tag' },
-		'^category': { icon: 'folder-open-outline', label: 'Category' },
-		'^event': { icon: 'file-clock-outline', label: 'Event' },
-		'^workflow': { icon: 'clipboard-flow-outline', label: 'Workflow' },
-		'^channel': { icon: 'bullhorn-outline', label: 'Channel' },
-		'^web_hook': { icon: 'webhook', label: 'Web Hook' },
-		'^plugin': { icon: 'power-plug-outline', label: 'Plugin' },
-		'^job': { icon: 'timer-outline', label: 'Job' },
-		'^queue': { icon: 'tray-full', label: 'Queue' },
-		
-		'^state': { icon: 'database-outline', label: 'State' },
-	},
-	
 	receiveConfig: function(resp) {
 		// receive config from server
 		delete resp.code;
