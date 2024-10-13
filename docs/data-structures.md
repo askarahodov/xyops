@@ -346,6 +346,22 @@ echo '{ "push": { "actions": [ { "trigger":"success", "type":"email", "email":"y
 
 An internal object used to track CPU/Mem thresholds.
 
+## Job.table
+
+User writable property for providing a table of data.  Should be specified as an object with `title`, `rows`, `cols` and `caption` properties.  The `title` and `caption` may be omitted.
+
+## Job.html
+
+User writable property for providing a HTML-formatted report.  Should be specified as an object with `title`, `content` and `caption` properties.  The `title` and `caption` may be omitted.
+
+## Job.markdown
+
+User writable property for providing a markdown-formatted report.  Should be specified as an object with `title`, `content` and `caption` properties.  The `title` and `caption` may be omitted.  This gets converted to HTML on the back-end.
+
+## Job.text
+
+User writable property for providing a text-formatted report.  Should be specified as an object with `title`, `content` and `caption` properties.  The `title` and `caption` may be omitted.  This gets converted to HTML using a `<pre>` element.
+
 
 
 # Workflow
