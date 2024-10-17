@@ -2150,6 +2150,12 @@ Page.Events = class Events extends Page.Base {
 				nice_type = 'Option';
 				nice_desc = '<i class="mdi mdi-chat-sleep-outline">&nbsp;</i><b>Delay:</b> ' + get_text_from_seconds(item.duration || 0, false, true);
 			break;
+			
+			case 'plugin':
+				nice_icon = '<i class="mdi mdi-power-plug">&nbsp;</i>';
+				nice_type = 'Plugin';
+				nice_desc = this.getNicePlugin(item.plugin_id);
+			break;
 		} // switch item.type
 		
 		return { nice_icon, nice_type, nice_desc };
@@ -2256,7 +2262,7 @@ Page.Events = class Events extends Page.Base {
 		var user_tz = app.user.timezone || ropts.timeZone;
 		if (user_tz != app.config.tz) new_item.timezone = user_tz;
 		
-		var html = '<div class="dialog_box_content maximize" style="max-height:75vh; overflow-x:hidden; overflow-y:auto;">';
+		var html = '<div class="dialog_box_content maximize scroll">';
 		
 		// status
 		html += this.getFormRow({
@@ -2306,6 +2312,7 @@ Page.Events = class Events extends Page.Base {
 					{ id: 'crontab', title: "Crontab", icon: 'file-clock-outline' },
 					{ id: 'continuous', title: "Continuous", icon: 'all-inclusive' },
 					{ id: 'single', title: "Single Shot", icon: 'alarm-check' },
+					{ id: 'plugin', title: "Plugin", icon: 'power-plug' },
 					
 					{ id: 'catchup', title: "Catch-Up", icon: 'run-fast', group: "Options" },
 					{ id: 'destruct', title: "Self-Destruct", icon: 'fire' },
@@ -2511,6 +2518,28 @@ Page.Events = class Events extends Page.Base {
 			caption: 'Specify your custom job starting delay in seconds.'
 		});
 		
+		// plugin
+		html += this.getFormRow({
+			id: 'd_et_plugin',
+			label: 'Scheduler Plugin:',
+			content: this.getFormMenuSingle({
+				id: 'fe_et_plugin',
+				title: 'Select Scheduler Plugin',
+				options: app.plugins.filter( function(plugin) { return plugin.type == 'scheduler'; } ),
+				value: timing.plugin_id,
+				default_icon: 'power-plug-outline'
+			}),
+			caption: 'Select Plugin to use for custom scheduling.'
+		});
+		
+		// plugin params
+		html += this.getFormRow({
+			id: 'd_et_plugin_params',
+			label: 'Parameters:',
+			content: '<div id="d_et_param_editor" class="plugin_param_editor_cont"></div>',
+			caption: 'Enter values for all the Plugin-defined parameters here.'
+		});
+		
 		// range & blackout share these:
 		html += this.getFormRow({
 			id: 'd_et_range_start',
@@ -2692,6 +2721,13 @@ Page.Events = class Events extends Page.Base {
 					timing.duration = parseInt( $('#fe_et_delay').val() );
 					if (!timing.duration) return app.badField('#fe_et_delay', "Please enter or select the number of seconds to delay.");
 				break;
+				
+				case 'plugin':
+					timing.plugin_id = $('#fe_et_plugin').val();
+					if (!timing.plugin_id) return app.badField('#fe_et_plugin', "Please select a Plugin for scheduling.");
+					timing.params = self.getPluginParamValues( timing.plugin_id );
+					if ($('#fe_et_tz').val().length) timing.timezone = $('#fe_et_tz').val();
+				break;
 			} // switch timing.type
 			
 			// see if we need to add or replace
@@ -2791,6 +2827,13 @@ Page.Events = class Events extends Page.Base {
 					$('#d_et_delay_desc').show();
 					$('#d_et_delay').show();
 				break;
+				
+				case 'plugin':
+					$('#d_et_plugin').show();
+					$('#d_et_plugin_params').show();
+					$('#d_et_param_editor').html( self.getPluginParamEditor( $('#fe_et_plugin').val(), timing.params || {} ) );
+					$('#d_et_tz').show();
+				break;
 			} // switch new_type
 			
 			app.clearError();
@@ -2801,7 +2844,11 @@ Page.Events = class Events extends Page.Base {
 			change_timing_type( $(this).val() );
 		}); // type change
 		
-		SingleSelect.init( $('#fe_et_type, #fe_et_tz') );
+		$('#fe_et_plugin').on('change', function() {
+			$('#d_et_param_editor').html( self.getPluginParamEditor( $(this).val(), timing.params || {} ) );
+		}); // type change
+		
+		SingleSelect.init( $('#fe_et_type, #fe_et_tz, #fe_et_plugin') );
 		MultiSelect.init( $('#fe_et_years, #fe_et_months, #fe_et_weekdays, #fe_et_days, #fe_et_hours, #fe_et_minutes') );
 		// this.updateAddRemoveMe('#fe_eja_email');
 		
