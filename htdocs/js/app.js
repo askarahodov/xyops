@@ -703,11 +703,19 @@ app.extend({
 	},
 	
 	includesAny: function(haystack, needles) {
-		// return true if haystack contains any needles
+		// return true if haystack contains any needles, false otherwise
 		for (var idx = 0, len = needles.length; idx < len; idx++) {
 			if (haystack.includes(needles[idx])) return true;
 		}
 		return false;
+	},
+	
+	includesAll: function(haystack, needles) {
+		// return true if haystack contains ALL needles, false otherwise
+		for (var idx = 0, len = needles.length; idx < len; idx++) {
+			if (!haystack.includes(needles[idx])) return false;
+		}
+		return true;
 	},
 	
 	getLastDayInMonth: function(year, month) {
