@@ -362,7 +362,7 @@ Page.Servers = class Servers extends Page.ServerUtils {
 			html += '</div>';
 			
 			// options
-			html += '<div id="d_ss_adv" class="form_grid" style="margin-bottom:25px">';
+			html += '<div class="form_grid" style="margin-bottom:25px">';
 				
 				// group
 				html += '<div class="form_cell">';
@@ -529,8 +529,6 @@ Page.Servers = class Servers extends Page.ServerUtils {
 		// buttons at bottom
 		html += '<div class="box_buttons" style="padding:0">';
 			
-			// html += '<div id="btn_s_save" class="button mobile_collapse" onMouseUp="$P().doSavePreset()"><i class="mdi mdi-floppy">&nbsp;</i><span>' + (preset ? 'Edit' : 'Save') + ' Preset...</span></div>';
-			// html += '<div class="button" id="btn_s_download" onMouseUp="$P().doDownload()"><i class="mdi mdi-cloud-download-outline">&nbsp;</i>Download All...</div>';
 			html += '<div class="button primary" onMouseUp="$P().navSearch()"><i class="mdi mdi-magnify">&nbsp;</i>Search</div>';
 			// html += '<div class="clear"></div>';
 		html += '</div>'; // box_buttons
