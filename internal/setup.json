@@ -143,7 +143,10 @@
 			"enabled": true,
 			"url": "https://httpbin.org/post",
 			"method": "POST",
-			"headers": "Content-Type: application/json\nUser-Agent: Orchestra/WebHook",
+			"headers": [
+				{ "name": "Content-Type", "value": "application/json" },
+				{ "name": "User-Agent", "value": "Orchestra/WebHook" }
+			],
 			"body": "{\n\t\"content\": \"[content]\",\n\t\"text\": \"[text]\"\n}",
 			"timeout": 30,
 			"retries": 0,
