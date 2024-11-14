@@ -64,7 +64,14 @@ Page.Groups = class Groups extends Page.PageUtils {
 		html += '</div>';
 		html += '<div class="box_content table">';
 		
-		html += this.getBasicGrid( this.groups, cols, 'group', function(item, idx) {
+		var grid_opts = {
+			rows: this.groups,
+			cols: cols,
+			data_type: 'group',
+			grid_template_columns: 'min-content' + ' auto'.repeat( cols.length - 1 )
+		};
+		
+		html += this.getBasicGrid( grid_opts, function(item, idx) {
 			var actions = [];
 			actions.push( '<span class="link" onClick="$P().edit_group('+idx+')"><b>Edit</b></span>' );
 			actions.push( '<span class="link danger" onClick="$P().delete_group('+idx+')"><b>Delete</b></span>' );

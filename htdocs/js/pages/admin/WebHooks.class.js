@@ -39,6 +39,7 @@ Page.WebHooks = class WebHooks extends Page.PageUtils {
 	
 	receive_web_hooks(resp) {
 		// receive all web hooks from server, render them sorted
+		var self = this;
 		var html = '';
 		
 		if (!resp.rows) resp.rows = [];
@@ -57,12 +58,12 @@ Page.WebHooks = class WebHooks extends Page.PageUtils {
 			rows: this.web_hooks,
 			cols: cols,
 			data_type: 'web hook',
+			grid_template_columns: 'min-content' + ' auto'.repeat( cols.length - 1 ),
 			attribs: {
 				class: 'data_grid webhook_grid'
 			}
 		};
 		
-		var self = this;
 		html += this.getBasicGrid( opts, function(item, idx) {
 			var actions = [];
 			actions.push( '<span class="link" onClick="$P().edit_web_hook('+idx+')"><b>Edit</b></span>' );

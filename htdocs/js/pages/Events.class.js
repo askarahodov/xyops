@@ -283,6 +283,7 @@ Page.Events = class Events extends Page.PageUtils {
 			rows: this.events,
 			cols: cols,
 			data_type: 'event',
+			grid_template_columns: 'min-content' + ' auto'.repeat( cols.length - 1 ),
 			below: '<ul class="grid_row_empty" id="ul_el_none_found" style="display:none"><div style="grid-column-start: span ' + cols.length + ';">No events found matching your filters.</div></ul>'
 		};
 		

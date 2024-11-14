@@ -64,7 +64,14 @@ Page.Categories = class Categories extends Page.PageUtils {
 		html += '</div>';
 		html += '<div class="box_content table">';
 		
-		html += this.getBasicGrid( this.categories, cols, 'category', function(item, idx) {
+		var grid_opts = {
+			rows: this.categories,
+			cols: cols,
+			data_type: 'category',
+			grid_template_columns: 'min-content' + ' auto'.repeat( cols.length - 1 )
+		};
+		
+		html += this.getBasicGrid( grid_opts, function(item, idx) {
 			var classes = [], actions = [];
 			actions.push( '<span class="link" onClick="$P().edit_category('+idx+')"><b>Edit</b></span>' );
 			actions.push( '<span class="link danger" onClick="$P().delete_category('+idx+')"><b>Delete</b></span>' );

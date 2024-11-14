@@ -42,6 +42,7 @@ Page.AlertSetup = class AlertSetup extends Page.PageUtils {
 	
 	receive_alerts(resp) {
 		// receive all alerts from server, render them sorted
+		var self = this;
 		var html = '';
 		
 		if (!resp.rows) resp.rows = [];
@@ -56,8 +57,14 @@ Page.AlertSetup = class AlertSetup extends Page.PageUtils {
 		html += '</div>';
 		html += '<div class="box_content table">';
 		
-		var self = this;
-		html += this.getBasicGrid( this.alerts, cols, 'alert', function(item, idx) {
+		var grid_opts = {
+			rows: this.alerts,
+			cols: cols,
+			data_type: 'alert',
+			grid_template_columns: 'min-content' + ' auto'.repeat( cols.length - 1 )
+		};
+		
+		html += this.getBasicGrid( grid_opts, function(item, idx) {
 			var actions = [];
 			actions.push( '<span class="link" onClick="$P().edit_alert('+idx+')"><b>Edit</b></span>' );
 			actions.push( '<span class="link danger" onClick="$P().delete_alert('+idx+')"><b>Delete</b></span>' );

@@ -58,6 +58,7 @@ Page.Plugins = class Plugins extends Page.PageUtils {
 	
 	receive_plugins(resp) {
 		// receive all plugins from server, render them sorted
+		var self = this;
 		var html = '';
 		
 		if (!resp.rows) resp.rows = [];
@@ -72,8 +73,14 @@ Page.Plugins = class Plugins extends Page.PageUtils {
 		html += '</div>';
 		html += '<div class="box_content table">';
 		
-		var self = this;
-		html += this.getBasicGrid( this.plugins, cols, 'plugin', function(item, idx) {
+		var grid_opts = {
+			rows: this.plugins,
+			cols: cols,
+			data_type: 'plugin',
+			grid_template_columns: 'min-content' + ' auto'.repeat( cols.length - 1 )
+		};
+		
+		html += this.getBasicGrid( grid_opts, function(item, idx) {
 			var actions = [];
 			actions.push( '<span class="link" onClick="$P().edit_plugin('+idx+')"><b>Edit</b></span>' );
 			actions.push( '<span class="link danger" onClick="$P().delete_plugin('+idx+')"><b>Delete</b></span>' );

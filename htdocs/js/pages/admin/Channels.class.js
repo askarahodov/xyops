@@ -42,6 +42,7 @@ Page.Channels = class Channels extends Page.PageUtils {
 	
 	receive_channels(resp) {
 		// receive all channels from server, render them sorted
+		var self = this;
 		var html = '';
 		
 		if (!resp.rows) resp.rows = [];
@@ -56,8 +57,14 @@ Page.Channels = class Channels extends Page.PageUtils {
 		html += '</div>';
 		html += '<div class="box_content table">';
 		
-		var self = this;
-		html += this.getBasicGrid( this.channels, cols, 'channel', function(item, idx) {
+		var grid_opts = {
+			rows: this.channels,
+			cols: cols,
+			data_type: 'channel',
+			grid_template_columns: 'min-content' + ' auto'.repeat( cols.length - 1 )
+		};
+		
+		html += this.getBasicGrid( grid_opts, function(item, idx) {
 			var actions = [];
 			actions.push( '<span class="link" onClick="$P().edit_channel('+idx+')"><b>Edit</b></span>' );
 			actions.push( '<span class="link danger" onClick="$P().delete_channel('+idx+')"><b>Delete</b></span>' );
