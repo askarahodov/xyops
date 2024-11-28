@@ -729,6 +729,7 @@ div.td_big {
 		"d";
 	
 	grid-column-gap: 20px;
+	grid-row-gap: 4px;
 }
 .dialog_box_content.maximize .form_row > div.fr_label {
 	justify-self: start;
