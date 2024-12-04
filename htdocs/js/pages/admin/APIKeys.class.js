@@ -120,7 +120,8 @@ Page.APIKeys = class APIKeys extends Page.PageUtils {
 		this.api_key = { 
 			key: get_unique_id(24),
 			active: 1,
-			privileges: copy_object( config.default_privileges )
+			privileges: copy_object( config.default_privileges ),
+			roles: []
 		};
 		
 		html += this.get_api_key_edit_html();
@@ -335,6 +336,22 @@ Page.APIKeys = class APIKeys extends Page.PageUtils {
 			caption: 'Optionally enter a more detailed description of the application.'
 		});
 		
+		// roles
+		html += this.getFormRow({
+			label: 'Roles:',
+			content: this.getFormMenuMulti({
+				id: 'fe_ak_roles',
+				title: 'Assign roles to key',
+				placeholder: '(None)',
+				options: app.roles,
+				values: api_key.roles || [],
+				default_icon: 'account-group-outline',
+				onChange: '$P().onRoleChange(this)',
+				'data-hold': 1
+			}),
+			caption: 'Assign one or more roles to the key.  These automatically import privileges, which are additive.'
+		});
+		
 		// privilege list
 		html += this.getFormRow({
 			label: 'Privileges:',
@@ -348,12 +365,36 @@ Page.APIKeys = class APIKeys extends Page.PageUtils {
 				onChange: '$P().onPrivChange(this)',
 				'data-hold': 1,
 				'data-volatile': 1,
-				'data-admin_set': api_key.privileges.admin ? 1 : ''
+				'data-admin_set': api_key.privileges.admin ? 1 : '',
+				'data-inherited': this.getInheritedPrivList(api_key.roles || []).join(','),
+				'data-itooltip': "Inherited from role"
 			}),
 			caption: 'Select which privileges the API Key account should have. Administrators have <b>all</b> privileges.'
 		});
 		
 		return html;
+	}
+	
+	getInheritedPrivList(roles) {
+		// compute inherited privs from role list
+		var privs = {};
+		
+		roles.forEach( function(role_id) {
+			var role = find_object( app.roles, { id: role_id } );
+			if (!role || !role.enabled) return; // disabled or deleted role
+			merge_hash_into( privs, role.privileges );
+		} );
+		
+		return Object.keys(privs);
+	}
+	
+	onRoleChange(elem) {
+		// roles changed, recalc inherited privs
+		var $elem = $(elem);
+		var roles = $elem.val();
+		
+		var priv_list = this.getInheritedPrivList(roles);
+		this.div.find('#fe_ak_privs').data('inherited', priv_list.join(',')).trigger('change');
 	}
 	
 	onPrivChange(elem) {
@@ -389,6 +430,7 @@ Page.APIKeys = class APIKeys extends Page.PageUtils {
 		api_key.title = $('#fe_ak_title').val().trim();
 		api_key.description = $('#fe_ak_desc').val();
 		api_key.privileges = array_to_hash_keys( $('#fe_ak_privs').val(), 1 );
+		api_key.roles = $('#fe_ak_roles').val();
 		
 		if (!api_key.key.length) {
 			return app.badField('#fe_ak_key', "Please enter an API Key string, or generate a random one.");

@@ -535,6 +535,22 @@ Page.Users = class Users extends Page.Base {
 			caption: user.modified ? "Optionally enter a new password here to reset it.  Please make it secure." : "Enter a password for the account.  Please make it secure."
 		});
 		
+		// roles
+		html += this.getFormRow({
+			label: 'Roles:',
+			content: this.getFormMenuMulti({
+				id: 'fe_eu_roles',
+				title: 'Assign roles to user',
+				placeholder: '(None)',
+				options: app.roles,
+				values: user.roles || [],
+				default_icon: 'account-group-outline',
+				onChange: '$P().onRoleChange(this)',
+				'data-hold': 1
+			}),
+			caption: 'Assign one or more roles to the user.  These automatically import privileges, which are additive.'
+		});
+		
 		// privilege list
 		html += this.getFormRow({
 			label: 'Privileges:',
@@ -548,7 +564,9 @@ Page.Users = class Users extends Page.Base {
 				onChange: '$P().onPrivChange(this)',
 				'data-hold': 1,
 				'data-volatile': 1,
-				'data-admin_set': user.privileges.admin ? 1 : ''
+				'data-admin_set': user.privileges.admin ? 1 : '',
+				'data-inherited': this.getInheritedPrivList(user.roles || []).join(','),
+				'data-itooltip': "Inherited from role"
 			}),
 			caption: 'Select which privileges the user account should have. Administrators have <b>all</b> privileges.'
 		});
@@ -563,9 +581,11 @@ Page.Users = class Users extends Page.Base {
 				options: app.categories,
 				values: user.categories || [],
 				default_icon: 'folder-open-outline',
-				'data-hold': 1
+				'data-hold': 1,
+				'data-inherited': this.getInheritedCatList(user.roles || []).join(','),
+				'data-itooltip': "Inherited from role"
 			}),
-			caption: 'Optionally limit the user\'s access to specific categories only.  This only applies for non-administrators.'
+			caption: 'Optionally limit the user\'s access to specific categories.  This only applies for non-administrators.'
 		});
 		
 		// group privileges
@@ -578,12 +598,68 @@ Page.Users = class Users extends Page.Base {
 				options: app.groups,
 				values: user.groups || [],
 				default_icon: 'server-network',
-				'data-hold': 1
+				'data-hold': 1,
+				'data-inherited': this.getInheritedGroupList(user.roles || []).join(','),
+				'data-itooltip': "Inherited from role"
 			}),
-			caption: 'Optionally limit the user\'s access to specific server groups only.  This only applies for non-administrators.'
+			caption: 'Optionally limit the user\'s access to specific server groups.  This only applies for non-administrators.'
 		});
 		
 		return html;
+	}
+	
+	getInheritedPrivList(roles) {
+		// compute inherited privs from role list
+		var privs = {};
+		
+		roles.forEach( function(role_id) {
+			var role = find_object( app.roles, { id: role_id } );
+			if (!role || !role.enabled) return; // disabled or deleted role
+			merge_hash_into( privs, role.privileges );
+		} );
+		
+		return Object.keys(privs);
+	}
+	
+	getInheritedCatList(roles) {
+		// compute inherited cats from role list
+		var cats = [];
+		
+		roles.forEach( function(role_id) {
+			var role = find_object( app.roles, { id: role_id } );
+			if (!role || !role.enabled) return; // disabled or deleted role
+			cats = cats.concat( role.categories || [] );
+		} );
+		
+		return [...new Set(cats)]; // remove dupes
+	}
+	
+	getInheritedGroupList(roles) {
+		// compute inherited groups from role list
+		var cgrps = [];
+		
+		roles.forEach( function(role_id) {
+			var role = find_object( app.roles, { id: role_id } );
+			if (!role || !role.enabled) return; // disabled or deleted role
+			cgrps = cgrps.concat( role.groups || [] );
+		} );
+		
+		return [...new Set(cgrps)]; // remove dupes
+	}
+	
+	onRoleChange(elem) {
+		// roles changed, recalc inherited privs
+		var $elem = $(elem);
+		var roles = $elem.val();
+		
+		var priv_list = this.getInheritedPrivList(roles);
+		this.div.find('#fe_eu_privs').data('inherited', priv_list.join(',')).trigger('change');
+		
+		var cat_list = this.getInheritedCatList(roles);
+		this.div.find('#fe_eu_cats').data('inherited', cat_list.join(',')).trigger('change');
+		
+		var cgrp_list = this.getInheritedGroupList(roles);
+		this.div.find('#fe_eu_groups').data('inherited', cgrp_list.join(',')).trigger('change');
 	}
 	
 	onPrivChange(elem) {
@@ -618,6 +694,7 @@ Page.Users = class Users extends Page.Base {
 			full_name: trim($('#fe_eu_fullname').val()),
 			email: trim($('#fe_eu_email').val()),
 			password: $('#fe_eu_password').val(),
+			roles: $('#fe_eu_roles').val(),
 			privileges: array_to_hash_keys( $('#fe_eu_privs').val(), 1 ),
 			categories: $('#fe_eu_cats').val(),
 			groups: $('#fe_eu_groups').val()

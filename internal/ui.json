@@ -1,6 +1,6 @@
 {
 	"privilege_list": [
-		{ "id": "admin", "title": "Administrator", "icon": "lock-outline" },
+		{ "id": "admin", "title": "Administrator", "icon": "account-wrench" },
 		
 		{ "id": "create_events", "title": "Create Events", "icon": "calendar-clock" },
 		{ "id": "edit_events", "title": "Edit Events", "icon": "calendar-clock" },
@@ -9,8 +9,8 @@
 		{ "id": "run_jobs", "title": "Run Jobs", "icon": "timer-outline" },
 		{ "id": "abort_jobs", "title": "Abort Jobs", "icon": "timer-outline" },
 		{ "id": "delete_jobs", "title": "Delete Jobs", "icon": "timer-outline" },
-		{ "id": "tag_jobs", "title": "Add Job Tags", "icon": "timer-outline" },
-		{ "id": "comment_jobs", "title": "Add Job Comments", "icon": "timer-outline" },
+		{ "id": "tag_jobs", "title": "Job Tags", "icon": "timer-outline" },
+		{ "id": "comment_jobs", "title": "Job Comments", "icon": "timer-outline" },
 		
 		{ "id": "create_groups", "title": "Create Groups", "icon": "server-network" },
 		{ "id": "edit_groups", "title": "Edit Groups", "icon": "server-network" },
@@ -58,6 +58,7 @@
 		{ "id": "plugins", "title": "Plugins", "icon": "power-plug-outline" },
 		{ "id": "tags", "title": "Tags", "icon": "tag-outline" },
 		{ "id": "users", "title": "Users", "icon": "account" },
+		{ "id": "roles", "title": "Roles", "icon": "account-group" },
 		{ "id": "web_hooks", "title": "Web Hooks", "icon": "webhook" }
 	],
 	
@@ -128,6 +129,10 @@
 		"user_login": "User logged in: [user.full_name] ([user.username])",
 		"user_password": "User password was changed: [user.full_name] ([user.username])",
 		
+		"role_create": "Role created: [description] ([role.id])",
+		"role_update": "Role updated: [description] ([role.id])",
+		"role_delete": "Role deleted: [description] ([role.id])",
+		
 		"server_add": "Server connected to the network: [hostname]",
 		"server_delete": "Server disconnected from the network: [hostname]",
 		
@@ -152,6 +157,7 @@
 		"tags": "^(tag_.+)$",
 		"web_hooks": "^(web_hook_.+)$",
 		"users": "^(user_.+)$",
+		"roles": "^(role_.+)$",
 		"servers": "^(server_.+)$",
 		"peers": "^(peer_.+)$",
 		"system": "^(state_update|internal_job)$"
@@ -165,6 +171,7 @@
 		"^user_login": { "icon": "account-key", "label": "User" },
 		"^user_password": { "icon": "account-key", "label": "User" },
 		"^user": { "icon": "account", "label": "User" },
+		"^role": { "icon": "account-group", "label": "Role" },
 		
 		"^error": { "icon": "alert-decagram", "label": "Error" },
 		"^warning": { "icon": "alert-circle", "label": "Warning" },
@@ -204,7 +211,8 @@
 		"plugin": { "name": "plugin", "list": "plugins", "icon": "power-plug-outline", "page": "Plugins" },
 		"tag": { "name": "tag", "list": "tags", "icon": "tag-outline", "page": "Tags" },
 		"web_hook": { "name": "web hook", "list": "web_hooks", "icon": "webhook", "page": "WebHooks" },
-		"user": { "name": "user", "list": "users", "icon": "account", "page": "Users" }
+		"user": { "name": "user", "list": "users", "icon": "account", "page": "Users" },
+		"role": { "name": "role", "list": "roles", "icon": "account-group", "page": "Roles" }
 	},
 	
 	"plugin_type_descriptions": {

@@ -286,14 +286,6 @@
 			"recover_password": "conf/emails/recover_password.txt",
 			"verify_email": "conf/emails/verify_email.txt",
 			"logout_all_sessions": "conf/emails/logout_all_sessions.txt"
-		},
-		
-		"default_privileges": {
-			"create_events": 1,
-			"edit_events": 1,
-			"run_jobs": 1,
-			"tag_jobs": 1,
-			"comment_jobs": 1
 		}
 	},
 	

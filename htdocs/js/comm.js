@@ -189,9 +189,23 @@ app.comm = {
 				app.cacheBust = hires_time_now();
 			break;
 			
+			case 'self_update':
+				// an update was applied to OUR user, so do special update
+				this.handleSelfUpdate(data);
+			break;
+			
 			// more commands here
 			
 		} // switch cmd
+	},
+	
+	handleSelfUpdate: function(data) {
+		// update to self (our user)
+		app.user = data.user;
+		
+		// keep pristine copy of user, for applying roles
+		app.origUser = deep_copy_object(app.user);
+		app.applyUserRoles();
 	},
 	
 	handleStatusUpdate: function(data) {
@@ -231,6 +245,9 @@ app.comm = {
 		}
 		app.presortTables();
 		app.pruneData();
+		
+		// update user privs if roles changed
+		if (data.roles) app.applyUserRoles();
 		
 		// maintain copy of servers in case they go offline
 		if (data.servers) merge_hash_into(app.serverCache, data.servers);

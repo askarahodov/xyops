@@ -86,6 +86,7 @@ app.extend({
 			{ ID: 'WebHooks' },
 			{ ID: 'Plugins' },
 			{ ID: 'Tags' },
+			{ ID: 'Roles' },
 			{ ID: 'Users' },
 			{ ID: 'ActivityLog' },
 			{ ID: 'Masters' },
@@ -408,6 +409,29 @@ app.extend({
 		});
 	},
 	
+	applyUserRoles() {
+		// apply user roles to augment client priv set
+		// also do the same for user categories and user groups
+		// (these are only for UI hints -- they are enforced server-side)
+		var privs = deep_copy_object( this.origUser.privileges || {} );
+		var cats = deep_copy_object( this.origUser.categories || [] );
+		var cgrps = deep_copy_object( this.origUser.groups || [] );
+		
+		(this.user.roles || []).forEach( function(role_id) {
+			var role = find_object( app.roles, { id: role_id } );
+			if (!role) return; // deleted role
+			if (!role.enabled) return; // disabled role
+			
+			merge_hash_into( privs, role.privileges );
+			cats = cats.concat( role.categories || [] );
+			cgrps = cgrps.concat( role.groups || [] );
+		} );
+		
+		this.user.privileges = privs;
+		this.user.categories = [...new Set(cats)]; // remove dupes
+		this.user.groups = [...new Set(cgrps)]; // remove dupes
+	},
+	
 	doUserLogin: function(resp) {
 		// user login, called from login page, or session recover
 		// overriding this from base.js
@@ -420,6 +444,10 @@ app.extend({
 		this.setPref('username', resp.username);
 		this.setPref('session_id', resp.session_id);
 		
+		// keep pristine copy of user, for applying roles
+		this.origUser = deep_copy_object(this.user);
+		
+		this.applyUserRoles();
 		this.presortTables();
 		this.updateHeaderInfo();
 		this.setupDragDrop();

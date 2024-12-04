@@ -114,7 +114,7 @@ Page.MyAccount = class MyAccount extends Page.Base {
 			// new password
 			html += this.getFormRow({
 				label: 'New Password:',
-				content: '<div class="button" onMouseUp="$P().showNewPasswordField(this)">Change Password...</div><div style="display:none">' + this.getFormText({
+				content: '<div class="button" onClick="$P().showNewPasswordField(this)"><i class="mdi mdi-account-key">&nbsp;</i>Change Password...</div><div style="display:none">' + this.getFormText({
 					type: 'password',
 					id: 'fe_ma_new_password',
 					spellcheck: 'false',
@@ -133,8 +133,8 @@ Page.MyAccount = class MyAccount extends Page.Base {
 			label: 'Custom Icon:',
 			content: this.getFormMenuSingle({
 				id: 'fe_ma_icon',
-				title: 'Select icon for user',
-				placeholder: 'Select icon for user...',
+				title: 'Select my icon',
+				placeholder: 'Select my icon...',
 				options: [['', '(None)']].concat( iconFontNames.map( function(name) { return { id: name, title: name, icon: name }; } ) ),
 				value: user.icon || '',
 				// 'data-shrinkwrap': 1
@@ -145,8 +145,8 @@ Page.MyAccount = class MyAccount extends Page.Base {
 		// avatar
 		var ava_html = '';
 		ava_html += '<div class="simple_grid_horiz">';
-		ava_html += '<div id="d_ma_image" class="avatar_edit" style="background-image:url(' + app.getUserAvatarURL(128) + ')" onMouseUp="$P().uploadAvatar()"></div>';
-		ava_html += '<div class="button small danger" title="Delete Avatar Image" onMouseUp="$P().deleteAvatar()">&laquo; Delete</div>';
+		ava_html += '<div id="d_ma_image" class="avatar_edit" style="background-image:url(' + app.getUserAvatarURL(128) + ')" onClick="$P().uploadAvatar()"></div>';
+		ava_html += '<div class="button small danger" title="Delete Avatar Image" onClick="$P().deleteAvatar()">&laquo; Delete</div>';
 		ava_html += '</div>';
 		html += this.getFormRow({
 			label: 'Avatar:',
@@ -154,12 +154,21 @@ Page.MyAccount = class MyAccount extends Page.Base {
 			caption: "Optionally upload a custom avatar image for your user."
 		});
 		
+		// my roles (read-only)
+		html += this.getFormRow({
+			label: 'My Roles:',
+			content: (user.roles || []).map( function(role_id) { 
+				return '<div style="margin:5px 0px 5px 0px; color:var(--label-color);"><b>' + self.getNiceRole(role_id, false) + '</b></div>'; 
+			} ).join('') || '(None)',
+			caption: "The roles currently assigned to your user account."
+		});
+		
 		html += '</div>'; // box_content
 		
 		// buttons at bottom
 		html += '<div class="box_buttons">';
-			html += '<div class="button danger" onMouseUp="$P().showDeleteAccountDialog()"><i class="mdi mdi-trash-can-outline">&nbsp;</i>Delete Account...</div>';
-			html += '<div class="button primary" onMouseUp="$P().saveChanges()"><i class="mdi mdi-floppy">&nbsp;</i>Save Changes</div>';
+			html += '<div class="button danger" onClick="$P().showDeleteAccountDialog()"><i class="mdi mdi-trash-can-outline">&nbsp;</i>Delete Account...</div>';
+			html += '<div class="button primary" onClick="$P().saveChanges()"><i class="mdi mdi-floppy">&nbsp;</i>Save Changes</div>';
 		html += '</div>'; // box_buttons
 		
 		html += '</div>'; // box
@@ -271,12 +280,15 @@ Page.MyAccount = class MyAccount extends Page.Base {
 			Dialog.hideProgress();
 			app.showMessage('success', "Your account profile was updated successfully.");
 			
-			if (!self.active) return; // sanity
-			
 			$('#fe_ma_old_password').val('');
 			$('#fe_ma_new_password').val('');
 			
 			app.user = resp.user;
+			
+			// keep pristine copy of user, for applying roles
+			app.origUser = deep_copy_object(app.user);
+			app.applyUserRoles();
+			
 			$('#d_ma_image').css( 'background-image', 'url('+app.getUserAvatarURL(128)+')' );
 		} );
 	}
