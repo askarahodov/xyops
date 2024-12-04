@@ -197,7 +197,7 @@ app.extend({
 		// update top-right display
 		var html = '';
 		
-		html += '<div class="header_widget icon"><i class="mdi mdi-power-standby" onClick="app.doUserLogout()" title="Logout"></i></div>';
+		html += '<div class="header_widget icon danger"><i class="mdi mdi-power-standby" onClick="app.doUserLogout()" title="Logout"></i></div>';
 		html += '<div class="header_widget user" style="background-image:url(' + this.getUserAvatarURL( this.retina ? 64 : 32, bust ) + ')" onClick="app.doMyAccount()" title="My Account (' + app.username + ')"></div>';
 		html += '<div class="header_widget icon"><i class="mdi mdi-tune-vertical-variant" onClick="app.doMySettings()" title="My Preferences"></i></div>';
 		html += '<div id="d_theme_ctrl" class="header_widget icon" onClick="app.openThemeSelector()" title="Select Theme"></div>';
@@ -309,8 +309,8 @@ app.extend({
 			elem: '#d_theme_ctrl',
 			title: 'Select Theme',
 			items: [
-				{ id: 'light', title: 'Light', icon: 'weather-sunny' },
-				{ id: 'dark', title: 'Dark', icon: 'weather-night' },
+				{ id: 'light', title: 'Light', icon: 'white-balance-sunny' }, // weather-sunny
+				{ id: 'dark', title: 'Dark', icon: 'moon-waning-crescent' }, // weather-night
 				{ id: 'auto', title: 'Auto', icon: 'circle-half-full' }
 			],
 			value: this.getPref('theme'),
