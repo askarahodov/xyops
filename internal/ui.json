@@ -174,7 +174,7 @@
 		"^role": { "icon": "account-group", "label": "Role" },
 		
 		"^error": { "icon": "alert-decagram", "label": "Error" },
-		"^warning": { "icon": "alert-circle", "label": "Warning" },
+		"^warning": { "icon": "alert", "label": "Warning" },
 		"^notice": { "icon": "information-outline", "label": "Notice" },
 		"^group": { "icon": "server-network", "label": "Group" },
 		"^server": { "icon": "server", "label": "Server" },

@@ -78,7 +78,7 @@ Page.Search = class Search extends Page.Base {
 								['', 'Any Result'], 
 								{ id: 'success', title: 'Success', icon: 'check-circle-outline' },
 								{ id: 'error', title: 'Failure', icon: 'alert-decagram-outline' },
-								{ id: 'warning', title: 'Warning', icon: 'alert-circle-outline' },
+								{ id: 'warning', title: 'Warning', icon: 'alert-outline' },
 								{ id: 'critical', title: 'Critical', icon: 'fire-alert' },
 								{ id: 'abort', title: 'Abort', icon: 'cancel' },
 							],

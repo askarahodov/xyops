@@ -1762,7 +1762,7 @@ Page.Base = class Base extends Page {
 					{ id: 'complete', title: "On Job Completion", icon: 'stop-circle' },
 					{ id: 'success', title: "On Success", icon: 'check-circle-outline', group: "On Job Result:" },
 					{ id: 'error', title: "On Error", icon: 'alert-decagram-outline' },
-					{ id: 'warning', title: "On Warning", icon: 'alert-circle-outline' },
+					{ id: 'warning', title: "On Warning", icon: 'alert-outline' },
 					{ id: 'critical', title: "On Critical", icon: 'fire-alert' },
 					{ id: 'abort', title: "On Abort", icon: 'cancel' }
 				].concat(
@@ -2209,7 +2209,7 @@ Page.Base = class Base extends Page {
 			{ id: '', title: 'All Jobs', icon: 'calendar-search' },
 			{ id: 'z_success', title: 'Successes', icon: 'check-circle-outline' },
 			{ id: 'z_error', title: 'Errors', icon: 'alert-decagram-outline' },
-			{ id: 'z_warning', title: 'Warnings', icon: 'alert-circle-outline' },
+			{ id: 'z_warning', title: 'Warnings', icon: 'alert-outline' },
 			{ id: 'z_critical', title: 'Criticals', icon: 'fire-alert' },
 			{ id: 'z_abort', title: 'Aborts', icon: 'cancel' }
 		].concat(
