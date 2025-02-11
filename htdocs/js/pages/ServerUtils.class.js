@@ -785,7 +785,7 @@ Page.ServerUtils = class ServerUtils extends Page.Base {
 		var title = "View Historical Server Data";
 		var btn = ['check-circle', "Apply Changes"];
 		
-		var html = '<div class="dialog_box_content maximize" style="width:400px; max-height:75vh; overflow-x:hidden; overflow-y:auto;">';
+		var html = '<div class="dialog_box_content scroll">';
 		
 		if (!args.mode) {
 			// default to "today" daily view, or whatever day snap was taken
@@ -934,7 +934,7 @@ Page.ServerUtils = class ServerUtils extends Page.Base {
 					$('#d_esh_month').hide();
 					$('#d_esh_day').hide();
 					$('#d_esh_hour').hide();
-					$('#d_esh_limit > .fr_label').html( 'Number of Years:' );
+					$('#d_esh_limit > .fr_label').html( '# of Years:' );
 				break;
 				
 				case 'monthly':
@@ -942,7 +942,7 @@ Page.ServerUtils = class ServerUtils extends Page.Base {
 					$('#d_esh_month').show();
 					$('#d_esh_day').hide();
 					$('#d_esh_hour').hide();
-					$('#d_esh_limit > .fr_label').html( 'Number of Months:' );
+					$('#d_esh_limit > .fr_label').html( '# of Months:' );
 				break;
 				
 				case 'daily':
@@ -950,7 +950,7 @@ Page.ServerUtils = class ServerUtils extends Page.Base {
 					$('#d_esh_month').show();
 					$('#d_esh_day').show();
 					$('#d_esh_hour').hide();
-					$('#d_esh_limit > .fr_label').html( 'Number of Days:' );
+					$('#d_esh_limit > .fr_label').html( '# of Days:' );
 				break;
 				
 				case 'hourly':
@@ -958,7 +958,7 @@ Page.ServerUtils = class ServerUtils extends Page.Base {
 					$('#d_esh_month').show();
 					$('#d_esh_day').show();
 					$('#d_esh_hour').show();
-					$('#d_esh_limit > .fr_label').html( 'Number of Hours:' );
+					$('#d_esh_limit > .fr_label').html( '# of Hours:' );
 				break;
 			} // switch new_mode
 			

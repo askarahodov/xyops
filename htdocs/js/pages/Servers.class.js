@@ -708,6 +708,53 @@ Page.Servers = class Servers extends Page.ServerUtils {
 		return true;
 	}
 	
+	updateHeaderNav() {
+		// update header nav with current server info (icon/title may change, etc.)
+		var server = this.server;
+		var online = this.online;
+		
+		var server_icon = server.icon || (online ? 'router-network' : 'network-outline');
+		var badge_icon = online ? 'check-circle' : 'circle-outline';
+		var badge_color = online ? 'green' : 'gray';
+		var badge_title = online ? 'Online' : 'Offline';
+		
+		if (online && !server.enabled) {
+			badge_color = 'red';
+			badge_title = 'Disabled';
+			badge_icon = 'close-network-outline';
+		}
+		
+		app.setHeaderNav([
+			{ icon: 'server', loc: '#Servers?sub=list', title: 'Servers' },
+			{ icon: server_icon, title: server.title || server.hostname },
+			{ type: 'badge', color: badge_color, icon: badge_icon, title: badge_title }
+		]);
+		
+		app.setWindowTitle( "Viewing Server: " + (server.title || server.hostname) + "" );
+	}
+	
+	getWatchButton() {
+		// get dynamic watch button html based on current server watch status
+		var server = this.server;
+		var icon = 'bullseye';
+		var label = 'Watch...';
+		var extra_classes = '';
+		
+		if (app.state && app.state.watches && app.state.watches[server.id] && (app.state.watches[server.id] > app.epoch)) {
+			// currently watching this server
+			icon = 'bullseye-arrow';
+			label = 'Watching...';
+			extra_classes = 'marquee';
+		}
+		
+		return `<div class="button secondary ${extra_classes}" onClick="$P().openWatchDialog()"><i class="mdi mdi-${icon}">&nbsp;</i>${label}</div>`;
+	}
+	
+	updateWatchButton() {
+		// update dynamic watch button based on current state
+		this.div.find('#d_vs_watch_btn').html( this.getWatchButton() );
+	}
+	
 	receive_snapshot(resp) {
 		// render snapshot details
 		var self = this;
@@ -719,21 +766,11 @@ Page.Servers = class Servers extends Page.ServerUtils {
 		if (!this.active) return;
 		
 		this.server = server;
-		this.snapshot = data;
+		var snapshot = this.snapshot = data;
 		this.online = online;
 		this.charts = {};
 		
-		var snapshot = this.snapshot;
-		var server_icon = server.icon || (online ? 'router-network' : 'close-network-outline');
-		var badge_icon = online ? 'check-circle' : 'circle-outline';
-		
-		app.setHeaderNav([
-			{ icon: 'server', loc: '#Servers?sub=list', title: 'Servers' },
-			{ icon: server_icon, title: server.title || server.hostname },
-			{ type: 'badge', color: online ? 'green' : 'gray', icon: badge_icon, title: online ? 'Online' : 'Offline' }
-		]);
-		
-		app.setWindowTitle( "Viewing Server: " + (server.title || server.hostname) + "" );
+		this.updateHeaderNav();
 		
 		html += '<div class="box" style="border:none;">';
 			html += '<div class="box_title">';
@@ -742,10 +779,10 @@ Page.Servers = class Servers extends Page.ServerUtils {
 				
 				if (online) {
 					html += '<div class="box_title_right"><div class="button primary" onClick="$P().createSnapshot()"><i class="mdi mdi-monitor-screenshot">&nbsp;</i>Snapshot</div></div>';
-					html += '<div class="box_title_right"><div class="button secondary"><i class="mdi mdi-binoculars">&nbsp;</i>Watch...</div></div>';
+					html += '<div class="box_title_right" id="d_vs_watch_btn">' + this.getWatchButton() + '</div>';
 				}
 				
-				html += '<div class="box_title_right"><div class="button secondary"><i class="mdi mdi-file-edit-outline">&nbsp;</i>Edit Server...</div></div>';
+				html += '<div class="box_title_right"><div class="button secondary" onClick="$P().showEditServerDialog()"><i class="mdi mdi-file-edit-outline">&nbsp;</i>Edit Server...</div></div>';
 			html += '</div>';
 		html += '</div>';
 		
@@ -787,7 +824,7 @@ Page.Servers = class Servers extends Page.ServerUtils {
 					// row 2
 					html += '<div>';
 						html += '<div class="info_label">Groups</div>';
-						html += '<div class="info_value">' + this.getNiceGroupList(server.groups) + '</div>';
+						html += '<div class="info_value" id="d_vs_stat_groups">' + this.getNiceGroupList(server.groups) + '</div>';
 					html += '</div>';
 					
 					html += '<div>';
@@ -987,6 +1024,164 @@ Page.Servers = class Servers extends Page.ServerUtils {
 		}
 		
 		// SingleSelect.init( this.div.find('#fe_vs_mode, #fe_vs_year') );
+	}
+	
+	openWatchDialog() {
+		// show dialog for setting or removing server watch
+		var self = this;
+		var server = this.server;
+		var title = "Set Server Watch";
+		var btn = ['check-circle', "Save Changes"];
+		var cur_value = 300;
+		
+		if (app.state && app.state.watches && app.state.watches[server.id] && (app.state.watches[server.id] > app.epoch)) {
+			cur_value = Math.floor( app.state.watches[server.id] - app.epoch );
+			if (cur_value >= 86400) cur_value -= (cur_value % 86400);
+			else if (cur_value >= 3600) cur_value -= (cur_value % 3600);
+			else if (cur_value >= 60) cur_value -= (cur_value % 60);
+			else cur_value = 60; // min of 1 minute for dialog
+		}
+		
+		var html = '';
+		html += `<div class="dialog_intro">This allows you to set a "watch" on a server, which means that Orchestra will take snapshots of it every minute until the watch duration elapses.</div>`;
+		html += '<div class="dialog_box_content">';
+		
+		// html += this.getFormRow({
+		// 	label: 'Description:',
+		// 	content: `This allows you to set a "watch" on a server, which means that Orchestra will take snapshots of it every minute until the watch duration elapses.`
+		// });
+		
+		html += this.getFormRow({
+			label: 'Watch Duration:',
+			content: this.getFormRelativeTime({
+				id: 'fe_vsw_duration',
+				value: cur_value
+			}),
+			caption: 'Enter the desired duration for the watch.  Set to 0 to disable.'
+		});
+		
+		html += '</div>';
+		Dialog.confirm( title, html, btn, function(result) {
+			if (!result) return;
+			app.clearError();
+			
+			var duration = parseInt( $('#fe_vsw_duration').val() );
+			
+			Dialog.showProgress( 1.0, "Updating Watch..." );
+			app.api.post( 'app/watch_server', { id: server.id, duration }, function(resp) {
+				// update complete
+				Dialog.hideProgress();
+				if (!self.active) return; // sanity
+				
+				app.showMessage('success', "The server watch was " + (duration ? 'set' : 'removed') + " successfully.");
+				// self.updateWatchButton();
+			}); // api.post
+		}); // Dialog.confirm
+		
+		// SingleSelect.init( $('#fe_es_icon') );
+		// MultiSelect.init( $('#fe_es_groups') );
+		// Dialog.autoResize();
+		$('#fe_vsw_duration_val').focus();
+	}
+	
+	showEditServerDialog() {
+		// show dialog for editing server details
+		var self = this;
+		var server = this.server;
+		var title = "Edit Server Details";
+		var btn = ['check-circle', "Save Changes"];
+		
+		var html = '<div class="dialog_box_content">';
+		
+		html += this.getFormRow({
+			label: 'Server Label:',
+			content: this.getFormText({
+				id: 'fe_es_title',
+				spellcheck: 'false',
+				placeholder: '(Use Hostname)',
+				value: server.title || ''
+			}),
+			caption: 'Optionally enter a custom label for the server, for display purposes.  Omit to use the server hostname.'
+		});
+		
+		// status
+		html += this.getFormRow({
+			label: 'Status:',
+			content: this.getFormCheckbox({
+				id: 'fe_es_enabled',
+				label: 'Server Enabled',
+				checked: server.enabled
+			}),
+			caption: 'Enable or disable the server using this checkbox.  Disabled servers will not be chosen for any jobs.'
+		});
+		
+		// icon
+		html += this.getFormRow({
+			label: 'Custom Icon:',
+			content: this.getFormMenuSingle({
+				id: 'fe_es_icon',
+				title: 'Select icon for server',
+				placeholder: 'Select icon for server...',
+				options: [['', '(None)']].concat( iconFontNames.map( function(name) { return { id: name, title: name, icon: name }; } ) ),
+				value: server.icon || '',
+				// 'data-shrinkwrap': 1
+			}),
+			caption: 'Optionally choose an icon for the server.'
+		});
+		
+		// groups
+		html += this.getFormRow({
+			label: 'Server Groups:',
+			content: this.getFormMenuMulti({
+				id: 'fe_es_groups',
+				title: 'Select groups for the server',
+				placeholder: '(Automatic)',
+				options: app.groups,
+				values: server.autoGroup ? [] : server.groups,
+				default_icon: 'server-network',
+				'data-hold': 1
+				// 'data-shrinkwrap': 1
+			}),
+			caption: 'Override the server group(s) the server should belong to.  By default these are automatically assigned using the server hostname.'
+		});
+		
+		html += '</div>';
+		Dialog.confirm( title, html, btn, function(result) {
+			if (!result) return;
+			app.clearError();
+			
+			var updates = {
+				id: server.id,
+				title: $('#fe_es_title').val().trim(),
+				enabled: $('#fe_es_enabled').is(':checked'),
+				icon: $('#fe_es_icon').val(),
+				groups: $('#fe_es_groups').val()
+			};
+			
+			// set autoGroup based on group menu selection
+			updates.autoGroup = !updates.groups.length;
+			
+			Dialog.showProgress( 1.0, "Updating Server..." );
+			app.api.post( 'app/update_server', updates, function(resp) {
+				// update complete
+				Dialog.hideProgress();
+				if (!self.active) return; // sanity
+				
+				app.showMessage('success', "The server was updated successfully.");
+				
+				// update local copy
+				if (updates.autoGroup) delete updates.groups; // preserve groups in local copy
+				merge_hash_into(server, updates);
+				
+				self.updateHeaderNav();
+				self.div.find('#d_vs_stat_label').html( server.title || 'n/a' );
+				self.div.find('#d_vs_stat_groups').html( self.getNiceGroupList(server.groups) );
+			} ); // api.post
+		}); // Dialog.confirm
+		
+		SingleSelect.init( $('#fe_es_icon') );
+		MultiSelect.init( $('#fe_es_groups') );
+		Dialog.autoResize();
 	}
 	
 	goAlertHistory() {
@@ -1357,6 +1552,9 @@ Page.Servers = class Servers extends Page.ServerUtils {
 		
 		// update pixl-charts
 		this.appendSampleToChart();
+		
+		// update watch button
+		this.updateWatchButton();
 	}
 	
 	handleStatusUpdateView(data) {
@@ -1447,6 +1645,7 @@ Page.Servers = class Servers extends Page.ServerUtils {
 				if (key == 'activeAlerts') this.getLiveAlerts();
 				else if (key == 'stats') this.updateServerStats();
 				else if (key == 'servers') this.checkUpdateServerState();
+				else if (key == 'state') this.updateWatchButton();
 			break;
 		}
 	}
