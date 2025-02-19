@@ -583,7 +583,9 @@ Page.Snapshots = class Snapshots extends Page.ServerUtils {
 				"title": def.title,
 				"dataType": def.type,
 				"dataSuffix": def.suffix,
-				"minVertScale": def.minVertScale || 0,
+				"minVertScale": def.min_vert_scale || 0,
+				"delta": def.delta || false,
+				"divideByDelta": def.divide_by_delta || false,
 				"legend": false // single layer, no legend needed
 			});
 			chart.on('mouseover', function(event) { render_chart_overlay(def.id); });
