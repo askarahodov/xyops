@@ -198,14 +198,22 @@ Page.Base = class Base extends Page {
 	
 	getNiceProcess(item, link) {
 		// get formatted process cmd
+		var short_cmd = '' + item.command;
+		short_cmd = short_cmd.replace(/\s[\-\(\/\*].*$/, '');
+		short_cmd = basename(short_cmd);
+		if ((short_cmd.length > 32) && short_cmd.match(/\s/)) {
+			short_cmd = short_cmd.replace(/\s.*$/, '');
+		}
+		short_cmd = short_cmd.replace(/\:\s+.*$/, '');
+		
 		var html = '<span class="nowrap">';
 		var icon = '<i class="mdi mdi-' + (item.job ? 'console' : 'console') + '"></i>';
 		if (link) {
 			html += '<span class="link" onClick="$P().showProcessInfo(' + item.pid + ')">';
-			html += icon + '<span>' + item.command + '</span></span>';
+			html += icon + '<span>' + short_cmd + '</span></span>';
 		}
 		else {
-			html += icon + item.command;
+			html += icon + short_cmd;
 		}
 		
 		html += '</span>';
@@ -556,7 +564,8 @@ Page.Base = class Base extends Page {
 	
 	getNiceUptime(secs) {
 		// get nice server uptime
-		return '<i class="mdi mdi-battery-clock-outline">&nbsp;</i>' + get_text_from_seconds(secs, false, true);
+		var nice_date = this.getNiceDateTimeText( time_now() - secs );
+		return '<span title="' + nice_date + '"><i class="mdi mdi-battery-clock-outline">&nbsp;</i>' + get_text_from_seconds(secs, false, true) + '</span>';
 	}
 	
 	getNiceInternalJobType(type) {
@@ -2530,6 +2539,15 @@ Page.Base = class Base extends Page {
 				$elem.find('i').removeClass().addClass('mdi mdi-clipboard-check-outline success');
 			});
 		}); // snapshot
+	}
+	
+	chartCopyJSON(key, elem) {
+		// upload image to server and copy link to it
+		var chart = this.charts[key];
+		var $elem = $(elem);
+		var json = JSON.stringify( { title: chart.title, layers: chart.layers } );
+		copyToClipboard(json);
+		$elem.find('i').removeClass().addClass('mdi mdi-clipboard-check-outline success');
 	}
 	
 	getQuickMonChartData(rows, id) {
