@@ -11,6 +11,7 @@ Page.Monitors = class Monitors extends Page.PageUtils {
 	onActivate(args) {
 		// page activation
 		if (!this.requireLogin(args)) return true;
+		if (!this.requireAnyPrivilege('create_monitors', 'edit_monitors', 'delete_monitors')) return true;
 		
 		if (!args) args = {};
 		if (!args.sub) args.sub = this.default_sub;
@@ -69,12 +70,12 @@ Page.Monitors = class Monitors extends Page.PageUtils {
 		
 		html += this.getBasicGrid( grid_opts, function(item, idx) {
 			var actions = [];
-			actions.push( '<span class="link" onClick="$P().edit_monitor('+idx+')"><b>Edit</b></span>' );
-			actions.push( '<span class="link danger" onClick="$P().delete_monitor('+idx+')"><b>Delete</b></span>' );
+			if (app.hasPrivilege('edit_monitors')) actions.push( '<span class="link" onClick="$P().edit_monitor('+idx+')"><b>Edit</b></span>' );
+			if (app.hasPrivilege('delete_monitors')) actions.push( '<span class="link danger" onClick="$P().delete_monitor('+idx+')"><b>Delete</b></span>' );
 			
 			var tds = [
 				'<div class="td_drag_handle" draggable="true" title="Drag to reorder"><i class="mdi mdi-menu"></i></div>',
-				'<b>' + self.getNiceMonitor(item, true) + '</b>',
+				'<b>' + self.getNiceMonitor(item, app.hasPrivilege('edit_monitors')) + '</b>',
 				'<span class="mono">' + item.id + '</span>',
 				self.getNiceGroupList(item.groups, '', 3),
 				self.getNiceUser(item.username, app.isAdmin()),
@@ -89,9 +90,9 @@ Page.Monitors = class Monitors extends Page.PageUtils {
 		html += '</div>'; // box_content
 		
 		html += '<div class="box_buttons">';
-			html += '<div class="button" onClick="$P().doFileImportPrompt()"><i class="mdi mdi-cloud-upload-outline">&nbsp;</i>Import File...</div>';
+			if (app.hasAnyPrivilege('create_monitors', 'edit_monitors')) html += '<div class="button" onClick="$P().doFileImportPrompt()"><i class="mdi mdi-cloud-upload-outline">&nbsp;</i>Import File...</div>';
 			html += '<div class="button secondary" onClick="$P().go_history()"><i class="mdi mdi-history">&nbsp;</i>Revision History...</div>';
-			html += '<div class="button default" onClick="$P().edit_monitor(-1)"><i class="mdi mdi-plus-circle-outline">&nbsp;</i>New Monitor...</div>';
+			if (app.hasPrivilege('create_monitors')) html += '<div class="button default" onClick="$P().edit_monitor(-1)"><i class="mdi mdi-plus-circle-outline">&nbsp;</i>New Monitor...</div>';
 		html += '</div>'; // box_buttons
 		
 		html += '</div>'; // box

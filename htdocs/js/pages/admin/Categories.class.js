@@ -11,6 +11,7 @@ Page.Categories = class Categories extends Page.PageUtils {
 	onActivate(args) {
 		// page activation
 		if (!this.requireLogin(args)) return true;
+		if (!this.requireAnyPrivilege('create_categories', 'edit_categories', 'delete_categories')) return true;
 		
 		if (!args) args = {};
 		if (!args.sub) args.sub = this.default_sub;
@@ -73,15 +74,15 @@ Page.Categories = class Categories extends Page.PageUtils {
 		
 		html += this.getBasicGrid( grid_opts, function(item, idx) {
 			var classes = [], actions = [];
-			actions.push( '<span class="link" onClick="$P().edit_category('+idx+')"><b>Edit</b></span>' );
-			actions.push( '<span class="link danger" onClick="$P().delete_category('+idx+')"><b>Delete</b></span>' );
+			if (app.hasPrivilege('edit_categories')) actions.push( '<span class="link" onClick="$P().edit_category('+idx+')"><b>Edit</b></span>' );
+			if (app.hasPrivilege('delete_categories')) actions.push( '<span class="link danger" onClick="$P().delete_category('+idx+')"><b>Delete</b></span>' );
 			
 			var cat_events = find_objects( app.events, { category: item.id } );
 			var num_events = cat_events.length;
 			
 			var tds = [
 				drag_handle,
-				'<b>' + self.getNiceCategory(item, true) + '</b>',
+				'<b>' + self.getNiceCategory(item, app.hasPrivilege('edit_categories')) + '</b>',
 				'<span class="mono">' + item.id + '</span>',
 				commify( num_events ),
 				// commify( item.max_jobs ),
@@ -100,9 +101,9 @@ Page.Categories = class Categories extends Page.PageUtils {
 		html += '</div>'; // box_content
 		
 		html += '<div class="box_buttons">';
-			html += '<div class="button" onClick="$P().doFileImportPrompt()"><i class="mdi mdi-cloud-upload-outline">&nbsp;</i>Import File...</div>';
+			if (app.hasAnyPrivilege('create_categories', 'edit_categories')) html += '<div class="button" onClick="$P().doFileImportPrompt()"><i class="mdi mdi-cloud-upload-outline">&nbsp;</i>Import File...</div>';
 			html += '<div class="button secondary" onClick="$P().go_history()"><i class="mdi mdi-history">&nbsp;</i>Revision History...</div>';
-			html += '<div class="button default" onClick="$P().edit_category(-1)"><i class="mdi mdi-folder-plus-outline">&nbsp;</i>New Category...</div>';
+			if (app.hasPrivilege('create_categories')) html += '<div class="button default" onClick="$P().edit_category(-1)"><i class="mdi mdi-folder-plus-outline">&nbsp;</i>New Category...</div>';
 		html += '</div>'; // box_buttons
 		
 		html += '</div>'; // box

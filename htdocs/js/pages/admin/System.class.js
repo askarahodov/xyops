@@ -10,6 +10,7 @@ Page.System = class System extends Page.Base {
 		// page activation
 		var self = this;
 		if (!this.requireLogin(args)) return true;
+		if (!this.requireAnyPrivilege('admin')) return true;
 		
 		if (!args) args = {};
 		this.args = args;

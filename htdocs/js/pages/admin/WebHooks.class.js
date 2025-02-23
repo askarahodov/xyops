@@ -11,6 +11,7 @@ Page.WebHooks = class WebHooks extends Page.PageUtils {
 	onActivate(args) {
 		// page activation
 		if (!this.requireLogin(args)) return true;
+		if (!this.requireAnyPrivilege('create_web_hooks', 'edit_web_hooks', 'delete_web_hooks')) return true;
 		
 		if (!args) args = {};
 		if (!args.sub) args.sub = this.default_sub;
@@ -66,15 +67,15 @@ Page.WebHooks = class WebHooks extends Page.PageUtils {
 		
 		html += this.getBasicGrid( opts, function(item, idx) {
 			var actions = [];
-			actions.push( '<span class="link" onClick="$P().edit_web_hook('+idx+')"><b>Edit</b></span>' );
-			actions.push( '<span class="link danger" onClick="$P().delete_web_hook('+idx+')"><b>Delete</b></span>' );
+			if (app.hasPrivilege('edit_web_hooks')) actions.push( '<span class="link" onClick="$P().edit_web_hook('+idx+')"><b>Edit</b></span>' );
+			if (app.hasPrivilege('delete_web_hooks')) actions.push( '<span class="link danger" onClick="$P().delete_web_hook('+idx+')"><b>Delete</b></span>' );
 			
 			var tds = [
 				'<div class="td_drag_handle" style="cursor:default">' + self.getFormCheckbox({
 					checked: item.enabled,
 					onChange: '$P().toggle_web_hook_enabled(this,' + idx + ')'
 				}) + '</div>',
-				'<b>' + self.getNiceWebHook(item, true) + '</b>',
+				'<b>' + self.getNiceWebHook(item, app.hasPrivilege('edit_web_hooks')) + '</b>',
 				'<span class="mono">' + item.id + '</span>',
 				'<span class="">' + item.url + '</span>',
 				self.getNiceUser(item.username, app.isAdmin()),
@@ -89,9 +90,9 @@ Page.WebHooks = class WebHooks extends Page.PageUtils {
 		html += '</div>'; // box_content
 		
 		html += '<div class="box_buttons">';
-			html += '<div class="button" onClick="$P().doFileImportPrompt()"><i class="mdi mdi-cloud-upload-outline">&nbsp;</i>Import File...</div>';
+			if (app.hasAnyPrivilege('create_web_hooks', 'edit_web_hooks')) html += '<div class="button" onClick="$P().doFileImportPrompt()"><i class="mdi mdi-cloud-upload-outline">&nbsp;</i>Import File...</div>';
 			html += '<div class="button secondary" onClick="$P().go_history()"><i class="mdi mdi-history">&nbsp;</i>Revision History...</div>';
-			html += '<div class="button default" onClick="$P().edit_web_hook(-1)"><i class="mdi mdi-plus-circle-outline">&nbsp;</i>New Web Hook...</div>';
+			if (app.hasPrivilege('create_web_hooks')) html += '<div class="button default" onClick="$P().edit_web_hook(-1)"><i class="mdi mdi-plus-circle-outline">&nbsp;</i>New Web Hook...</div>';
 		html += '</div>'; // box_buttons
 		
 		html += '</div>'; // box

@@ -11,6 +11,7 @@ Page.Tags = class Tags extends Page.PageUtils {
 	onActivate(args) {
 		// page activation
 		if (!this.requireLogin(args)) return true;
+		if (!this.requireAnyPrivilege('create_tags', 'edit_tags', 'delete_tags')) return true;
 		
 		if (!args) args = {};
 		if (!args.sub) args.sub = this.default_sub;
@@ -54,11 +55,11 @@ Page.Tags = class Tags extends Page.PageUtils {
 		var self = this;
 		html += this.getBasicGrid( this.tags, cols, 'tag', function(item, idx) {
 			var actions = [];
-			actions.push( '<span class="link" onClick="$P().edit_tag('+idx+')"><b>Edit</b></span>' );
-			actions.push( '<span class="link danger" onClick="$P().delete_tag('+idx+')"><b>Delete</b></span>' );
+			if (app.hasPrivilege('edit_tags')) actions.push( '<span class="link" onClick="$P().edit_tag('+idx+')"><b>Edit</b></span>' );
+			if (app.hasPrivilege('delete_tags')) actions.push( '<span class="link danger" onClick="$P().delete_tag('+idx+')"><b>Delete</b></span>' );
 			
 			return [
-				'<b>' + self.getNiceTag(item, '#Tags?sub=edit&id=' + item.id) + '</b>',
+				'<b>' + self.getNiceTag(item, !!app.hasPrivilege('edit_tags')) + '</b>',
 				'<span class="mono">' + item.id + '</span>',
 				self.getNiceUser(item.username, app.isAdmin()),
 				
@@ -72,9 +73,9 @@ Page.Tags = class Tags extends Page.PageUtils {
 		html += '</div>'; // box_content
 		
 		html += '<div class="box_buttons">';
-			html += '<div class="button" onClick="$P().doFileImportPrompt()"><i class="mdi mdi-cloud-upload-outline">&nbsp;</i>Import File...</div>';
+			if (app.hasAnyPrivilege('create_tags', 'edit_tags')) html += '<div class="button" onClick="$P().doFileImportPrompt()"><i class="mdi mdi-cloud-upload-outline">&nbsp;</i>Import File...</div>';
 			html += '<div class="button secondary" onClick="$P().go_history()"><i class="mdi mdi-history">&nbsp;</i>Revision History...</div>';
-			html += '<div class="button default" onClick="$P().edit_tag(-1)"><i class="mdi mdi-tag-plus-outline">&nbsp;</i>New Tag...</div>';
+			if (app.hasPrivilege('create_tags')) html += '<div class="button default" onClick="$P().edit_tag(-1)"><i class="mdi mdi-tag-plus-outline">&nbsp;</i>New Tag...</div>';
 		html += '</div>'; // box_buttons
 		
 		html += '</div>'; // box

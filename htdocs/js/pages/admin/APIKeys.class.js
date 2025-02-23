@@ -10,6 +10,7 @@ Page.APIKeys = class APIKeys extends Page.PageUtils {
 	onActivate(args) {
 		// page activation
 		if (!this.requireLogin(args)) return true;
+		if (!this.requireAnyPrivilege('admin')) return true;
 		
 		if (!args) args = {};
 		if (!args.sub) args.sub = this.default_sub;

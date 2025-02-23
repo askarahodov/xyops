@@ -27,6 +27,7 @@ Page.Plugins = class Plugins extends Page.PageUtils {
 	onActivate(args) {
 		// page activation
 		if (!this.requireLogin(args)) return true;
+		if (!this.requireAnyPrivilege('create_plugins', 'edit_plugins', 'delete_plugins')) return true;
 		
 		if (!args) args = {};
 		if (!args.sub) args.sub = this.default_sub;
@@ -82,8 +83,8 @@ Page.Plugins = class Plugins extends Page.PageUtils {
 		
 		html += this.getBasicGrid( grid_opts, function(item, idx) {
 			var actions = [];
-			actions.push( '<span class="link" onClick="$P().edit_plugin('+idx+')"><b>Edit</b></span>' );
-			actions.push( '<span class="link danger" onClick="$P().delete_plugin('+idx+')"><b>Delete</b></span>' );
+			if (app.hasPrivilege('edit_plugins')) actions.push( '<span class="link" onClick="$P().edit_plugin('+idx+')"><b>Edit</b></span>' );
+			if (app.hasPrivilege('delete_plugins')) actions.push( '<span class="link danger" onClick="$P().delete_plugin('+idx+')"><b>Delete</b></span>' );
 			
 			var plugin_events = find_objects( app.events, { plugin: item.id } );
 			var num_events = plugin_events.length;
@@ -93,7 +94,7 @@ Page.Plugins = class Plugins extends Page.PageUtils {
 					checked: item.enabled,
 					onChange: '$P().toggle_plugin_enabled(this,' + idx + ')'
 				}) + '</div>',
-				'<b>' + self.getNicePlugin(item, true) + '</b>',
+				'<b>' + self.getNicePlugin(item, app.hasPrivilege('edit_plugins')) + '</b>',
 				'<span class="mono">' + item.id + '</span>',
 				self.getNicePluginType(item.type),
 				// commify( num_events ),
@@ -109,9 +110,9 @@ Page.Plugins = class Plugins extends Page.PageUtils {
 		html += '</div>'; // box_content
 		
 		html += '<div class="box_buttons">';
-			html += '<div class="button" onClick="$P().doFileImportPrompt()"><i class="mdi mdi-cloud-upload-outline">&nbsp;</i>Import File...</div>';
+			if (app.hasAnyPrivilege('create_plugins', 'edit_plugins')) html += '<div class="button" onClick="$P().doFileImportPrompt()"><i class="mdi mdi-cloud-upload-outline">&nbsp;</i>Import File...</div>';
 			html += '<div class="button secondary" onClick="$P().go_history()"><i class="mdi mdi-history">&nbsp;</i>Revision History...</div>';
-			html += '<div class="button default" onClick="$P().edit_plugin(-1)"><i class="mdi mdi-plus-circle-outline">&nbsp;</i>New Plugin...</div>';
+			if (app.hasPrivilege('create_plugins')) html += '<div class="button default" onClick="$P().edit_plugin(-1)"><i class="mdi mdi-plus-circle-outline">&nbsp;</i>New Plugin...</div>';
 		html += '</div>'; // box_buttons
 		
 		html += '</div>'; // box

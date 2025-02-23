@@ -9,6 +9,7 @@ Page.Masters = class Masters extends Page.Base {
 	onActivate(args) {
 		// page activation
 		if (!this.requireLogin(args)) return true;
+		if (!this.requireAnyPrivilege('admin')) return true;
 		
 		if (!args) args = {};
 		this.args = args;

@@ -11,6 +11,7 @@ Page.Channels = class Channels extends Page.PageUtils {
 	onActivate(args) {
 		// page activation
 		if (!this.requireLogin(args)) return true;
+		if (!this.requireAnyPrivilege('create_channels', 'edit_channels', 'delete_channels')) return true;
 		
 		if (!args) args = {};
 		if (!args.sub) args.sub = this.default_sub;
@@ -66,15 +67,15 @@ Page.Channels = class Channels extends Page.PageUtils {
 		
 		html += this.getBasicGrid( grid_opts, function(item, idx) {
 			var actions = [];
-			actions.push( '<span class="link" onClick="$P().edit_channel('+idx+')"><b>Edit</b></span>' );
-			actions.push( '<span class="link danger" onClick="$P().delete_channel('+idx+')"><b>Delete</b></span>' );
+			if (app.hasPrivilege('edit_channels')) actions.push( '<span class="link" onClick="$P().edit_channel('+idx+')"><b>Edit</b></span>' );
+			if (app.hasPrivilege('delete_channels')) actions.push( '<span class="link danger" onClick="$P().delete_channel('+idx+')"><b>Delete</b></span>' );
 			
 			var tds = [
 				'<div class="td_drag_handle" style="cursor:default">' + self.getFormCheckbox({
 					checked: item.enabled,
 					onChange: '$P().toggle_channel_enabled(this,' + idx + ')'
 				}) + '</div>',
-				'<b>' + self.getNiceChannel(item, true) + '</b>',
+				'<b>' + self.getNiceChannel(item, app.hasPrivilege('edit_channels')) + '</b>',
 				'<span class="mono">' + item.id + '</span>',
 				self.getNiceUser(item.username, app.isAdmin()),
 				'<span title="'+self.getNiceDateTimeText(item.created)+'">'+self.getNiceDate(item.created)+'</span>',
@@ -88,9 +89,9 @@ Page.Channels = class Channels extends Page.PageUtils {
 		html += '</div>'; // box_content
 		
 		html += '<div class="box_buttons">';
-			html += '<div class="button" onClick="$P().doFileImportPrompt()"><i class="mdi mdi-cloud-upload-outline">&nbsp;</i>Import File...</div>';
+			if (app.hasAnyPrivilege('create_channels', 'edit_channels')) html += '<div class="button" onClick="$P().doFileImportPrompt()"><i class="mdi mdi-cloud-upload-outline">&nbsp;</i>Import File...</div>';
 			html += '<div class="button secondary" onClick="$P().go_history()"><i class="mdi mdi-history">&nbsp;</i>Revision History...</div>';
-			html += '<div class="button default" onClick="$P().edit_channel(-1)"><i class="mdi mdi-plus-circle-outline">&nbsp;</i>New Channel...</div>';
+			if (app.hasPrivilege('create_channels')) html += '<div class="button default" onClick="$P().edit_channel(-1)"><i class="mdi mdi-plus-circle-outline">&nbsp;</i>New Channel...</div>';
 		html += '</div>'; // box_buttons
 		
 		html += '</div>'; // box

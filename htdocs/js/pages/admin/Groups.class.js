@@ -12,6 +12,9 @@ Page.Groups = class Groups extends Page.PageUtils {
 		// page activation
 		if (!this.requireLogin(args)) return true;
 		
+		// WIP:
+		// if (!this.requireAnyPrivilege('create_groups', 'edit_groups', 'delete_groups')) return true;
+		
 		if (!args) args = {};
 		if (!args.sub) args.sub = this.default_sub;
 		this.args = args;
@@ -73,8 +76,8 @@ Page.Groups = class Groups extends Page.PageUtils {
 		
 		html += this.getBasicGrid( grid_opts, function(item, idx) {
 			var actions = [];
-			actions.push( '<span class="link" onClick="$P().edit_group('+idx+')"><b>Edit</b></span>' );
-			actions.push( '<span class="link danger" onClick="$P().delete_group('+idx+')"><b>Delete</b></span>' );
+			if (app.hasPrivilege('edit_groups')) actions.push( '<span class="link" onClick="$P().edit_group('+idx+')"><b>Edit</b></span>' );
+			if (app.hasPrivilege('delete_groups')) actions.push( '<span class="link danger" onClick="$P().delete_group('+idx+')"><b>Delete</b></span>' );
 			
 			var nice_match = '';
 			if (item.hostname_match == '(?!)') nice_match = '(None)';
@@ -82,7 +85,7 @@ Page.Groups = class Groups extends Page.PageUtils {
 			
 			var tds = [
 				drag_handle,
-				'<b>' + self.getNiceGroup(item, true) + '</b>',
+				'<b>' + self.getNiceGroup(item, app.hasPrivilege('edit_groups')) + '</b>',
 				'<span class="mono">' + item.id + '</span>',
 				nice_match,
 				self.getNiceUser(item.username, app.isAdmin()),
@@ -97,9 +100,9 @@ Page.Groups = class Groups extends Page.PageUtils {
 		html += '</div>'; // box_content
 		
 		html += '<div class="box_buttons">';
-			html += '<div class="button" onClick="$P().doFileImportPrompt()"><i class="mdi mdi-cloud-upload-outline">&nbsp;</i>Import File...</div>';
+			if (app.hasAnyPrivilege('create_groups', 'edit_groups')) html += '<div class="button" onClick="$P().doFileImportPrompt()"><i class="mdi mdi-cloud-upload-outline">&nbsp;</i>Import File...</div>';
 			html += '<div class="button secondary" onClick="$P().go_history()"><i class="mdi mdi-history">&nbsp;</i>Revision History...</div>';
-			html += '<div class="button default" onClick="$P().edit_group(-1)"><i class="mdi mdi-plus-circle-outline">&nbsp;</i>New Group...</div>';
+			if (app.hasPrivilege('create_groups')) html += '<div class="button default" onClick="$P().edit_group(-1)"><i class="mdi mdi-plus-circle-outline">&nbsp;</i>New Group...</div>';
 		html += '</div>'; // box_buttons
 		
 		html += '</div>'; // box
