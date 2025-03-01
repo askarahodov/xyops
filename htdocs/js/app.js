@@ -46,6 +46,9 @@ app.extend({
 		delete resp.code;
 		window.config = resp.config;
 		
+		// apply menu item max
+		SingleSelect.maxMenuItems = config.max_menu_items || 1000;
+		
 		// setup audio subsystem
 		this.setupAudio();
 		

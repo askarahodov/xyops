@@ -672,20 +672,32 @@ Page.ServerUtils = class ServerUtils extends Page.Base {
 		var html = '';
 		var bold_idx = opts.column_ids.indexOf( opts.sort_by );
 		
-		for (var idx = 0, len = disp_rows.length; idx < len; idx++) {
+		var len = disp_rows.length;
+		var max_rows = config.max_table_rows || 0;
+		var chopped = 0;
+		if (max_rows && (disp_rows.length > max_rows)) {
+			chopped = disp_rows.length - max_rows;
+			len = max_rows;
+		}
+		
+		for (var idx = 0; idx < len; idx++) {
 			var row = disp_rows[idx];
 			var tds = opts.callback(row, idx);
 			html += '<ul class="grid_row">';
 			for (var idy = 0, ley = tds.length; idy < ley; idy++) {
 				html += '<div' + ((bold_idx == idy) ? ' style="font-weight:bold"' : '') + '>' + tds[idy] + '</div>';
 			}
-			// html += '<td>' + tds.join('</td><td>') + '</td>';
 			html += '</ul>';
 		} // foreach row
 		
 		if (!disp_rows.length) {
 			html += '<ul class="grid_row_empty"><div style="grid-column-start: span ' + opts.column_ids.length + ';">';
-			html += 'No '+pluralize(opts.item_name)+' found.';
+			html += 'No ' + pluralize(opts.item_name) + ' found.';
+			html += '</div></ul>';
+		}
+		else if (chopped) {
+			html += '<ul class="grid_row_more"><div style="grid-column-start: span ' + opts.column_ids.length + ';">';
+			html += `(${commify(chopped)} more ${pluralize(opts.item_name, chopped)} not shown)`;
 			html += '</div></ul>';
 		}
 		
