@@ -585,6 +585,7 @@ Page.Snapshots = class Snapshots extends Page.ServerUtils {
 				"dataSuffix": def.suffix,
 				"minVertScale": def.min_vert_scale || 0,
 				"delta": def.delta || false,
+				"deltaMinValue": def.delta_min_value ?? false,
 				"divideByDelta": def.divide_by_delta || false,
 				"legend": false // single layer, no legend needed
 			});
@@ -593,7 +594,7 @@ Page.Snapshots = class Snapshots extends Page.ServerUtils {
 			
 			chart.addLayer({
 				id: snapshot.server,
-				title: server ? app.formatHostname(server.hostname) : snapshot.server,
+				title: server ? self.getNiceServerText(server) : snapshot.server,
 				data: self.getQuickMonChartData(snapshot.quickmon || [], def.id),
 				color: app.colors[ idx % app.colors.length ]
 			});
