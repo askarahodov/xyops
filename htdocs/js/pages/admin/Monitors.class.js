@@ -476,23 +476,31 @@ Page.Monitors = class Monitors extends Page.PageUtils {
 			caption: 'Select the data type for the monitor, which controls how the value is read and displayed.'
 		});
 		
-		// delta
-		var delta_value = '';
-		if (monitor.delta && monitor.divide_by_delta) delta_value = 'delta_div';
-		else if (monitor.delta) delta_value = 'delta';
+		// delta features
+		var feats = [];
+		if (monitor.delta) {
+			feats.push('delta');
+			if (monitor.delta_min_value === 0) feats.push('delta_min');
+			if (monitor.divide_by_delta) feats.push('delta_div');
+		}
 		
 		html += this.getFormRow({
-			label: 'Delta:',
-			content: this.getFormMenu({
+			label: 'Delta Features:',
+			content: this.getFormMenuMulti({
 				id: 'fe_em_delta',
+				title: 'Select delta features',
+				placeholder: '(None)',
 				options: [
-					['', "(Disabled)"],
-					['delta', "Calculate as Delta"],
-					['delta_div', "Calculate as Delta and Divide by Time"],
+					{ id: 'delta', icon: 'finance', title: "Calc as Delta" },
+					{ id: 'delta_div', icon: 'timer-sand', title: "Divide by Time" },
+					{ id: 'delta_min', icon: 'altimeter', title: "Zero Minimum" }
 				],
-				value: delta_value
+				values: feats,
+				default_icon: 'delta',
+				'data-hold': 1
+				// 'data-shrinkwrap': 1
 			}),
-			caption: 'Optionally interpret the data value as a delta, and optionally divided by time.  This is mainly for values that continually count upwards, but we want to graph the difference over time, instead of the absolute value.'
+			caption: 'Optionally interpret the data value as a delta, and optionally divided by time.  This is mainly for measuring values that continually count upwards, and you want to graph the difference over time, instead of the absolute value.'
 		});
 		
 		// min_vert_scale
@@ -551,21 +559,15 @@ Page.Monitors = class Monitors extends Page.PageUtils {
 		monitor.suffix = $('#fe_em_suffix').val();
 		monitor.notes = $('#fe_em_notes').val();
 		
-		switch ($('#fe_em_delta').val()) {
-			case 'delta':
-				monitor.delta = true;
-				monitor.divide_by_delta = false;
-			break;
-			
-			case 'delta_div':
-				monitor.delta = true;
-				monitor.divide_by_delta = true;
-			break;
-			
-			default:
-				monitor.delta = false;
-				delete monitor.divide_by_delta;
-			break;
+		var feats = $('#fe_em_delta').val();
+		monitor.delta = false;
+		monitor.delta_min_value = false;
+		monitor.divide_by_delta = false;
+		
+		if (feats.length) {
+			if (feats.includes('delta')) monitor.delta = true;
+			if (feats.includes('delta_min')) monitor.delta_min_value = 0;
+			if (feats.includes('delta_div')) monitor.divide_by_delta = true;
 		}
 		
 		if (!monitor.id.length) {
