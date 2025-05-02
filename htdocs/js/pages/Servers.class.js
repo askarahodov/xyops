@@ -1659,6 +1659,9 @@ Page.Servers = class Servers extends Page.ServerUtils {
 		app.api.post( 'app/get_latest_monitor_data', { server: server.id, sys: 'hourly', limit: 60 }, function(resp) {
 			if (!self.active) return; // sanity
 			
+			// prune based on latest sample, not "now" (server may be offline and we're rendering the last known state)
+			if (resp.rows.length) min_epoch = resp.rows[ resp.rows.length - 1 ].date - 3600;
+			
 			// prune all data older than 1 hour
 			resp.rows = resp.rows.filter( function(row) { return row.date >= min_epoch; } );
 			
