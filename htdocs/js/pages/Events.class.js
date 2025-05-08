@@ -464,7 +464,7 @@ Page.Events = class Events extends Page.PageUtils {
 		
 		var url = '#Events' + (num_keys(query) ? compose_query_string(query) : '');
 		history.replaceState( null, '', url );
-		Nav.loc = url;
+		Nav.loc = url.replace(/^\#/, '');
 		
 		// magic trick: replace link in sidebar for Events
 		// $('#tab_Events').attr( 'href', url );
@@ -1244,50 +1244,46 @@ Page.Events = class Events extends Page.PageUtils {
 			"title": "Performance History",
 			"dataType": "seconds",
 			// "dataSuffix": " sec"
+			"_allow_zoom": true
 		});
 		
 		this.charts.cpu = this.createChart({
 			"canvas": '#c_ve_cpu',
 			"title": "CPU History",
 			"dataType": "integer",
-			"dataSuffix": "%"
+			"dataSuffix": "%",
+			"_allow_zoom": true
 		});
 		
 		this.charts.mem = this.createChart({
 			"canvas": '#c_ve_mem',
 			"title": "Memory History",
 			"dataType": "bytes",
-			"dataSuffix": ""
+			"dataSuffix": "",
+			"_allow_zoom": true
 		});
 		
 		this.charts.disk = this.createChart({
 			"canvas": '#c_ve_disk',
 			"title": "I/O History",
 			"dataType": "bytes",
-			"dataSuffix": "/sec"
+			"dataSuffix": "/sec",
+			"_allow_zoom": true
 		});
 		
 		this.charts.net = this.createChart({
 			"canvas": '#c_ve_net',
 			"title": "Network History",
 			"dataType": "bytes",
-			"dataSuffix": "/sec"
+			"dataSuffix": "/sec",
+			"_allow_zoom": true
 		});
 		
-		var render_chart_overlay = function(key) {
-			$('.pxc_tt_overlay').html(
-				'<div class="chart_toolbar ct_' + key + '">' + 
-					'<div class="chart_icon ci_di" title="Download Image" onClick="$P().chartDownload(\'' + key + '\')"><i class="mdi mdi-cloud-download-outline"></i></div>' + 
-					'<div class="chart_icon ci_cl" title="Copy Image Link" onClick="$P().chartCopyLink(\'' + key + '\',this)"><i class="mdi mdi-clipboard-pulse-outline"></i></div>' + 
-				'</div>' 
-			);
-		};
-		
-		this.charts.perf.on('mouseover', function(event) { render_chart_overlay('perf'); });
-		this.charts.cpu.on('mouseover', function(event) { render_chart_overlay('cpu'); });
-		this.charts.mem.on('mouseover', function(event) { render_chart_overlay('mem'); });
-		this.charts.disk.on('mouseover', function(event) { render_chart_overlay('disk'); });
-		this.charts.net.on('mouseover', function(event) { render_chart_overlay('net'); });
+		this.setupChartHover('perf');
+		this.setupChartHover('cpu');
+		this.setupChartHover('mem');
+		this.setupChartHover('disk');
+		this.setupChartHover('net');
 	}
 	
 	populateHistoryCharts() {
