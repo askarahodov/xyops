@@ -57,7 +57,7 @@ Page.Servers = class Servers extends Page.ServerUtils {
 		var html = '';
 		
 		// build opt groups for server props like OS, CPU, etc.
-		var opt_groups = { os_platform: {}, os_distro: {}, os_release: {}, os_arch: {}, cpu_virt: {}, cpu_brand: {}, cpu_cores: {} };
+		var opt_groups = { os_platform: {}, os_distro: {}, os_release: {}, os_arch: {}, cpu_virt: {}, cpu_type: {}, cpu_cores: {} };
 		
 		resp.rows.forEach( function(server) {
 			var info = server.info || {};
@@ -70,13 +70,13 @@ Page.Servers = class Servers extends Page.ServerUtils {
 			if (info.os.release) opt_groups.os_release[ info.os.release ] = 1;
 			if (info.os.arch) opt_groups.os_arch[ info.os.arch ] = 1;
 			if (info.virt.vendor) opt_groups.cpu_virt[ info.virt.vendor ] = 1;
-			if (info.cpu.brand) opt_groups.cpu_brand[ info.cpu.brand ] = 1;
+			if (info.cpu.combo) opt_groups.cpu_type[ info.cpu.combo ] = 1;
 			if (info.cpu.cores) opt_groups.cpu_cores[ info.cpu.cores ] = 1;
 		} );
 		
 		// sort alpha and convert to id/title for menu opts
 		for (var key in opt_groups) {
-			opt_groups[key] = Object.keys(opt_groups[key]).sort().map( function(value) { return { id: value.replace(/\W+/g, '').toLowerCase(), title: value }; } );
+			opt_groups[key] = Object.keys(opt_groups[key]).sort().map( function(value) { return { id: crammify(value), title: value }; } );
 		}
 		
 		// must sort cpu_cores numerically
@@ -93,7 +93,7 @@ Page.Servers = class Servers extends Page.ServerUtils {
 			this.buildOptGroup( opt_groups.os_distro, "OS Distro:", '', 'osd_' ),
 			this.buildOptGroup( opt_groups.os_release, "OS Release:", '', 'osr_' ),
 			this.buildOptGroup( opt_groups.os_arch, "OS Arch:", '', 'osa_' ),
-			this.buildOptGroup( opt_groups.cpu_brand, "CPU Brand:", '', 'cpub_' ),
+			this.buildOptGroup( opt_groups.cpu_type, "CPU Type:", '', 'cput_' ),
 			this.buildOptGroup( opt_groups.cpu_cores, "CPU Cores:", '', 'cpuc_' ),
 			this.buildOptGroup( opt_groups.cpu_virt, "Virtualization:", '', 'virt_' )
 		);
@@ -209,12 +209,12 @@ Page.Servers = class Servers extends Page.ServerUtils {
 		
 		// do history.replaceState jazz here
 		// don't mess up initial visit href
-		var query = deep_copy_object(args);
-		delete query.sub;
+		// var query = deep_copy_object(args);
+		// delete query.sub;
 		
-		var url = '#Servers' + (num_keys(query) ? compose_query_string(query) : '');
-		history.replaceState( null, '', url );
-		Nav.loc = url.replace(/^\#/, '');
+		// var url = '#Servers' + (num_keys(query) ? compose_query_string(query) : '');
+		// history.replaceState( null, '', url );
+		// Nav.loc = url.replace(/^\#/, '');
 		
 		// magic trick: replace link in sidebar for Events
 		// $('#tab_Servers').attr( 'href', url );
@@ -231,7 +231,7 @@ Page.Servers = class Servers extends Page.ServerUtils {
 			if (words.indexOf(args.search.toLowerCase()) == -1) return false; // hide
 		}
 		
-		if (('filter' in args) && args.filter.match && args.filter.match(/^(\w)_(.+)$/)) {
+		if (('filter' in args) && args.filter.match && args.filter.match(/^([a-z0-9]+)_(.+)$/)) {
 			var mode = RegExp.$1;
 			var value = RegExp.$2;
 			
@@ -249,32 +249,32 @@ Page.Servers = class Servers extends Page.ServerUtils {
 					if (!item.groups.includes(value)) return false; // hide
 				break;
 				
-				case 'osp_':
-					if (item.info.os.platform != value) return false; // hide
+				case 'osp':
+					if (crammify(item.info.os.platform) != value) return false; // hide
 				break;
 				
-				case 'osd_':
-					if (item.info.os.distro != value) return false; // hide
+				case 'osd':
+					if (crammify(item.info.os.distro) != value) return false; // hide
 				break;
 				
-				case 'osr_':
-					if (item.info.os.release != value) return false; // hide
+				case 'osr':
+					if (crammify(item.info.os.release) != value) return false; // hide
 				break;
 				
-				case 'osa_':
-					if (item.info.os.arch != value) return false; // hide
+				case 'osa':
+					if (crammify(item.info.os.arch) != value) return false; // hide
 				break;
 				
-				case 'virt_':
-					if (item.info.virt.vendor != value) return false; // hide
+				case 'virt':
+					if (crammify(item.info.virt.vendor) != value) return false; // hide
 				break;
 				
-				case 'cpub_':
-					if (item.info.cpu.brand != value) return false; // hide
+				case 'cput':
+					if (crammify(item.info.cpu.brand) != value) return false; // hide
 				break;
 				
-				case 'cpuc_':
-					if (item.info.cpu.cores != value) return false; // hide
+				case 'cpuc':
+					if (crammify(item.info.cpu.cores) != value) return false; // hide
 				break;
 			} // switch mode
 		}
@@ -809,13 +809,13 @@ Page.Servers = class Servers extends Page.ServerUtils {
 					html += '</div>';
 					
 					html += '<div>';
-						html += '<div class="info_label">Server Hostname</div>';
-						html += '<div class="info_value">' + server.hostname + '</div>';
+						html += '<div class="info_label">Server IP</div>';
+						html += '<div class="info_value">' + this.getNiceIP(server.ip) + '</div>';
 					html += '</div>';
 					
 					html += '<div>';
-						html += '<div class="info_label">Server IP</div>';
-						html += '<div class="info_value">' + server.ip + '</div>';
+						html += '<div class="info_label">Server Hostname</div>';
+						html += '<div class="info_value">' + server.hostname + '</div>';
 					html += '</div>';
 					
 					html += '<div>';
@@ -1022,6 +1022,7 @@ Page.Servers = class Servers extends Page.ServerUtils {
 			this.getLiveAlerts();
 			this.renderActiveJobs();
 			this.setupQuickMonitors();
+			if (!app.reducedMotion()) this.animate();
 		}
 		else {
 			// offline only
@@ -1385,10 +1386,13 @@ Page.Servers = class Servers extends Page.ServerUtils {
 				"deltaMinValue": def.delta_min_value ?? false,
 				"divideByDelta": def.divide_by_delta || false,
 				"legend": false, // single layer, no legend needed
+				"clip": true,
+				"live": true,
 				"_quick": true
 			});
 			self.charts[ def.id ] = chart;
 			self.setupChartHover(def.id);
+			self.setupCustomHeadroom(def.id);
 		});
 		
 		// request all data from server
@@ -1417,6 +1421,29 @@ Page.Servers = class Servers extends Page.ServerUtils {
 		}
 	}
 	
+	animate() {
+		// animate quickmon charts
+		var self = this;
+		
+		// invalidate raf token
+		this.raf = false;
+		
+		if (!this.active) return; // auto-shutdown on page deactivate
+		if (!this.online) return; // auto-shutdown if server is offline
+		
+		var now = app.getApproxServerTime();
+		
+		config.quick_monitors.forEach( function(def, idx) {
+			var chart = self.charts[def.id];
+			chart.zoom = { xMin: now - 61, xMax: now - 1 };
+			chart.dirty = true;
+		});
+		
+		ChartManager.check();
+		
+		this.raf = requestAnimationFrame( this.animate.bind(this) );
+	}
+	
 	appendSampleToQuickChart(data) {
 		// append sample to quickmon chart (real-time from server)
 		// { id, row }
@@ -1428,7 +1455,7 @@ Page.Servers = class Servers extends Page.ServerUtils {
 			var layer_idx = find_object_idx( chart.layers, { id: data.id } );
 			
 			if ((layer_idx > -1) && data.row.date && (typeof(data.row[def.id]) == 'number')) {
-				chart.addLayerSample(layer_idx, { x: data.row.date, y: data.row[def.id] || 0 }, 60 );
+				chart.addLayerSample(layer_idx, { x: data.row.date, y: data.row[def.id] || 0 }, 63 );
 			}
 		}); // foreach monitor
 		
@@ -1438,49 +1465,6 @@ Page.Servers = class Servers extends Page.ServerUtils {
 			this.updateMemDetails(data);
 			this.updateCPUDetails(data);
 			this.startDetailAnimation();
-		}
-	}
-	
-	resetDetailAnimation() {
-		// reset detail animation
-		var raf = !!(this.detailAnimation && this.detailAnimation.raf);
-		this.detailAnimation = { raf, start: Date.now(), duration: 500, donuts: [] };
-	}
-	
-	startDetailAnimation() {
-		// start animation frames
-		if (!this.detailAnimation.raf) {
-			this.detailAnimation.raf = true;
-			requestAnimationFrame( this.renderDetailAnimation.bind(this) );
-		}
-	}
-	
-	renderDetailAnimation() {
-		// update animation in progress
-		if (!this.active) return; // sanity
-		
-		var now = Date.now();
-		var anim = this.detailAnimation;
-		if (!anim) return; // sanity
-		anim.raf = false;
-		
-		var progress = Math.min(1.0, (now - anim.start) / anim.duration ); // linear
-		var eased = progress * progress * (3 - 2 * progress); // ease-in-out
-		
-		// donuts need their conic-gradient redrawn
-		anim.donuts.forEach( function(donut) {
-			var pct = short_float( donut.from + ((donut.to - donut.from) * eased), 3 );
-			donut.elem.css('background-image', 'conic-gradient( ' + donut.color + ' ' + pct + '%, var(--border-color) 0)');
-		} );
-		
-		if (progress < 1.0) {
-			// more frames still needed
-			anim.raf = true;
-			requestAnimationFrame( this.renderDetailAnimation.bind(this) );
-		}
-		else {
-			// done, cleanup
-			delete this.detailAnimation;
 		}
 	}
 	
@@ -1511,7 +1495,8 @@ Page.Servers = class Servers extends Page.ServerUtils {
 					elem: $elem,
 					from: old_pct,
 					to: new_pct,
-					color: opts.color
+					color: opts.color,
+					bg: opts.bg
 				});
 				
 				opts.value = new_value;
@@ -1546,7 +1531,8 @@ Page.Servers = class Servers extends Page.ServerUtils {
 					elem: $elem,
 					from: old_pct,
 					to: new_pct,
-					color: opts.color
+					color: opts.color,
+					bg: opts.bg
 				});
 				
 				opts.value = new_value;
@@ -1852,6 +1838,7 @@ Page.Servers = class Servers extends Page.ServerUtils {
 		delete this.donutDashUnits;
 		delete this.detailAnimation;
 		delete this.serverInstallArgs;
+		delete this.chartZoom;
 		
 		// destroy charts if applicable (view page)
 		if (this.charts) {
@@ -1859,6 +1846,12 @@ Page.Servers = class Servers extends Page.ServerUtils {
 				this.charts[key].destroy();
 			}
 			delete this.charts;
+		}
+		
+		// cancel raf if scheduled
+		if (this.raf) {
+			cancelAnimationFrame(this.raf);
+			this.raf = false;
 		}
 		
 		this.div.html( '' );
