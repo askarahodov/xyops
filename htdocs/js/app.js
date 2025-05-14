@@ -212,8 +212,8 @@ app.extend({
 		html += '<div class="header_widget icon danger"><i class="mdi mdi-power-standby" onClick="app.doUserLogout()" title="Logout"></i></div>';
 		html += '<div class="header_widget user" style="background-image:url(' + this.getUserAvatarURL( this.retina ? 64 : 32, bust ) + ')" onClick="app.doMyAccount()" title="My Account (' + app.username + ')"></div>';
 		html += '<div class="header_widget icon"><i class="mdi mdi-tune-vertical-variant" onClick="app.doMySettings()" title="My Preferences"></i></div>';
-		html += '<div id="d_theme_ctrl" class="header_widget icon" onClick="app.openThemeSelector()" title="Select Theme"></div>';
-		html += '<div id="d_header_clock" class="header_widget combo" onClick="app.openScheduleSelector()" title="Toggle Scheduler">...</div>';
+		html += '<div id="d_theme_ctrl" class="header_widget icon" onMouseDown="app.openThemeSelector()" title="Select Theme"></div>';
+		html += '<div id="d_header_clock" class="header_widget combo" onMouseDown="app.openScheduleSelector()" title="Toggle Scheduler">...</div>';
 		
 		html += '<div id="d_job_counter" class="header_widget combo marquee" onClick="app.goJobs()" title="Active Jobs" style="display:none">...</div>';
 		html += '<div id="d_alert_counter" class="header_widget combo red" onClick="app.goAlerts()" title="Active Alerts" style="display:none">...</div>';
