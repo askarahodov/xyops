@@ -640,10 +640,12 @@ Page.Servers = class Servers extends Page.ServerUtils {
 		
 		var grid_args = {
 			resp: resp,
-			cols: ['Hostname', 'IP Address', 'Groups', '# CPUs', 'RAM', 'OS', 'Created', 'Modified'],
+			cols: ['Server', 'IP Address', 'Groups', '# CPUs', 'RAM', 'OS', 'Created', 'Modified'],
 			data_type: 'server',
 			offset: this.args.offset || 0,
 			limit: this.args.limit,
+			sort_by: 'hostname', // FUTURE: Add a sort menu?
+			sort_dir: 1,
 			class: 'data_grid server_search_grid',
 			pagination_link: '$P().searchPaginate'
 		};
@@ -918,7 +920,7 @@ Page.Servers = class Servers extends Page.ServerUtils {
 		html += '<div class="box" id="d_vs_quickmon" style="display:none">';
 			html += '<div class="box_title">';
 				html += '<div class="box_title_widget" style="overflow:visible; margin-left:0;"><i class="mdi mdi-magnify" onMouseUp="$(this).next().focus()">&nbsp;</i><input type="text" placeholder="Filter" value="" onInput="$P().applyQuickMonitorFilter(this)"></div>';
-				html += this.getChartSizeSelector();
+				html += this.getChartSizeSelector('chart_size_quick');
 				html += 'Quick Look &mdash; Last Minute';
 			html += '</div>';
 			html += '<div class="box_content table">';
@@ -1363,7 +1365,7 @@ Page.Servers = class Servers extends Page.ServerUtils {
 		var self = this;
 		var server = this.server;
 		var html = '';
-		html += '<div class="chart_grid_horiz ' + (app.getPref('chart_size') || 'medium') + '">';
+		html += '<div class="chart_grid_horiz ' + (app.getPref('chart_size_quick') || 'medium') + '">';
 		
 		config.quick_monitors.forEach( function(def) {
 			// { "id": "cpu_load", "title": "CPU Load Average", "source": "cpu.avgLoad", "type": "float", "suffix": "" },
