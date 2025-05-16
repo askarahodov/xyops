@@ -34,7 +34,6 @@ Page.ServerHist = class ServerHist extends Page.ServerUtils {
 		
 		this.loading();
 		app.api.get( 'app/get_server', { id: args.id }, this.receive_snapshot.bind(this), this.fullPageError.bind(this) );
-		return true;
 	}
 	
 	receive_snapshot(resp) {
@@ -57,84 +56,27 @@ Page.ServerHist = class ServerHist extends Page.ServerUtils {
 		this.jobHistArgs = {};
 		
 		var sys = this.sys = find_object( config.systems, { id: args.mode } );
-		if (!sys) return this.doFullPageError("Unknown system: " + sys);
+		if (!sys) return this.doFullPageError("Unknown system: " + args.mode);
 		
 		var snapshot = this.snapshot;
 		var server_icon = server.icon || (online ? 'router-network' : 'close-network-outline');
-		var epoch_start = 0;
-		var limit = 0;
-		var icon = '';
-		var title = '';
-		var unit = '';
 		
-		// convert args to start / end epochs
-		switch (args.mode) {
-			case 'yearly':
-				epoch_start = Math.ceil( this.parseDateTZ( args.year + '-01-01 00:00:00' ) / sys.epoch_div ) * sys.epoch_div;
-				limit = Math.floor( (args.limit * (86400 * 366)) / sys.epoch_div );
-				title = this.formatDate(epoch_start, { year: 'numeric' } );
-				icon = 'earth';
-				unit = 'year';
-			break;
-			
-			case 'monthly':
-				epoch_start = Math.ceil( this.parseDateTZ( args.year + '-' + args.month + '-01 00:00:00' ) / sys.epoch_div ) * sys.epoch_div;
-				limit = Math.floor( (args.limit * ((86400 * 31) + 3600)) / sys.epoch_div );
-				title = this.formatDate(epoch_start, { year: 'numeric', month: 'long' } );
-				icon = 'calendar-month-outline';
-				unit = 'month';
-			break;
-			
-			case 'daily':
-				epoch_start = Math.ceil( this.parseDateTZ( args.year + '-' + args.month + '-' + args.day + ' 00:00:00' ) / sys.epoch_div ) * sys.epoch_div;
-				limit = Math.floor( (args.limit * (86400 + 3600)) / sys.epoch_div );
-				title = this.formatDate(epoch_start, { year: 'numeric', month: 'long', day: 'numeric' } );
-				icon = 'calendar-today-outline';
-				unit = 'day';
-			break;
-			
-			case 'hourly':
-				epoch_start = Math.ceil( this.parseDateTZ( args.year + '-' + args.month + '-' + args.day + ' ' + args.hour + ':00:00' ) / sys.epoch_div ) * sys.epoch_div;
-				limit = Math.floor( (args.limit * 3600) / sys.epoch_div );
-				title = this.formatDate(epoch_start, { year: 'numeric', month: 'long', day: 'numeric', hour: 'numeric' } );
-				icon = 'clock-outline';
-				unit = 'hour';
-			break;
-		} // switch args.mode
-		
-		// save epoch range for later
-		this.epochStart = epoch_start;
-		
-		// nudge limit back into current range if needed
-		limit = this.nudgeLimit(epoch_start, limit);
-		
-		this.epochEnd = epoch_start + (limit * sys.epoch_div);
-		this.chartLimit = limit;
-		
-		// possibly augment title if range is wider than one unit
-		if (args.limit && (args.limit > 1)) {
-			switch (args.mode) {
-				case 'yearly': title += ' - ' + this.formatDate(this.epochEnd - 1, { year: 'numeric' } ); break;
-				case 'monthly': title += ' - ' + this.formatDate(this.epochEnd - 1, { year: 'numeric', month: 'long' } ); break;
-				case 'daily': title += ' - ' + this.formatDate(this.epochEnd - 1, { year: 'numeric', month: 'long', day: 'numeric' } ); break;
-				case 'hourly': title = this.formatDateRange( this.epochStart, this.epochEnd, { year: 'numeric', month: 'long', day: 'numeric', hour: 'numeric' } ); break;
-			}
-		}
+		this.histPrep();
 		
 		app.setHeaderNav([
 			{ icon: 'server', loc: '#Servers?sub=list', title: 'Servers' },
 			{ icon: server_icon, loc: '#Servers?sub=view&id=' + server.id, title: server.title || server.hostname },
-			{ icon: icon, title: ucfirst(args.mode) + " View" }
+			{ icon: this.histIcon, title: ucfirst(args.mode) + " View" }
 		]);
 		
 		app.setWindowTitle( "Historical Server View: " + (server.title || server.hostname) + "" );
 		
 		html += '<div class="box" style="border:none;">';
 			html += '<div class="box_title">';
-				html += '<div class="box_title_left">' + ucfirst(args.mode) + ' &mdash; ' + title + '</div>';
+				html += '<div class="box_title_left" style="color:var(--green)">' + ucfirst(args.mode) + ' &mdash; ' + this.histTitle + '</div>';
 				html += '<div class="box_title_left"><div class="button secondary mobile_collapse" onClick="$P().chooseHistoricalView()"><i class="mdi mdi-calendar-cursor">&nbsp;</i><span>Select Range...</span></div></div>';
-				html += '<div class="box_title_right"><div class="button secondary mobile_collapse tablet_hide" onClick="$P().navNext()"><span>Next ' + ucfirst(unit) + '&nbsp;</span><i class="mdi mdi-chevron-right"></i></div></div>';
-				html += '<div class="box_title_right"><div class="button secondary mobile_collapse tablet_hide" onClick="$P().navPrev()"><i class="mdi mdi-chevron-left">&nbsp;</i><span>Prev ' + ucfirst(unit) + '</span></div></div>';
+				html += '<div class="box_title_right"><div class="button mobile_collapse tablet_hide" onClick="$P().histNavNext()"><span>Next ' + ucfirst(this.histUnit) + '&nbsp;</span><i class="mdi mdi-chevron-right"></i></div></div>';
+				html += '<div class="box_title_right"><div class="button mobile_collapse tablet_hide" onClick="$P().histNavPrev()"><i class="mdi mdi-chevron-left">&nbsp;</i><span>Prev ' + ucfirst(this.histUnit) + '</span></div></div>';
 			html += '</div>';
 		html += '</div>';
 		
@@ -165,7 +107,7 @@ Page.ServerHist = class ServerHist extends Page.ServerUtils {
 					
 					html += '<div>';
 						html += '<div class="info_label">Server IP</div>';
-						html += '<div class="info_value">' + server.ip + '</div>';
+						html += '<div class="info_value">' + this.getNiceIP(server.ip) + '</div>';
 					html += '</div>';
 					
 					html += '<div>';
@@ -224,7 +166,7 @@ Page.ServerHist = class ServerHist extends Page.ServerUtils {
 			html += '<div class="box_title">';
 				html += '<div class="box_title_widget" style="overflow:visible; margin-left:0;"><i class="mdi mdi-magnify" onMouseUp="$(this).next().focus()">&nbsp;</i><input type="text" placeholder="Filter" value="" onInput="$P().applyMonitorFilter(this)"></div>';
 				html += this.getChartSizeSelector();
-				html += 'Server Monitors &mdash; ' + title;
+				html += 'Server Monitors &mdash; ' + this.histTitle;
 			html += '</div>';
 			html += '<div class="box_content table">';
 				html += '<div class="loading_container"><div class="loading"></div></div>';
@@ -234,7 +176,7 @@ Page.ServerHist = class ServerHist extends Page.ServerUtils {
 		// alerts
 		html += '<div class="box" id="d_vs_alerts" style="">';
 			html += '<div class="box_title">';
-				html += 'Server Alerts &mdash; ' + title;
+				html += 'Server Alerts &mdash; ' + this.histTitle;
 				// html += '<div class="button right secondary" onMouseUp="$P().goAlertHistory()"><i class="mdi mdi-magnify">&nbsp;</i>Alert History...</div>';
 				// html += '<div class="clear"></div>';
 			html += '</div>';
@@ -252,11 +194,11 @@ Page.ServerHist = class ServerHist extends Page.ServerUtils {
 					title: 'Filter job list',
 					options: this.buildJobFilterOpts(),
 					value: this.jobHistArgs.filter || '',
-					onChange: '$P().applyHistoryFilters()',
+					onChange: '$P().applyJobHistoryFilters()',
 					'data-shrinkwrap': 1
 				}) + '</div>';
 				
-				html += 'Server Jobs &mdash; ' + title;
+				html += 'Server Jobs &mdash; ' + this.histTitle;
 			html += '</div>';
 			html += '<div class="box_content table">';
 				html += '<div class="loading_container"><div class="loading"></div></div>';
@@ -270,134 +212,6 @@ Page.ServerHist = class ServerHist extends Page.ServerUtils {
 		this.fetchJobHistory();
 		
 		SingleSelect.init( this.div.find('#fe_vs_job_filter, .sel_chart_size') );
-	}
-	
-	navPrev() {
-		// navigate to previous time unit (hour, day, etc.)
-		var args = this.args;
-		
-		switch (args.mode) {
-			case 'yearly':
-				args.year--;
-			break;
-			
-			case 'monthly':
-				args.month--;
-				if (args.month < 1) { args.month = 12; args.year--; }
-			break;
-			
-			case 'daily':
-				var dargs = this.getDateArgsTZ( this.epochStart - 43200 );
-				args.year = dargs.year;
-				args.month = dargs.month;
-				args.day = dargs.day;
-			break;
-			
-			case 'hourly':
-				var dargs = this.getDateArgsTZ( this.epochStart - 3600 );
-				args.year = dargs.year;
-				args.month = dargs.month;
-				args.day = dargs.day;
-				
-				// special case here for jumping over fall-back DST
-				// (i.e. where jumping backward one hour will land on the same YYYY-MM-DD-HH)
-				args.hour = (dargs.hour == args.hour) ? (dargs.hour - 1) : dargs.hour;
-			break;
-		} // switch args.mode
-		
-		Nav.go( this.selfNav(args) );
-	}
-	
-	navNext() {
-		// navigate to next time unit (hour, day, etc.)
-		var args = this.args;
-		
-		switch (args.mode) {
-			case 'yearly':
-				args.year++;
-			break;
-			
-			case 'monthly':
-				args.month++;
-				if (args.month > 12) { args.month = 1; args.year++; }
-			break;
-			
-			case 'daily':
-				var dargs = this.getDateArgsTZ( this.epochStart + 43200 + 86400 );
-				args.year = dargs.year;
-				args.month = dargs.month;
-				args.day = dargs.day;
-			break;
-			
-			case 'hourly':
-				var dargs = this.getDateArgsTZ( this.epochStart + 3600 );
-				args.year = dargs.year;
-				args.month = dargs.month;
-				args.day = dargs.day;
-				
-				// special case here for jumping over fall-back DST
-				// (i.e. where jumping forward one hour will land on the same YYYY-MM-DD-HH)
-				args.hour = (dargs.hour == args.hour) ? (dargs.hour + 1) : dargs.hour;
-			break;
-		} // switch args.mode
-		
-		Nav.go( this.selfNav(args) );
-	}
-	
-	nudgeLimit(epoch_start, limit) {
-		// ensure limit keeps graph range within current mode (yearly, etc.)
-		var args = this.args;
-		var sys = this.sys;
-		var done = false;
-		
-		var criteria = {};
-		['year', 'month', 'day', 'hour'].forEach( function(key) { if (key in args) criteria[key] = args[key]; } );
-		var num_crit = num_keys(criteria);
-		
-		// support limit > 1 for ranges
-		if (args.limit && (args.limit > 1)) {
-			switch (args.mode) {
-				case 'yearly':
-					criteria.year += (args.limit - 1);
-				break;
-				
-				case 'monthly':
-					criteria.month += (args.limit - 1);
-					if (criteria.month > 12) { criteria.month -= 12; criteria.year++; }
-				break;
-				
-				case 'daily':
-					var dargs = this.getDateArgsTZ( this.epochStart + 43200 + (86400 * (args.limit - 1)) );
-					criteria.year = dargs.year;
-					criteria.month = dargs.month;
-					criteria.day = dargs.day;
-				break;
-				
-				case 'hourly':
-					var dargs = this.getDateArgsTZ( this.epochStart + (3600 * (args.limit - 1)) );
-					criteria.year = dargs.year;
-					criteria.month = dargs.month;
-					criteria.day = dargs.day;
-					
-					// special case here for jumping over fall-back DST
-					// (i.e. where jumping forward one hour will land on the same YYYY-MM-DD-HH)
-					criteria.hour = (dargs.hour == criteria.hour) ? (dargs.hour + 1) : dargs.hour;
-				break;
-			} // switch args.mode
-		} // limit adj
-		
-		while (!done) {
-			var end_epoch = epoch_start + ((limit - 1) * sys.epoch_div);
-			var dargs = this.getDateArgsTZ(end_epoch);
-			var num_matched = 0;
-			for (var key in criteria) {
-				if (dargs[key] == criteria[key]) num_matched++;
-			}
-			if (num_matched == num_crit) done = true;
-			else limit--;
-		}
-		
-		return limit;
 	}
 	
 	setupMonitors() {
@@ -491,157 +305,11 @@ Page.ServerHist = class ServerHist extends Page.ServerUtils {
 		}
 	}
 	
-	applyHistoryFilters() {
-		// menu change for job history filter popdown
-		this.jobHistArgs.filter = this.div.find('#fe_vs_job_filter').val();
-		this.div.find('#d_vs_jobs > .box_content').html( '<div class="loading_container"><div class="loading"></div></div>' );
-		this.fetchJobHistory();
-	}
-	
-	fetchJobHistory() {
-		// fetch job history from server
-		var args = this.jobHistArgs;
-		
-		// { query, offset, limit, sort_by, sort_dir }
-		args.query = 'server:' + this.server.id;
-		args.offset = args.offset || 0;
-		args.limit = config.alt_items_per_page;
-		args.sort_by = 'completed'; 
-		args.sort_dir = -1;
-		
-		// add epoch date range
-		args.query += ' date:' + this.epochStart + '..' + this.epochEnd;
-		
-		// apply filters if any
-		if (args.filter) {
-			switch (args.filter) {
-				case 'z_success': args.query += ' tags:_success'; break;
-				case 'z_error': args.query += ' tags:_error'; break;
-				case 'z_warning': args.query += ' code:warning'; break;
-				case 'z_critical': args.query += ' code:critical'; break;
-				case 'z_abort': args.query += ' code:abort'; break;
-				
-				case 'z_retried': args.query += ' tags:_retried'; break;
-				case 'z_last': args.query += ' tags:_last'; break;
-				
-				default:
-					if (args.filter.match(/^t_(.+)$/)) args.query += ' tags:' + RegExp.$1;
-				break;
-			}
-		}
-		
-		app.api.get( 'app/search_jobs', args, this.receiveJobHistory.bind(this) );
-	}
-	
-	receiveJobHistory(resp) {
-		// receive history from db
-		var self = this;
-		var args = this.jobHistArgs;
-		var html = '';
-		
-		// make sure page is still active (API may be slow)
-		if (!this.active) return;
-		
-		if (!resp.rows) resp.rows = [];
-		this.jobs = resp.rows;
-		
-		var grid_args = {
-			resp: resp,
-			cols: ['Job ID', 'Server', 'Source', 'Started', 'Elapsed', 'Avg CPU/Mem', 'Result'],
-			data_type: 'job',
-			offset: args.offset || 0,
-			limit: args.limit,
-			class: 'data_grid job_history_grid',
-			pagination_link: '$P().jobHistoryNav'
-		};
-		
-		html += this.getPaginatedGrid( grid_args, function(job, idx) {
-			return [
-				'<b>' + self.getNiceJob(job, true) + '</b>',
-				self.getNiceServer(job.server, true),
-				self.getNiceJobSource(job),
-				self.getShortDateTime( job.started ),
-				self.getNiceJobElapsedTime(job, true),
-				self.getNiceJobAvgCPU(job) + ' / ' + self.getNiceJobAvgMem(job),
-				self.getNiceJobResult(job),
-				// '<a href="#Job?id=' + job.id + '">Details</a>'
-			];
-		} );
-		
-		this.div.find('#d_vs_jobs > .box_content').removeClass('loading').html( html );
-	}
-	
-	jobHistoryNav(offset) {
-		// intercept click on job history table pagination nav
-		this.jobHistArgs.offset = offset;
-		this.div.find('#d_vs_jobs > .box_content').addClass('loading');
-		this.fetchJobHistory();
-	}
-	
-	fetchAlertHistory() {
-		// fetch history of alert on current server
-		var self = this;
-		if (!this.alertHistoryOffset) this.alertHistoryOffset = 0;
-		
-		var opts = {
-			query: 'server:' + this.server.id + ' date:' + this.epochStart + '..' + this.epochEnd,
-			offset: this.alertHistoryOffset,
-			limit: config.alt_items_per_page,
-			sort_by: '_id',
-			sort_dir: -1,
-			ttl: 1
-		};
-		
-		app.api.get( 'app/search_alerts', opts, this.renderAlertHistory.bind(this));
-	}
-	
-	renderAlertHistory(resp) {
-		// render alert history
-		var self = this;
-		var cols = ["Alert ID", "Title", "Message", "Server", "Status", "Started", "Duration"];
-		var html = '';
-		
-		// make sure page is still active (API may be slow)
-		if (!this.active) return;
-		
-		var grid_args = {
-			resp: resp,
-			cols: cols,
-			offset: 0,
-			limit: config.alt_items_per_page,
-			sort_by: '_id',
-			sort_dir: -1,
-			data_type: 'alert',
-			pagination_link: '$P().alertHistoryNav'
-		};
-		
-		html += this.getPaginatedGrid( grid_args, function(item, idx) {
-			return [
-				'<b>' + self.getNiceAlertID(item, true) + '</b>',
-				self.getNiceAlert(item.alert, false),
-				item.message,
-				self.getNiceServer(item.server, true),
-				self.getNiceAlertStatus(item),
-				self.getRelativeDateTime(item.date),
-				self.getNiceAlertElapsedTime(item, true, true)
-			];
-		}); // grid
-		
-		$('#d_vs_alerts > div.box_content').removeClass('loading').html( html );
-	}
-	
-	alertHistoryNav(offset) {
-		// intercept click on job history table pagination nav
-		this.alertHistoryOffset = offset;
-		this.div.find('#d_vs_alerts > .box_content').addClass('loading');
-		this.fetchAlertHistory();
-	}
-	
 	onKeyDown(event) {
 		// key was pressed while not in a text field or dialog
 		switch (event.key) {
-			case 'ArrowLeft': this.navPrev(); break;
-			case 'ArrowRight': this.navNext(); break;
+			case 'ArrowLeft': this.histNavPrev(); break;
+			case 'ArrowRight': this.histNavNext(); break;
 		}
 	}
 	
@@ -657,6 +325,9 @@ Page.ServerHist = class ServerHist extends Page.ServerUtils {
 		delete this.chartLimit;
 		delete this.jobHistArgs;
 		delete this.chartZoom;
+		delete this.histTitle;
+		delete this.histIcon;
+		delete this.histUnit;
 		
 		// destroy charts if applicable (view page)
 		if (this.charts) {
