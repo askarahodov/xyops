@@ -316,7 +316,6 @@ Page.Events = class Events extends Page.PageUtils {
 					checked: item.enabled,
 					onChange: '$P().toggle_event_enabled(this,' + idx + ')'
 				}) + '</div>',
-				// '<div class="td_big">' + self.getNiceEvent(item, true) + '</div>',
 				'<span style="font-weight:bold">' + self.getNiceEvent(item, true) + '</span>',
 				self.getNiceCategory(item.category, true),
 				self.getNicePlugin(item.plugin, true),
@@ -2443,7 +2442,7 @@ Page.Events = class Events extends Page.PageUtils {
 			class: 'data_grid',
 			empty_msg: add_link,
 			always_append_empty_msg: true,
-			grid_template_columns: 'min-content auto auto auto'
+			grid_template_columns: '40px auto auto auto'
 		};
 		
 		html += this.getCompactGrid(targs, function(item, idx) {
