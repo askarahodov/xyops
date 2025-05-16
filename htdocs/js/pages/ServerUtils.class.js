@@ -1625,13 +1625,35 @@ Page.ServerUtils = class ServerUtils extends Page.PageUtils {
 			
 			var color_swatch = '<i class="mdi mdi-circle" style="color:' + item.color + '">&nbsp;</i>';
 			
-			var nice_jobs = 'Idle';
-			var num_jobs = find_objects( self.jobs || app.activeJobs, { server: item.id } ).length;
-			if (num_jobs > 0) nice_jobs = '<i class="mdi mdi-autorenew mdi-spin">&nbsp;</i><b>' + num_jobs + '</b>';
+			var nice_jobs = '';
+			var nice_alerts = '';
 			
-			var nice_alerts = 'None';
-			var num_alerts = find_objects( self.alerts || app.activeAlerts, { server: item.id } ).length;
-			if (num_alerts > 0) nice_alerts = '<i class="mdi mdi-bell-outline">&nbsp;</i><b>' + num_alerts + '</b>';
+			switch (self.groupMode) {
+				case 'live':
+					nice_jobs = 'Idle';
+					var num_jobs = find_objects( app.activeJobs, { server: item.id } ).length;
+					if (num_jobs > 0) nice_jobs = '<i class="mdi mdi-autorenew mdi-spin">&nbsp;</i><b>' + num_jobs + '</b>';
+					
+					nice_alerts = 'None';
+					var num_alerts = find_objects( app.activeAlerts, { server: item.id } ).length;
+					if (num_alerts > 0) nice_alerts = '<i class="mdi mdi-bell-outline">&nbsp;</i><b>' + num_alerts + '</b>';
+				break;
+				
+				case 'snapshot':
+					nice_jobs = 'None';
+					var num_jobs = find_objects( self.jobs, { server: item.id } ).length;
+					if (num_jobs > 0) nice_jobs = '<b>' + num_jobs + '</b>';
+					
+					nice_alerts = 'None';
+					var num_alerts = find_objects( self.alerts, { server: item.id } ).length;
+					if (num_alerts > 0) nice_alerts = '<i class="mdi mdi-bell-outline">&nbsp;</i><b>' + num_alerts + '</b>';
+				break;
+				
+				case 'history':
+					nice_jobs = 'n/a';
+					nice_alerts = 'n/a';
+				break;
+			}
 			
 			var nice_uptime = (!item.offline && item.info.booted) ? self.getNiceUptime( now - item.info.booted ) : 'Offline';
 			
@@ -2110,8 +2132,8 @@ Page.ServerUtils = class ServerUtils extends Page.PageUtils {
 		args.sort_by = 'completed'; 
 		args.sort_dir = -1;
 		
-		// add epoch date range
-		args.query += ' date:' + this.epochStart + '..' + this.epochEnd;
+		// add epoch date range (don't use .. range shorthand because end is inclusive)
+		args.query += ' date:>=' + this.epochStart + ' date:<' + this.epochEnd;
 		
 		// apply filters if any
 		if (args.filter) {
