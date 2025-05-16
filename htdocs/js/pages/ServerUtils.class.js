@@ -879,12 +879,12 @@ Page.ServerUtils = class ServerUtils extends Page.PageUtils {
 	// Date/Time stuff for historical views
 	// 
 	
-	chooseHistoricalView() {
+	chooseHistoricalView(group_mode) {
 		// show dialog to select historical view for server
 		var self = this;
 		var args = this.args;
-		var title = "View Historical Server Data";
-		var btn = ['check-circle', "Apply Changes"];
+		var title = "View Historical " + (group_mode ? 'Group' : 'Server') + " Data";
+		var btn = ['check-circle', "Apply"];
 		
 		var html = '<div class="dialog_box_content scroll">';
 		
@@ -1025,7 +1025,8 @@ Page.ServerUtils = class ServerUtils extends Page.PageUtils {
 			} // switch mode
 			
 			Dialog.hide();
-			Nav.go( '#ServerHist' + compose_query_string(args) );
+			var page_name = group_mode ? 'GroupHist' : 'ServerHist';
+			Nav.go( '#' + page_name + compose_query_string(args) );
 			
 		}); // Dialog.confirm
 		
@@ -1083,7 +1084,7 @@ Page.ServerUtils = class ServerUtils extends Page.PageUtils {
 	
 	getYearOptions() {
 		// get locale-formatted year numbers for menu
-		var start_year = yyyy( this.server.created );
+		var start_year = yyyy( this.server ? this.server.created : this.group.created );
 		var cur_year = yyyy();
 		var options = [];
 		
@@ -1416,13 +1417,10 @@ Page.ServerUtils = class ServerUtils extends Page.PageUtils {
 				var key = RegExp.$1;
 				var opts = this.donutDashUnits[id];
 				
-				// set opts.max based on computed (merged) total
-				opts.max = mem.total;
-				
 				var new_value = mem[key] || 0;
 				var old_value = opts.value || 0;
 				
-				var new_pct = short_float( (new_value / (opts.max || 1)) * 100, 3 );
+				var new_pct = short_float( (new_value / (mem.total || 1)) * 100, 3 );
 				var old_pct = short_float( (old_value / (opts.max || 1)) * 100, 3 );
 				
 				var value_disp = this.getDashValue(new_value, opts.type, opts.suffix);
@@ -1430,7 +1428,7 @@ Page.ServerUtils = class ServerUtils extends Page.PageUtils {
 				$elem.find('> div.dash_donut_value').html( value_disp );
 				
 				// add animation controller for donut change
-				if (new_pct != old_pct) this.detailAnimation.donuts.push({
+				this.detailAnimation.donuts.push({
 					elem: $elem,
 					from: old_pct,
 					to: new_pct,
@@ -1439,6 +1437,7 @@ Page.ServerUtils = class ServerUtils extends Page.PageUtils {
 				});
 				
 				opts.value = new_value;
+				opts.max = mem.total;
 			}
 		}
 	}
@@ -1489,13 +1488,10 @@ Page.ServerUtils = class ServerUtils extends Page.PageUtils {
 				var key = RegExp.$1;
 				var opts = this.donutDashUnits[id];
 				
-				// set opts.max based on computed (merged) total
-				opts.max = cpu.total;
-				
 				var new_value = cpu[key] || 0;
 				var old_value = opts.value || 0;
 				
-				var new_pct = short_float( (new_value / (opts.max || 1)) * 100, 3 );
+				var new_pct = short_float( (new_value / (cpu.total || 1)) * 100, 3 );
 				var old_pct = short_float( (old_value / (opts.max || 1)) * 100, 3 );
 				
 				var value_disp = this.getDashValue(new_value, opts.type, opts.suffix);
@@ -1503,7 +1499,7 @@ Page.ServerUtils = class ServerUtils extends Page.PageUtils {
 				$elem.find('> div.dash_donut_value').html( value_disp );
 				
 				// add animation controller for donut change
-				if (new_pct != old_pct) this.detailAnimation.donuts.push({
+				this.detailAnimation.donuts.push({
 					elem: $elem,
 					from: old_pct,
 					to: new_pct,
@@ -1512,6 +1508,7 @@ Page.ServerUtils = class ServerUtils extends Page.PageUtils {
 				});
 				
 				opts.value = new_value;
+				opts.max = cpu.total;
 			}
 		}
 	}
@@ -1533,14 +1530,6 @@ Page.ServerUtils = class ServerUtils extends Page.PageUtils {
 		// set new cpu/mem merge type
 		var type = $(elem).val();
 		app.setPref('cpu_mem_merge_' + key, type);
-		
-		// set all donut values to zero, because the "max" donut value will have changed
-		for (var id in this.donutDashUnits) {
-			if (id.startsWith(key)) {
-				var opts = this.donutDashUnits[id];
-				opts.value = 0;
-			}
-		}
 		
 		// now update the cpu & mem detail donuts
 		// this may interrupt and restart an animation in progress
@@ -1615,6 +1604,8 @@ Page.ServerUtils = class ServerUtils extends Page.PageUtils {
 			}) + '</div>';
 			
 			html += 'Group Servers';
+			if (this.histTitle) html += ' &mdash; ' + this.histTitle;
+			
 		html += '</div>';
 		html += '<div class="box_content table">';
 		
@@ -1642,7 +1633,7 @@ Page.ServerUtils = class ServerUtils extends Page.PageUtils {
 			var num_alerts = find_objects( self.alerts || app.activeAlerts, { server: item.id } ).length;
 			if (num_alerts > 0) nice_alerts = '<i class="mdi mdi-bell-outline">&nbsp;</i><b>' + num_alerts + '</b>';
 			
-			var nice_uptime = (!item.offline && item.info.booted) ? self.getNiceUptime( now - item.info.booted ) : 'n/a';
+			var nice_uptime = (!item.offline && item.info.booted) ? self.getNiceUptime( now - item.info.booted ) : 'Offline';
 			
 			var tds = [
 				'<span style="font-weight:bold">' + color_swatch + self.getNiceServer(item, true) + '</span>',
@@ -1718,6 +1709,8 @@ Page.ServerUtils = class ServerUtils extends Page.PageUtils {
 			} );
 			chart.dirty = true;
 		}
+		
+		ChartManager.check();
 		
 		// resraw everything here that may be affected, e.g. alerts, jobs
 		this.renderGroupFilteredSections();
@@ -1900,6 +1893,355 @@ Page.ServerUtils = class ServerUtils extends Page.PageUtils {
 		});
 		
 		this.div.find('#d_vg_conns > .box_content').html( html );
+	}
+	
+	histNavPrev() {
+		// navigate to previous time unit (hour, day, etc.)
+		var args = this.args;
+		
+		switch (args.mode) {
+			case 'yearly':
+				args.year--;
+			break;
+			
+			case 'monthly':
+				args.month--;
+				if (args.month < 1) { args.month = 12; args.year--; }
+			break;
+			
+			case 'daily':
+				var dargs = this.getDateArgsTZ( this.epochStart - 43200 );
+				args.year = dargs.year;
+				args.month = dargs.month;
+				args.day = dargs.day;
+			break;
+			
+			case 'hourly':
+				var dargs = this.getDateArgsTZ( this.epochStart - 3600 );
+				args.year = dargs.year;
+				args.month = dargs.month;
+				args.day = dargs.day;
+				
+				// special case here for jumping over fall-back DST
+				// (i.e. where jumping backward one hour will land on the same YYYY-MM-DD-HH)
+				args.hour = (dargs.hour == args.hour) ? (dargs.hour - 1) : dargs.hour;
+			break;
+		} // switch args.mode
+		
+		Nav.go( this.selfNav(args) );
+	}
+	
+	histNavNext() {
+		// navigate to next time unit (hour, day, etc.)
+		var args = this.args;
+		
+		switch (args.mode) {
+			case 'yearly':
+				args.year++;
+			break;
+			
+			case 'monthly':
+				args.month++;
+				if (args.month > 12) { args.month = 1; args.year++; }
+			break;
+			
+			case 'daily':
+				var dargs = this.getDateArgsTZ( this.epochStart + 43200 + 86400 );
+				args.year = dargs.year;
+				args.month = dargs.month;
+				args.day = dargs.day;
+			break;
+			
+			case 'hourly':
+				var dargs = this.getDateArgsTZ( this.epochStart + 3600 );
+				args.year = dargs.year;
+				args.month = dargs.month;
+				args.day = dargs.day;
+				
+				// special case here for jumping over fall-back DST
+				// (i.e. where jumping forward one hour will land on the same YYYY-MM-DD-HH)
+				args.hour = (dargs.hour == args.hour) ? (dargs.hour + 1) : dargs.hour;
+			break;
+		} // switch args.mode
+		
+		Nav.go( this.selfNav(args) );
+	}
+	
+	histNudgeLimit(epoch_start, limit) {
+		// ensure limit keeps graph range within current mode (yearly, etc.)
+		var args = this.args;
+		var sys = this.sys;
+		var done = false;
+		
+		var criteria = {};
+		['year', 'month', 'day', 'hour'].forEach( function(key) { if (key in args) criteria[key] = args[key]; } );
+		var num_crit = num_keys(criteria);
+		
+		// support limit > 1 for ranges
+		if (args.limit && (args.limit > 1)) {
+			switch (args.mode) {
+				case 'yearly':
+					criteria.year += (args.limit - 1);
+				break;
+				
+				case 'monthly':
+					criteria.month += (args.limit - 1);
+					if (criteria.month > 12) { criteria.month -= 12; criteria.year++; }
+				break;
+				
+				case 'daily':
+					var dargs = this.getDateArgsTZ( epoch_start + 43200 + (86400 * (args.limit - 1)) );
+					criteria.year = dargs.year;
+					criteria.month = dargs.month;
+					criteria.day = dargs.day;
+				break;
+				
+				case 'hourly':
+					var dargs = this.getDateArgsTZ( epoch_start + (3600 * (args.limit - 1)) );
+					criteria.year = dargs.year;
+					criteria.month = dargs.month;
+					criteria.day = dargs.day;
+					
+					// special case here for jumping over fall-back DST
+					// (i.e. where jumping forward one hour will land on the same YYYY-MM-DD-HH)
+					criteria.hour = (dargs.hour == criteria.hour) ? (dargs.hour + 1) : dargs.hour;
+				break;
+			} // switch args.mode
+		} // limit adj
+		
+		while (!done) {
+			var end_epoch = epoch_start + ((limit - 1) * sys.epoch_div);
+			var dargs = this.getDateArgsTZ(end_epoch);
+			var num_matched = 0;
+			for (var key in criteria) {
+				if (dargs[key] == criteria[key]) num_matched++;
+			}
+			if (num_matched == num_crit) done = true;
+			else limit--;
+		}
+		
+		return limit;
+	}
+	
+	histPrep() {
+		// prep for ServerHist or GroupHist display
+		var args = this.args;
+		var sys = this.sys;
+		var epoch_start = 0;
+		var limit = 0;
+		var icon = '';
+		var title = '';
+		var unit = '';
+		
+		// convert args to start / end epochs
+		switch (args.mode) {
+			case 'yearly':
+				epoch_start = Math.ceil( this.parseDateTZ( args.year + '-01-01 00:00:00' ) / sys.epoch_div ) * sys.epoch_div;
+				limit = Math.floor( (args.limit * (86400 * 366)) / sys.epoch_div );
+				title = this.formatDate(epoch_start, { year: 'numeric' } );
+				icon = 'earth';
+				unit = 'year';
+			break;
+			
+			case 'monthly':
+				epoch_start = Math.ceil( this.parseDateTZ( args.year + '-' + args.month + '-01 00:00:00' ) / sys.epoch_div ) * sys.epoch_div;
+				limit = Math.floor( (args.limit * ((86400 * 31) + 3600)) / sys.epoch_div );
+				title = this.formatDate(epoch_start, { year: 'numeric', month: 'long' } );
+				icon = 'calendar-month-outline';
+				unit = 'month';
+			break;
+			
+			case 'daily':
+				epoch_start = Math.ceil( this.parseDateTZ( args.year + '-' + args.month + '-' + args.day + ' 00:00:00' ) / sys.epoch_div ) * sys.epoch_div;
+				limit = Math.floor( (args.limit * (86400 + 3600)) / sys.epoch_div );
+				title = this.formatDate(epoch_start, { year: 'numeric', month: 'long', day: 'numeric' } );
+				icon = 'calendar-today-outline';
+				unit = 'day';
+			break;
+			
+			case 'hourly':
+				epoch_start = Math.ceil( this.parseDateTZ( args.year + '-' + args.month + '-' + args.day + ' ' + args.hour + ':00:00' ) / sys.epoch_div ) * sys.epoch_div;
+				limit = Math.floor( (args.limit * 3600) / sys.epoch_div );
+				title = this.formatDate(epoch_start, { year: 'numeric', month: 'long', day: 'numeric', hour: 'numeric' } );
+				icon = 'clock-outline';
+				unit = 'hour';
+			break;
+		} // switch args.mode
+		
+		// nudge limit back into current range if needed
+		limit = this.histNudgeLimit(epoch_start, limit);
+		
+		this.epochStart = epoch_start;
+		this.epochEnd = epoch_start + (limit * sys.epoch_div);
+		this.chartLimit = limit;
+		
+		// possibly augment title if range is wider than one unit
+		if (args.limit && (args.limit > 1)) {
+			switch (args.mode) {
+				case 'yearly': title += ' - ' + this.formatDate(this.epochEnd - 1, { year: 'numeric' } ); break;
+				case 'monthly': title += ' - ' + this.formatDate(this.epochEnd - 1, { year: 'numeric', month: 'long' } ); break;
+				case 'daily': title += ' - ' + this.formatDate(this.epochEnd - 1, { year: 'numeric', month: 'long', day: 'numeric' } ); break;
+				case 'hourly': title = this.formatDateRange( this.epochStart, this.epochEnd, { year: 'numeric', month: 'long', day: 'numeric', hour: 'numeric' } ); break;
+			}
+		}
+		
+		this.histTitle = title;
+		this.histIcon = icon;
+		this.histUnit = unit;
+	}
+	
+	applyJobHistoryFilters() {
+		// menu change for job history filter popdown
+		this.jobHistArgs.filter = this.div.find('#fe_vs_job_filter').val();
+		this.div.find('#d_vs_jobs > .box_content').html( '<div class="loading_container"><div class="loading"></div></div>' );
+		this.fetchJobHistory();
+	}
+	
+	fetchJobHistory() {
+		// fetch job history from server
+		var args = this.jobHistArgs;
+		
+		// { query, offset, limit, sort_by, sort_dir }
+		if (this.server) args.query = 'server:' + this.server.id;
+		else if (this.group) args.query = 'groups:' + this.group.id;
+		
+		args.offset = args.offset || 0;
+		args.limit = config.alt_items_per_page;
+		args.sort_by = 'completed'; 
+		args.sort_dir = -1;
+		
+		// add epoch date range
+		args.query += ' date:' + this.epochStart + '..' + this.epochEnd;
+		
+		// apply filters if any
+		if (args.filter) {
+			switch (args.filter) {
+				case 'z_success': args.query += ' tags:_success'; break;
+				case 'z_error': args.query += ' tags:_error'; break;
+				case 'z_warning': args.query += ' code:warning'; break;
+				case 'z_critical': args.query += ' code:critical'; break;
+				case 'z_abort': args.query += ' code:abort'; break;
+				
+				case 'z_retried': args.query += ' tags:_retried'; break;
+				case 'z_last': args.query += ' tags:_last'; break;
+				
+				default:
+					if (args.filter.match(/^t_(.+)$/)) args.query += ' tags:' + RegExp.$1;
+				break;
+			}
+		}
+		
+		app.api.get( 'app/search_jobs', args, this.receiveJobHistory.bind(this) );
+	}
+	
+	receiveJobHistory(resp) {
+		// receive history from db
+		var self = this;
+		var args = this.jobHistArgs;
+		var html = '';
+		
+		// make sure page is still active (API may be slow)
+		if (!this.active) return;
+		
+		if (!resp.rows) resp.rows = [];
+		this.jobs = resp.rows;
+		
+		var grid_args = {
+			resp: resp,
+			cols: ['Job ID', 'Server', 'Source', 'Started', 'Elapsed', 'Avg CPU/Mem', 'Result'],
+			data_type: 'job',
+			offset: args.offset || 0,
+			limit: args.limit,
+			class: 'data_grid job_history_grid',
+			pagination_link: '$P().jobHistoryNav'
+		};
+		
+		html += this.getPaginatedGrid( grid_args, function(job, idx) {
+			return [
+				'<b>' + self.getNiceJob(job, true) + '</b>',
+				self.getNiceServer(job.server, true),
+				self.getNiceJobSource(job),
+				self.getShortDateTime( job.started ),
+				self.getNiceJobElapsedTime(job, true),
+				self.getNiceJobAvgCPU(job) + ' / ' + self.getNiceJobAvgMem(job),
+				self.getNiceJobResult(job),
+				// '<a href="#Job?id=' + job.id + '">Details</a>'
+			];
+		} );
+		
+		this.div.find('#d_vs_jobs > .box_content').removeClass('loading').html( html );
+	}
+	
+	jobHistoryNav(offset) {
+		// intercept click on job history table pagination nav
+		this.jobHistArgs.offset = offset;
+		this.div.find('#d_vs_jobs > .box_content').addClass('loading');
+		this.fetchJobHistory();
+	}
+	
+	fetchAlertHistory() {
+		// fetch history of alert on current server
+		var self = this;
+		if (!this.alertHistoryOffset) this.alertHistoryOffset = 0;
+		
+		var opts = {
+			query: '',
+			offset: this.alertHistoryOffset,
+			limit: config.alt_items_per_page,
+			sort_by: '_id',
+			sort_dir: -1,
+			ttl: 1
+		};
+		
+		if (this.server) opts.query = 'server:' + this.server.id;
+		else if (this.group) opts.query = 'groups:' + this.group.id;
+		
+		// add epoch date range: start:<RIGHT_SIDE_RANGE end:>=LEFT_SIDE_RANGE
+		opts.query += ' start:<' + this.epochEnd + ' end:>=' + this.epochStart;
+		
+		app.api.get( 'app/search_alerts', opts, this.renderAlertHistory.bind(this));
+	}
+	
+	renderAlertHistory(resp) {
+		// render alert history
+		var self = this;
+		var cols = ["Alert ID", "Title", "Message", "Server", "Status", "Started", "Duration"];
+		var html = '';
+		
+		// make sure page is still active (API may be slow)
+		if (!this.active) return;
+		
+		var grid_args = {
+			resp: resp,
+			cols: cols,
+			offset: 0,
+			limit: config.alt_items_per_page,
+			sort_by: '_id',
+			sort_dir: -1,
+			data_type: 'alert',
+			pagination_link: '$P().alertHistoryNav'
+		};
+		
+		html += this.getPaginatedGrid( grid_args, function(item, idx) {
+			return [
+				'<b>' + self.getNiceAlertID(item, true) + '</b>',
+				self.getNiceAlert(item.alert, false),
+				item.message,
+				self.getNiceServer(item.server, true),
+				self.getNiceAlertStatus(item),
+				self.getRelativeDateTime(item.date),
+				self.getNiceAlertElapsedTime(item, true, true)
+			];
+		}); // grid
+		
+		$('#d_vs_alerts > div.box_content').removeClass('loading').html( html );
+	}
+	
+	alertHistoryNav(offset) {
+		// intercept click on job history table pagination nav
+		this.alertHistoryOffset = offset;
+		this.div.find('#d_vs_alerts > .box_content').addClass('loading');
+		this.fetchAlertHistory();
 	}
 	
 };
