@@ -202,9 +202,9 @@ Page.Search = class Search extends Page.Base {
 							id: 'fe_s_server',
 							title: 'Select Server',
 							placeholder: 'All Servers',
-							options: [['', 'Any Server']].concat( sort_by(Object.values(app.servers), 'hostname').map( function(server) {
-								return merge_objects( { title: server.hostname }, server );
-							} ) ),
+							options: [['', 'Any Server']].concat( sort_by(Object.values(app.servers).map( function(server) {
+								return merge_objects( server, { title: server.title || server.hostname } );
+							} ), 'title') ),
 							value: args.server || '',
 							default_icon: 'router-network',
 							'data-shrinkwrap': 1
