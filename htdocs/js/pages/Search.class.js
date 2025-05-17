@@ -104,17 +104,17 @@ Page.Search = class Search extends Page.Base {
 					});
 				html += '</div>';
 				
-				// workflow
+				// category
 				html += '<div class="form_cell">';
 					html += this.getFormRow({
-						label: '<i class="icon mdi mdi-clipboard-flow-outline">&nbsp;</i>Workflow:',
+						label: '<i class="icon mdi mdi-folder-open-outline">&nbsp;</i>Category:',
 						content: this.getFormMenuSingle({
-							id: 'fe_s_workflow',
-							title: 'Select Workflow',
-							placeholder: 'All Workflows',
-							options: [['', 'Any Workflow']].concat( app.events.filter( function(event) { return event.type == 'workflow'; } ) ),
-							value: args.workflow || '',
-							default_icon: 'clipboard-flow-outline',
+							id: 'fe_s_category',
+							title: 'Select Category',
+							placeholder: 'All Categories',
+							options: [['', 'Any Category']].concat( app.categories ),
+							value: args.category || '',
+							default_icon: 'folder-open-outline',
 							'data-shrinkwrap': 1
 						})
 					});
@@ -162,22 +162,6 @@ Page.Search = class Search extends Page.Base {
 					});
 				html += '</div>';
 				
-				// category
-				html += '<div class="form_cell">';
-					html += this.getFormRow({
-						label: '<i class="icon mdi mdi-folder-open-outline">&nbsp;</i>Category:',
-						content: this.getFormMenuSingle({
-							id: 'fe_s_category',
-							title: 'Select Category',
-							placeholder: 'All Categories',
-							options: [['', 'Any Category']].concat( app.categories ),
-							value: args.category || '',
-							default_icon: 'folder-open-outline',
-							'data-shrinkwrap': 1
-						})
-					});
-				html += '</div>';
-				
 				// plugin
 				html += '<div class="form_cell">';
 					html += this.getFormRow({
@@ -207,6 +191,22 @@ Page.Search = class Search extends Page.Base {
 							} ), 'title') ),
 							value: args.server || '',
 							default_icon: 'router-network',
+							'data-shrinkwrap': 1
+						})
+					});
+				html += '</div>';
+				
+				// group
+				html += '<div class="form_cell">';
+					html += this.getFormRow({
+						label: '<i class="icon mdi mdi-server-network">&nbsp;</i>Group:',
+						content: this.getFormMenuSingle({
+							id: 'fe_s_group',
+							title: 'Select Group',
+							placeholder: 'All Groups',
+							options: [['', 'Any Group']].concat( app.groups ),
+							value: args.group || '',
+							default_icon: 'server-network',
 							'data-shrinkwrap': 1
 						})
 					});
@@ -274,10 +274,10 @@ Page.Search = class Search extends Page.Base {
 		// if (!sargs) this.div.find('#btn_s_save').addClass('disabled');
 		
 		// MultiSelect.init( this.div.find('#fe_s_tags') );
-		SingleSelect.init( this.div.find('#fe_s_tag, #fe_s_result, #fe_s_event, #fe_s_source, #fe_s_date, #fe_s_category, #fe_s_plugin, #fe_s_server, #fe_s_workflow, #fe_s_sort') );
+		SingleSelect.init( this.div.find('#fe_s_tag, #fe_s_result, #fe_s_event, #fe_s_source, #fe_s_date, #fe_s_category, #fe_s_plugin, #fe_s_server, #fe_s_group, #fe_s_sort') );
 		// $('.header_search_widget').hide();
 		
-		this.div.find('#fe_s_tag, #fe_s_result, #fe_s_event, #fe_s_source, #fe_s_date, #fe_s_category, #fe_s_plugin, #fe_s_server, #fe_s_workflow, #fe_s_sort').on('change', function() {
+		this.div.find('#fe_s_tag, #fe_s_result, #fe_s_event, #fe_s_source, #fe_s_date, #fe_s_category, #fe_s_plugin, #fe_s_server, #fe_s_group, #fe_s_sort').on('change', function() {
 			self.navSearch();
 		});
 		
@@ -343,8 +343,8 @@ Page.Search = class Search extends Page.Base {
 		var server = this.div.find('#fe_s_server').val();
 		if (server) args.server = server;
 		
-		var workflow = this.div.find('#fe_s_workflow').val();
-		if (workflow) args.workflow = workflow;
+		var group = this.div.find('#fe_s_group').val();
+		if (group) args.group = group;
 		
 		var date = this.div.find('#fe_s_date').val();
 		if (date) args.date = date;
@@ -395,7 +395,7 @@ Page.Search = class Search extends Page.Base {
 		if (args.category) query += ' category:' + args.category;
 		if (args.plugin) query += ' plugin:' + args.plugin;
 		if (args.server) query += ' server:' + args.server;
-		if (args.workflow) query += ' workflow:' + args.workflow;
+		if (args.group) query += ' groups:' + args.group;
 		
 		if (args.date) {
 			query += ' ' + this.getDateRangeQuery('date', args.date);
