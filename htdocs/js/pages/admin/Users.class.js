@@ -188,6 +188,7 @@ Page.Users = class Users extends Page.Base {
 		
 		this.div.html( html );
 		
+		SingleSelect.init( this.div.find('#fe_eu_status') );
 		MultiSelect.init( this.div.find('select[multiple]') );
 		$('#fe_eu_username').focus();
 		this.setupBoxButtonFloater();
@@ -330,6 +331,7 @@ Page.Users = class Users extends Page.Base {
 		
 		this.div.html( html );
 		
+		SingleSelect.init( this.div.find('#fe_eu_status') );
 		MultiSelect.init( this.div.find('select[multiple]') );
 		$('#fe_eu_username').attr('disabled', true);
 		this.setupBoxButtonFloater();
@@ -491,8 +493,9 @@ Page.Users = class Users extends Page.Base {
 		// status
 		html += this.getFormRow({
 			label: 'Account Status:',
-			content: this.getFormMenu({
+			content: this.getFormMenuSingle({
 				id: 'fe_eu_status',
+				title: 'Select Status',
 				options: [[1,'Active'], [0,'Suspended']],
 				value: user.active
 			}),
