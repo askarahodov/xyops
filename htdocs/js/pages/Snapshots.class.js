@@ -965,13 +965,45 @@ Page.Snapshots = class Snapshots extends Page.ServerUtils {
 		
 		this.updateGroupServerTable(); // this populates visibleServerIDs, mind
 		
-		this.getSnapshotAlerts();
-		this.getSnapshotJobs();
+		this.getGroupSnapshotAlerts();
+		this.getGroupSnapshotJobs();
 		
 		this.setupGroupQuickMonitors();
 		this.setupGroupMonitors();
 		
 		// this.updateDonutDashUnits();
+	}
+	
+	getGroupSnapshotAlerts() {
+		// fetch alerts associated with snapshot
+		var self = this;
+		var snapshot = this.snapshot;
+		
+		if (!snapshot.alerts || !snapshot.alerts.length) {
+			this.alerts = [];
+			return this.renderSnapshotAlerts();
+		}
+		
+		app.api.post( 'app/get_alert_invocations', { ids: snapshot.alerts }, function(resp) {
+			self.alerts = resp.alerts || [];
+			self.updateGroupServerTable(); // this ultimately calls renderSnapshotAlerts
+		});
+	}
+	
+	getGroupSnapshotJobs() {
+		// fetch info about all snapshot jobs
+		var self = this;
+		var snapshot = this.snapshot;
+		
+		if (!snapshot.jobs || !snapshot.jobs.length) {
+			this.jobs = [];
+			return this.renderSnapshotJobs();
+		}
+		
+		app.api.post( 'app/get_jobs', { ids: snapshot.jobs }, function(resp) {
+			self.jobs = resp.jobs || [];
+			self.updateGroupServerTable(); // this ultimately calls renderSnapshotJobs
+		});
 	}
 	
 	updateDonutDashUnits() {
@@ -1212,7 +1244,7 @@ Page.Snapshots = class Snapshots extends Page.ServerUtils {
 	
 	onDataUpdate(key, data) {
 		// refresh things as needed
-		if ((this.args.sub == 'view') && (key == 'activeAlerts')) this.getSnapshotAlerts();
+		// if ((this.args.sub == 'view') && (key == 'activeAlerts')) this.getSnapshotAlerts();
 	}
 	
 	onDeactivate() {
