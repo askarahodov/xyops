@@ -149,11 +149,11 @@ Page.Servers = class Servers extends Page.ServerUtils {
 			
 			var tds = [
 				'<span style="font-weight:bold">' + self.getNiceServer(item, true) + '</span>',
-				item.ip,
+				self.getNiceIP(item.ip),
 				self.getNiceGroupList(item.groups, true),
 				'<i class="mdi mdi-chip">&nbsp;</i>' + (item.info.cpu.cores || 0),
 				'<i class="mdi mdi-memory">&nbsp;</i>' + get_text_from_bytes(item.info.memory.total || 0),
-				item.info.os.distro + ' ' + item.info.os.release,
+				self.getNiceShortOS(item.info.os),
 				item.info.booted ? self.getNiceUptime( now - item.info.booted ) : 'n/a',
 				'<div id="d_es_server_jobs_' + item.id + '">' + nice_jobs + '</div>',
 				nice_alerts // no need for div here: alert change redraws entire table
@@ -308,7 +308,10 @@ Page.Servers = class Servers extends Page.ServerUtils {
 		if (!args.limit) args.limit = config.items_per_page;
 		
 		app.setWindowTitle('Server Search');
-		app.setHeaderTitle( '<i class="mdi mdi-cloud-search-outline">&nbsp;</i>Server Search' );
+		app.setHeaderNav([
+			{ icon: 'server', loc: '#Servers?sub=list', title: 'Servers' },
+			{ icon: 'cloud-search-outline', title: 'Search' }
+		]);
 		
 		this.loading();
 		// this.loading();
@@ -662,11 +665,11 @@ Page.Servers = class Servers extends Page.ServerUtils {
 		html += this.getPaginatedGrid( grid_args, function(item, idx) {
 			return [
 				'<b>' + self.getNiceServer(item, true) + '</b>',
-				item.ip,
+				self.getNiceIP(item.ip),
 				self.getNiceGroupList(item.groups, true),
 				'<i class="mdi mdi-chip">&nbsp;</i>' + (item.info.cpu.cores || 0),
 				'<i class="mdi mdi-memory">&nbsp;</i>' + get_text_from_bytes(item.info.memory.total || 0),
-				item.info.os.distro + ' ' + item.info.os.release,
+				self.getNiceShortOS(item.info.os),
 				self.getRelativeDateTime( item.created ),
 				self.getRelativeDateTime( item.modified )
 			];
