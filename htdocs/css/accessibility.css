@@ -151,10 +151,6 @@ body.coloracc .checkbox_container > input:hover ~ label {
 	text-decoration: underline !important;
 }
 
-body.coloracc .danger {
-	text-transform: upper-case;
-}
-
 body.coloracc .button:hover {
 	text-decoration: underline !important;
 	border-style: dashed !important;
