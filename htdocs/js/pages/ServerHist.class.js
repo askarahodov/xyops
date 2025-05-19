@@ -97,7 +97,7 @@ Page.ServerHist = class ServerHist extends Page.ServerUtils {
 					// row 1
 					html += '<div>';
 						html += '<div class="info_label">Server ID</div>';
-						html += '<div class="info_value monospace">' + server.id + '</div>';
+						html += '<div class="info_value monospace">' + this.getNiceCopyableID(server.id) + '</div>';
 					html += '</div>';
 					
 					html += '<div>';

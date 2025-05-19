@@ -196,6 +196,24 @@ Page.Base = class Base extends Page {
 		return html;
 	}
 	
+	getNiceCopyableID(id) {
+		// show nice ID with copy-to-clipboard
+		var html = '<span class="nowrap">';
+		var icon = '<i class="mdi mdi-clipboard-text-outline"></i>';
+		html += '<span class="link" onClick="$P().copyID(this)" title="Copy ID to Clipboard">';
+		html += icon + '<span>' + id + '</span></span>';
+		html += '</span>';
+		return html;
+	}
+	
+	copyID(elem) {
+		// copy ID to clipboard, and update icon
+		copyToClipboard( $(elem).find('span').text() );
+		$(elem).find('i.mdi').removeClass().addClass([ 'mdi', 'mdi-clipboard-check-outline' ]);
+		// $(elem).css('color', 'var(--green)');
+		app.showMessage('info', "The ID was copied to your clipboard.");
+	}
+	
 	getNiceProcessText(item) {
 		// get short process name from full path + args
 		var short_cmd = '' + item.command;

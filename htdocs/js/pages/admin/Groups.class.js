@@ -650,7 +650,7 @@ Page.Groups = class Groups extends Page.ServerUtils {
 					// row 1
 					html += '<div>';
 						html += '<div class="info_label">Group ID</div>';
-						html += '<div class="info_value monospace">' + group.id + '</div>';
+						html += '<div class="info_value monospace">' +this.getNiceCopyableID(group.id) + '</div>';
 					html += '</div>';
 					
 					html += '<div>';
