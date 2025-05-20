@@ -183,6 +183,7 @@ Page.Tags = class Tags extends Page.PageUtils {
 	
 	new_tag_finish(resp) {
 		// new tag created successfully
+		app.cacheBust = hires_time_now();
 		Dialog.hideProgress();
 		if (!this.active) return; // sanity
 		
@@ -276,8 +277,9 @@ Page.Tags = class Tags extends Page.PageUtils {
 		app.api.post( 'app/update_tag', tag, this.save_tag_finish.bind(this) );
 	}
 	
-	save_tag_finish(resp, tx) {
+	save_tag_finish(resp) {
 		// new tag saved successfully
+		app.cacheBust = hires_time_now();
 		Dialog.hideProgress();
 		if (!this.active) return; // sanity
 		
@@ -297,9 +299,9 @@ Page.Tags = class Tags extends Page.PageUtils {
 		} );
 	}
 	
-	delete_tag_finish(resp, tx) {
+	delete_tag_finish(resp) {
 		// finished deleting tag
-		var self = this;
+		app.cacheBust = hires_time_now();
 		Dialog.hideProgress();
 		if (!this.active) return; // sanity
 		

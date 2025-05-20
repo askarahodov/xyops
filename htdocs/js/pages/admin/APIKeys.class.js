@@ -169,6 +169,7 @@ Page.APIKeys = class APIKeys extends Page.PageUtils {
 	
 	new_api_key_finish(resp) {
 		// new API Key created successfully
+		app.cacheBust = hires_time_now();
 		Dialog.hideProgress();
 		if (!this.active) return; // sanity
 		
@@ -258,6 +259,7 @@ Page.APIKeys = class APIKeys extends Page.PageUtils {
 	
 	save_api_key_finish(resp) {
 		// new API Key saved successfully
+		app.cacheBust = hires_time_now();
 		Dialog.hideProgress();
 		if (!this.active) return; // sanity
 		
@@ -280,7 +282,7 @@ Page.APIKeys = class APIKeys extends Page.PageUtils {
 	
 	delete_api_key_finish(resp) {
 		// finished deleting API Key
-		var self = this;
+		app.cacheBust = hires_time_now();
 		Dialog.hideProgress();
 		if (!this.active) return; // sanity
 		

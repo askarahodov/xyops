@@ -228,6 +228,7 @@ Page.AlertSetup = class AlertSetup extends Page.PageUtils {
 	
 	new_alert_finish(resp) {
 		// new alert created successfully
+		app.cacheBust = hires_time_now();
 		Dialog.hideProgress();
 		if (!this.active) return; // sanity
 		
@@ -326,6 +327,7 @@ Page.AlertSetup = class AlertSetup extends Page.PageUtils {
 	
 	save_alert_finish(resp) {
 		// new alert saved successfully
+		app.cacheBust = hires_time_now();
 		Dialog.hideProgress();
 		if (!this.active) return; // sanity
 		
@@ -347,7 +349,7 @@ Page.AlertSetup = class AlertSetup extends Page.PageUtils {
 	
 	delete_alert_finish(resp) {
 		// finished deleting alert
-		var self = this;
+		app.cacheBust = hires_time_now();
 		Dialog.hideProgress();
 		if (!this.active) return; // sanity
 		

@@ -260,6 +260,7 @@ Page.Groups = class Groups extends Page.ServerUtils {
 	
 	new_group_finish(resp) {
 		// new group created successfully
+		app.cacheBust = hires_time_now();
 		Dialog.hideProgress();
 		if (!this.active) return; // sanity
 		
@@ -361,6 +362,7 @@ Page.Groups = class Groups extends Page.ServerUtils {
 	
 	save_group_finish(resp) {
 		// new group saved successfully
+		app.cacheBust = hires_time_now();
 		Dialog.hideProgress();
 		if (!this.active) return; // sanity
 		
@@ -390,7 +392,7 @@ Page.Groups = class Groups extends Page.ServerUtils {
 	
 	delete_group_finish(resp) {
 		// finished deleting group
-		var self = this;
+		app.cacheBust = hires_time_now();
 		Dialog.hideProgress();
 		if (!this.active) return; // sanity
 		

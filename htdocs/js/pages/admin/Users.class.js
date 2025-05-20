@@ -256,6 +256,7 @@ Page.Users = class Users extends Page.Base {
 	
 	new_user_finish(resp) {
 		// new user created successfully
+		app.cacheBust = hires_time_now();
 		Dialog.hideProgress();
 		if (!this.active) return; // sanity
 		
@@ -429,6 +430,7 @@ Page.Users = class Users extends Page.Base {
 	
 	save_user_finish(resp) {
 		// user saved successfully
+		app.cacheBust = hires_time_now();
 		Dialog.hideProgress();
 		if (!this.active) return; // sanity
 		
@@ -464,6 +466,7 @@ Page.Users = class Users extends Page.Base {
 	
 	delete_user_finish(resp) {
 		// finished deleting, immediately log user out
+		app.cacheBust = hires_time_now();
 		Dialog.hideProgress();
 		if (!this.active) return; // sanity
 		

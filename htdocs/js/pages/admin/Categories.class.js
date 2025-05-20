@@ -248,6 +248,7 @@ Page.Categories = class Categories extends Page.PageUtils {
 	
 	new_category_finish(resp) {
 		// new category created successfully
+		app.cacheBust = hires_time_now();
 		Dialog.hideProgress();
 		if (!this.active) return; // sanity
 		
@@ -345,6 +346,7 @@ Page.Categories = class Categories extends Page.PageUtils {
 	
 	save_category_finish(resp) {
 		// new category saved successfully
+		app.cacheBust = hires_time_now();
 		Dialog.hideProgress();
 		if (!this.active) return; // sanity
 		
@@ -371,7 +373,7 @@ Page.Categories = class Categories extends Page.PageUtils {
 	
 	delete_category_finish(resp) {
 		// finished deleting category
-		var self = this;
+		app.cacheBust = hires_time_now();
 		Dialog.hideProgress();
 		if (!this.active) return; // sanity
 		

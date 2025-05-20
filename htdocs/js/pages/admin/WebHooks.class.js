@@ -239,6 +239,7 @@ Page.WebHooks = class WebHooks extends Page.PageUtils {
 	
 	new_web_hook_finish(resp) {
 		// new web hook created successfully
+		app.cacheBust = hires_time_now();
 		Dialog.hideProgress();
 		if (!this.active) return; // sanity
 		
@@ -368,6 +369,7 @@ Page.WebHooks = class WebHooks extends Page.PageUtils {
 	
 	save_web_hook_finish(resp) {
 		// new web hook saved successfully
+		app.cacheBust = hires_time_now();
 		Dialog.hideProgress();
 		if (!this.active) return; // sanity
 		
@@ -389,7 +391,7 @@ Page.WebHooks = class WebHooks extends Page.PageUtils {
 	
 	delete_web_hook_finish(resp) {
 		// finished deleting web hook
-		var self = this;
+		app.cacheBust = hires_time_now();
 		Dialog.hideProgress();
 		if (!this.active) return; // sanity
 		

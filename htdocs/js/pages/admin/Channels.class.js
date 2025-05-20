@@ -228,6 +228,7 @@ Page.Channels = class Channels extends Page.PageUtils {
 	
 	new_channel_finish(resp) {
 		// new channel created successfully
+		app.cacheBust = hires_time_now();
 		Dialog.hideProgress();
 		if (!this.active) return; // sanity
 		
@@ -325,6 +326,7 @@ Page.Channels = class Channels extends Page.PageUtils {
 	
 	save_channel_finish(resp) {
 		// new channel saved successfully
+		app.cacheBust = hires_time_now();
 		Dialog.hideProgress();
 		if (!this.active) return; // sanity
 		
@@ -346,7 +348,7 @@ Page.Channels = class Channels extends Page.PageUtils {
 	
 	delete_channel_finish(resp) {
 		// finished deleting channel
-		var self = this;
+		app.cacheBust = hires_time_now();
 		Dialog.hideProgress();
 		if (!this.active) return; // sanity
 		

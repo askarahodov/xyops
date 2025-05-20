@@ -207,6 +207,7 @@ Page.Roles = class Roles extends Page.PageUtils {
 	
 	new_role_finish(resp) {
 		// new User Role created successfully
+		app.cacheBust = hires_time_now();
 		Dialog.hideProgress();
 		if (!this.active) return; // sanity
 		
@@ -296,6 +297,7 @@ Page.Roles = class Roles extends Page.PageUtils {
 	
 	save_role_finish(resp) {
 		// new User Role saved successfully
+		app.cacheBust = hires_time_now();
 		Dialog.hideProgress();
 		if (!this.active) return; // sanity
 		
@@ -318,7 +320,7 @@ Page.Roles = class Roles extends Page.PageUtils {
 	
 	delete_role_finish(resp) {
 		// finished deleting User Role
-		var self = this;
+		app.cacheBust = hires_time_now();
 		Dialog.hideProgress();
 		if (!this.active) return; // sanity
 		

@@ -261,6 +261,7 @@ Page.Plugins = class Plugins extends Page.PageUtils {
 	
 	new_plugin_finish(resp) {
 		// new plugin created successfully
+		app.cacheBust = hires_time_now();
 		Dialog.hideProgress();
 		if (!this.active) return; // sanity
 		
@@ -372,6 +373,7 @@ Page.Plugins = class Plugins extends Page.PageUtils {
 	
 	save_plugin_finish(resp) {
 		// new plugin saved successfully
+		app.cacheBust = hires_time_now();
 		Dialog.hideProgress();
 		if (!this.active) return; // sanity
 		
@@ -398,7 +400,7 @@ Page.Plugins = class Plugins extends Page.PageUtils {
 	
 	delete_plugin_finish(resp) {
 		// finished deleting plugin
-		var self = this;
+		app.cacheBust = hires_time_now();
 		Dialog.hideProgress();
 		if (!this.active) return; // sanity
 		

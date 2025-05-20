@@ -235,6 +235,7 @@ Page.Monitors = class Monitors extends Page.PageUtils {
 	
 	new_monitor_finish(resp) {
 		// new monitor created successfully
+		app.cacheBust = hires_time_now();
 		Dialog.hideProgress();
 		if (!this.active) return; // sanity
 		
@@ -331,6 +332,7 @@ Page.Monitors = class Monitors extends Page.PageUtils {
 	
 	save_monitor_finish(resp) {
 		// new monitor saved successfully
+		app.cacheBust = hires_time_now();
 		Dialog.hideProgress();
 		if (!this.active) return; // sanity
 		
@@ -352,7 +354,7 @@ Page.Monitors = class Monitors extends Page.PageUtils {
 	
 	delete_monitor_finish(resp) {
 		// finished deleting monitor
-		var self = this;
+		app.cacheBust = hires_time_now();
 		Dialog.hideProgress();
 		if (!this.active) return; // sanity
 		
