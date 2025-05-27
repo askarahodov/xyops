@@ -119,10 +119,6 @@ do
 		node --trace-warnings $HOMEDIR/lib/main.js --debug --debug_level 9 --repl --color --echo "$@"
 		exit
 	;;
-	setup)
-		node $HOMEDIR/bin/storage-cli.js setup
-		exit
-	;;
 	maint)
 		node $HOMEDIR/bin/storage-cli.js maint $2
 		exit
@@ -168,7 +164,6 @@ stop       - Stops $NAME and wait until it actually exits.
 restart    - Calls stop, then start (hard restart).
 status     - Checks whether $NAME is currently running.
 debug      - Starts $NAME in debug mode (foreground, echo debug log).
-setup      - Runs initial storage setup.
 maint      - Runs daily maintenance routine.
 admin      - Creates new emergency admin account (specify user / pass).
 grant      - Grant privilege to specified user.
