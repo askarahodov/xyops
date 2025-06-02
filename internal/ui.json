@@ -227,6 +227,10 @@
 		"scheduler": "**Scheduler Plugins** allow you to define your own event scheduling systems.  Every minute, your plugin code will execute and be passed a JSON document containing all the events currently assigned, plus the date/time in the event's timezone, and you can decide which events run at which times.  For more information see [Scheduler Plugins](#Docs/plugins/scheduler-plugins)."
 	},
 	
+	"error_type_descriptions": {
+		"master": "Unfortunately, you have landed on a non-primary conductor server.  Meaning, this server is part of a cluster of conductor servers, but it is not the current primary server.  The current primary server is \"[masterHost]\", but you may not be able to access it directly.  Multi-conductor setups typically have a load balancer in front, so you don't ever have to address any conductor server directly.  However, since you are here reading this, something has clearly gone wrong.  Please contact your system administrator for help."
+	},
+	
 	"marked_config": {
 		"gfm": true,
 		"tables": true,

@@ -43,6 +43,8 @@ app.extend({
 	
 	receiveConfig: function(resp) {
 		// receive config from server
+		if (resp.code) return this.handleConfigError(resp);
+		
 		delete resp.code;
 		window.config = resp.config;
 		
@@ -171,6 +173,33 @@ app.extend({
 		this.page_manager = new PageManager( always_array(config.Page) );
 		
 		if (!Nav.inited) Nav.init();
+	},
+	
+	handleConfigError: function(resp) {
+		// handle config error (i.e. "master")
+		if (!resp.host) {
+			Dialog.showProgress( 1.0, "Waiting for Conductor..." );
+			setTimeout( function() { load_script('/api/app/config'); }, 5000 );
+			return;
+		}
+		
+		// user landed on a backup server
+		Dialog.hide();
+		
+		var html = '';
+		html += '<div style="height:75px;"></div>';
+		
+		html += '<div class="box" style="padding:30px">';
+			html += '<div class="box_title error">' + (resp.title || 'An Error Occurred') + '</div>';
+			html += '<div class="box_content" style="font-size:14px;">' + resp.description + '</div>';
+		html += '</div>';
+		
+		html += '<div style="height:75px;"></div>';
+		$('div.main').html(html);
+		
+		app.setWindowTitle( "Error" );
+		app.setHeaderTitle( '<i class="mdi mdi-alert-circle-outline">&nbsp;</i>Error' );
+		$('div.header_title').addClass('error');
 	},
 	
 	presortTables: function() {
