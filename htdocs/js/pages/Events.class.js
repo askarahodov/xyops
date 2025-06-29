@@ -109,7 +109,9 @@ Page.Events = class Events extends Page.PageUtils {
 						content: this.getFormMenuSingle({
 							id: 'fe_el_plugin',
 							title: 'Select Plugin',
-							options: [['', 'Any Plugin']].concat( event_plugins ),
+							options: [['', 'Any Plugin']].concat( event_plugins ).concat([ 
+								{ id: "_workflow", title: "Workflow", icon: "clipboard-flow-outline", group: "Special" }
+							]),
 							value: args.group || '',
 							default_icon: 'power-plug-outline',
 							'data-shrinkwrap': 1
@@ -141,7 +143,7 @@ Page.Events = class Events extends Page.PageUtils {
 							title: 'Select Timing',
 							options: [
 								['', 'Any Timing'], 
-								{ id: 'demand', title: 'On Demand', icon: 'button-cursor' },
+								{ id: 'manual', title: 'On Demand', icon: 'button-cursor' },
 								{ id: 'schedule', title: 'Scheduled', icon: 'update' },
 								{ id: 'continuous', title: "Continuous", icon: 'all-inclusive' },
 								{ id: 'single', title: "Single Shot", icon: 'alarm-check' },
@@ -237,7 +239,7 @@ Page.Events = class Events extends Page.PageUtils {
 		// reset max events (dynamic pagination)
 		this.eventsPerPage = config.events_per_page;
 		
-		var events = app.events.filter( function(event) { return event.type != 'workflow'; } );
+		var events = app.events;
 		
 		// use events in app cache
 		this.receive_events({
@@ -305,7 +307,7 @@ Page.Events = class Events extends Page.PageUtils {
 			// action_html += '</div>';
 			
 			var actions = [];
-			actions.push( '<span class="link" onClick="$P().do_confirm_run_event('+idx+')"><b>Run Now</b></span>' );
+			actions.push( '<span class="link" onClick="$P().do_run_event('+idx+')"><b>Run Now</b></span>' );
 			// actions.push( '<span class="link" onClick="$P().edit_event('+idx+')"><b>Edit</b></span>' );
 			// actions.push( '<span class="link" onClick="$P().go_event_stats('+idx+')"><b>Stats</b></span>' );
 			// actions.push( '<span class="link" onClick="$P().go_event_history('+idx+')"><b>History</b></span>' );
@@ -319,7 +321,7 @@ Page.Events = class Events extends Page.PageUtils {
 				'<span style="font-weight:bold">' + self.getNiceEvent(item, true) + '</span>',
 				self.getNiceCategory(item.category, true),
 				self.getNicePlugin(item.plugin, true),
-				self.getNiceTargetList(item.targets, ', ', 3),
+				self.getNiceTargetList(item.targets, true),
 				summarize_event_timings(item),
 				
 				'<div id="d_el_jt_status_' + item.id + '">' + self.getNiceEventStatus(item) + '</div>',
@@ -347,6 +349,7 @@ Page.Events = class Events extends Page.PageUtils {
 		html += '<div class="box_buttons">';
 			html += '<div class="button" onClick="$P().doFileImportPrompt()"><i class="mdi mdi-cloud-upload-outline">&nbsp;</i>Import File...</div>';
 			html += '<div class="button secondary" onClick="$P().go_history()"><i class="mdi mdi-history">&nbsp;</i>Revision History...</div>';
+			html += '<div class="button default" onClick="$P().go_new_workflow()"><i class="mdi mdi-plus-circle-outline">&nbsp;</i>New Workflow...</div>';
 			html += '<div class="button default" onClick="$P().edit_event(-1)"><i class="mdi mdi-plus-circle-outline">&nbsp;</i>New Event...</div>';
 		html += '</div>'; // box_buttons
 		
@@ -360,6 +363,11 @@ Page.Events = class Events extends Page.PageUtils {
 		
 		// SingleSelect.init( this.div.find('#fe_ee_filter') );
 		// MultiSelect.init( this.div.find('#fe_ee_filter') );
+	}
+	
+	go_new_workflow() {
+		// nav to new workflow page
+		Nav.go( '#Workflows?sub=new' );
 	}
 	
 	handleStatusUpdateList(data) {
@@ -546,13 +554,12 @@ Page.Events = class Events extends Page.PageUtils {
 		
 		// timing
 		if ('timing' in args) {
-			// types: demand, schedule, continuous, single, plugin, catchup, range, blackout, delay
+			// types: manual, schedule, continuous, single, plugin, catchup, range, blackout, delay
 			var types = {};
 			(item.timings || []).forEach( function(timing) { 
 				types[timing.type || 'N/A'] = 1; 
 				if (timing.type == 'plugin') types[ 'p_' + timing.plugin_id ] = 1;
 			} );
-			types.demand = !types.schedule && !types.continuous && !types.single;
 			if (!types[args.timing]) return false; // hide
 		}
 		
@@ -614,35 +621,54 @@ Page.Events = class Events extends Page.PageUtils {
 		} );
 	}
 	
-	do_confirm_run_event(idx) {
-		// confirm user wants to run job
-		var self = this;
+	do_run_event(idx) {
+		// run event from list
 		this.event = this.events[idx];
-		app.clearError();
-		
-		Dialog.confirm( 'Run Event', "Are you sure you want to manually run the event &ldquo;<b>" + this.event.title + "</b>&rdquo;?", ['run-fast', 'Run Now'], function(result) {
-			if (!result) return;
-			self.run_event(idx);
-		} ); // confirm
+		this.do_run_current_event();
 	}
 	
-	run_event(idx) {
-		// run event from view page
+	do_run_current_event(idx) {
+		// show dialog to run event and collect user form fields, if applicable
 		var self = this;
-		this.event = this.events[idx];
+		var title = "Run Event";
+		var btn = ['run-fast', 'Run Now'];
 		app.clearError();
 		
-		Dialog.showProgress( 1.0, "Launching Job..." );
+		var html = '';
+		html += `<div class="dialog_intro">You are about to manually launch a job for the event &ldquo;<b>${this.event.title}</b>&rdquo;.  Please enter values for all the event-defined parameters if applicable.</div>`;
+		html += '<div class="dialog_box_content scroll maximize">';
 		
-		app.api.post( 'app/run_event', this.event, function(resp) {
-			Dialog.hideProgress();
-			// app.showMessage('success', "The job was started successfully.");
+		// user form fields
+		html += this.getFormRow({
+			label: 'Event Parameters:',
+			content: '<div class="plugin_param_editor_cont">' + this.getParamEditor(this.event.fields, {}) + '</div>',
+			// caption: 'Enter values for all the event-defined parameters here.'
+		});
+		
+		html += '</div>';
+		Dialog.confirm( title, html, btn, function(result) {
+			if (!result) return;
+			app.clearError();
 			
-			if (!self.active) return; // sanity
+			var fields = self.getParamValues(self.event.fields);
+			if (!fields) return; // validation error
 			
-			// jump immediately to live details page
-			Nav.go('Job?id=' + resp.id);
-		} );
+			var job = deep_copy_object(self.event);
+			if (!job.params) job.params = {};
+			merge_hash_into( job.params, fields );
+			
+			Dialog.showProgress( 1.0, "Launching Job..." );
+			
+			app.api.post( 'app/run_event', job, function(resp) {
+				Dialog.hideProgress();
+				if (!self.active) return; // sanity
+				
+				// jump immediately to live job details page
+				Nav.go('Job?id=' + resp.id);
+			} ); // api.post
+		}); // Dialog.confirm
+		
+		Dialog.autoResize();
 	}
 	
 	edit_event(idx) {
@@ -680,7 +706,7 @@ Page.Events = class Events extends Page.PageUtils {
 				
 				// html += '<div class="button right danger" onClick="$P().show_delete_event_dialog()"><i class="mdi mdi-trash-can-outline">&nbsp;</i>Delete...</div>';
 				html += '<div class="button default right" onClick="$P().do_edit_from_view()"><i class="mdi mdi-file-edit-outline">&nbsp;</i>Edit Event...</div>';
-				if (event.enabled) html += '<div class="button right" onClick="$P().do_confirm_run_from_view()"><i class="mdi mdi-run-fast">&nbsp;</i>Run Now</div>';
+				if (event.enabled) html += '<div class="button right" onClick="$P().do_run_current_event()"><i class="mdi mdi-run-fast">&nbsp;</i>Run Now</div>';
 				html += '<div class="clear"></div>';
 			html += '</div>'; // title
 			
@@ -721,7 +747,7 @@ Page.Events = class Events extends Page.PageUtils {
 				
 					html += '<div>';
 						html += '<div class="info_label">Targets</div>';
-						html += '<div class="info_value">' + this.getNiceTargetList(event.targets, ', ', 3) + '</div>';
+						html += '<div class="info_value">' + this.getNiceTargetList(event.targets, true) + '</div>';
 					html += '</div>';
 					
 					html += '<div>';
@@ -916,12 +942,12 @@ Page.Events = class Events extends Page.PageUtils {
 			cols: cols,
 			data_type: 'item',
 			class: 'data_grid',
-			empty_msg: "On-demand only",
+			empty_msg: "(Disabled)",
 			grid_template_columns: 'auto auto'
 		};
 		
 		html += this.getCompactGrid(targs, function(item, idx) {
-			var { nice_icon, nice_type, nice_desc } = self.prepTimingDisplay(item);
+			var { nice_icon, nice_type, nice_desc } = self.getTimingDisplayArgs(item);
 			
 			var tds = [
 				'<div class="td_big nowrap">' + nice_icon + nice_type + '</div>',
@@ -956,7 +982,7 @@ Page.Events = class Events extends Page.PageUtils {
 			var disp = self.getJobActionDisplayArgs(item);
 			
 			var tds = [
-				'<div class="td_big nowrap"><i class="mdi mdi-eye-outline"></i>' + disp.trigger + '</div>',
+				'<div class="td_big nowrap"><i class="mdi mdi-' + disp.trigger.icon + '"></i>' + disp.trigger.title + '</div>',
 				'<div class="td_big ellip"><i class="mdi mdi-' + disp.icon + '">&nbsp;</i>' + disp.type + '</div>',
 				'<div class="ellip">' + disp.desc + '</div>'
 			];
@@ -1002,35 +1028,7 @@ Page.Events = class Events extends Page.PageUtils {
 	
 	do_edit_from_view() {
 		// jump to edit from view page
-		Nav.go('#Events?sub=edit&id=' + this.event.id);
-	}
-	
-	do_confirm_run_from_view() {
-		// confirm user wants to run job
-		var self = this;
-		
-		Dialog.confirm( 'Run Event', "Are you sure you want to manually run the event &ldquo;<b>" + this.event.title + "</b>&rdquo;?", ['run-fast', 'Run Now'], function(result) {
-			if (!result) return;
-			self.do_run_from_view();
-		} ); // confirm
-	}
-	
-	do_run_from_view() {
-		// run event from view page
-		var self = this;
-		app.clearError();
-		
-		Dialog.showProgress( 1.0, "Launching Job..." );
-		
-		app.api.post( 'app/run_event', this.event, function(resp) {
-			Dialog.hideProgress();
-			// app.showMessage('success', "The job was started successfully.");
-			
-			if (!self.active) return; // sanity
-			
-			// jump immediately to live details page
-			Nav.go('Job?id=' + resp.id);
-		} );
+		Nav.go( (this.event.workflow ? '#Workflows' : '#Events') + '?sub=edit&id=' + this.event.id );
 	}
 	
 	do_flush_queue() {
@@ -1832,7 +1830,7 @@ Page.Events = class Events extends Page.PageUtils {
 			itemMenu: {
 				label: '<i class="icon mdi mdi-calendar-multiple">&nbsp;</i>Event:',
 				title: 'Select Event',
-				options: [['', 'Any Event']].concat( app.events ),
+				options: [['', 'Any Event']].concat( this.getCategorizedEvents() ),
 				default_icon: 'file-clock-outline'
 			}
 		});
@@ -1866,6 +1864,7 @@ Page.Events = class Events extends Page.PageUtils {
 			this.event = deep_copy_object( app.config.new_event_template );
 		}
 		
+		this.params = this.event.fields; // for user form param editor
 		this.limits = this.event.limits; // for res limit editor
 		this.actions = this.event.actions; // for job action editor
 		
@@ -1896,6 +1895,7 @@ Page.Events = class Events extends Page.PageUtils {
 		MultiSelect.init( this.div.find('select[multiple]') );
 		SingleSelect.init( this.div.find('#fe_ee_icon, #fe_ee_cat, #fe_ee_algo, #fe_ee_plugin') );
 		this.renderPluginParamEditor();
+		this.renderParamEditor();
 		// this.updateAddRemoveMe('#fe_ee_email');
 		$('#fe_ee_title').focus();
 		this.setupBoxButtonFloater();
@@ -1968,6 +1968,8 @@ Page.Events = class Events extends Page.PageUtils {
 			this.event = resp.event;
 		}
 		
+		if (!this.event.fields) this.event.fields = [];
+		this.params = this.event.fields; // for user form param editor
 		this.limits = this.event.limits; // for res limit editor
 		this.actions = this.event.actions; // for job action editor
 		
@@ -2008,6 +2010,7 @@ Page.Events = class Events extends Page.PageUtils {
 		MultiSelect.init( this.div.find('select[multiple]') );
 		SingleSelect.init( this.div.find('#fe_ee_icon, #fe_ee_cat, #fe_ee_algo, #fe_ee_plugin') );
 		this.renderPluginParamEditor();
+		this.renderParamEditor();
 		// this.updateAddRemoveMe('#fe_ee_email');
 		this.setupBoxButtonFloater();
 		
@@ -2035,13 +2038,17 @@ Page.Events = class Events extends Page.PageUtils {
 	do_test_event() {
 		// test event with temporary changes
 		// Note: This may include unsaved changes, which are included in the on-demand run now job, by design
-		app.clearError();
 		var self = this;
+		var title = this.workflow ? "Test Workflow" : "Test Event";
+		var btn = ['open-in-new', 'Run Now'];
+		
+		app.clearError();
 		var event = this.get_event_form_json();
 		if (!event) return; // error
 		
-		var html = '<div class="dialog_box_content">';
+		var html = '<div class="dialog_box_content scroll maximize">';
 		
+		// actions
 		html += this.getFormRow({
 			label: 'Actions:',
 			content: this.getFormCheckbox({
@@ -2052,6 +2059,7 @@ Page.Events = class Events extends Page.PageUtils {
 			caption: 'Enable all event actions for the test run.'
 		});
 		
+		// limits
 		html += this.getFormRow({
 			label: 'Limits:',
 			content: this.getFormCheckbox({
@@ -2062,6 +2070,7 @@ Page.Events = class Events extends Page.PageUtils {
 			caption: 'Enable all resource limits for the test run.'
 		});
 		
+		// notify
 		html += this.getFormRow({
 			id: 'd_eja_email',
 			label: 'Notify:',
@@ -2077,9 +2086,29 @@ Page.Events = class Events extends Page.PageUtils {
 			caption: 'Optionally send the test results to one or more email addresses.'
 		});
 		
+		// custom input json
+		html += this.getFormRow({
+			label: 'Custom JSON Input:',
+			content: this.getFormTextarea({
+				id: 'fe_ete_input',
+				rows: 1,
+				value: `{\n\t\n}`,
+				style: 'display:none'
+			}) + '<div class="button small secondary" onClick="$P().edit_test_input()">Edit JSON...</div>',
+			caption: 'Optionally customize the JSON input data for the job.  This is used to simulate data being passed to it from a previous job.'
+		});
+		
+		// user form fields
+		html += this.getFormRow({
+			label: 'Event Parameters:',
+			content: '<div class="plugin_param_editor_cont">' + this.getParamEditor(event.fields, {}) + '</div>',
+			caption: (event.fields && event.fields.length) ? 'Enter values for all the event-defined parameters here.' : ''
+		});
+		
 		html += '</div>';
-		Dialog.confirm( "Test Event", html, ['run-fast', 'Run Now'], function(result) {
+		Dialog.confirm( title, html, btn, function(result) {
 			if (!result) return;
+			app.clearError();
 			
 			var job = deep_copy_object(event);
 			job.enabled = true; // override event disabled, so test actually runs
@@ -2102,20 +2131,48 @@ Page.Events = class Events extends Page.PageUtils {
 				});
 			}
 			
+			// parse custom input json
+			var raw_json = $('#fe_ete_input').val();
+			if (raw_json) try {
+				job.input = JSON.parse( raw_json );
+			}
+			catch (err) {
+				return app.badField( '#fe_ete_input', "Invalid JSON: " + err.message );
+			}
+			
+			var params = self.getParamValues(self.event.fields);
+			if (!params) return; // validation error
+			
+			if (!job.params) job.params = {};
+			merge_hash_into( job.params, params );
+			
+			// pre-open new window/tab for job details
+			var win = window.open('', '_blank');
+			
 			app.api.post( 'app/run_event', job, function(resp) {
-				Dialog.hideProgress();
-				// app.showMessage('success', "The job was started successfully.");
-				
+				// Dialog.hideProgress();
 				if (!self.active) return; // sanity
 				
-				// jump immediately to live details page
-				Nav.go('Job?id=' + resp.id);
-			} );
+				// jump immediately to live details page in new window
+				// Nav.go('Job?id=' + resp.id);
+				win.location.href = '#Job?id=' + resp.id;
+			}, 
+			function(err) {
+				win.close();
+				app.doError("API Error: " + err.description);
+			});
 			
 			Dialog.hide();
 		}); // Dialog.confirm
 		
 		this.updateAddRemoveMe('#fe_ete_email');
+	}
+	
+	edit_test_input() {
+		// popup json editor for test dialog
+		this.editCodeAuto("Edit Input JSON", $('#fe_ete_input').val(), function(new_value) {
+			$('#fe_ete_input').val( new_value );
+		});
 	}
 	
 	do_save_event() {
@@ -2131,7 +2188,7 @@ Page.Events = class Events extends Page.PageUtils {
 	}
 	
 	save_event_finish(resp) {
-		// new event saved successfully
+		// event saved successfully
 		app.cacheBust = hires_time_now();
 		Dialog.hideProgress();
 		if (!this.active) return; // sanity
@@ -2154,14 +2211,15 @@ Page.Events = class Events extends Page.PageUtils {
 	show_delete_event_dialog() {
 		// show dialog confirming event delete action
 		var self = this;
+		var thing = this.workflow ? "workflow" : "event";
 		
 		// check for jobs first
 		var event_jobs = find_objects( app.activeJobs, { event: this.event.id } );
 		if (event_jobs.length) return app.doError("Sorry, you cannot delete a event that has active jobs running.");
 		
-		Dialog.confirmDanger( 'Delete Event', "Are you sure you want to <b>permanently delete</b> the event &ldquo;<b>" + this.event.title + "</b>&rdquo;?  There is no way to undo this action.", ['trash-can', 'Delete'], function(result) {
+		Dialog.confirmDanger( 'Delete Event', "Are you sure you want to <b>permanently delete</b> the " + thing + " &ldquo;<b>" + this.event.title + "</b>&rdquo;?  There is no way to undo this action.", ['trash-can', 'Delete'], function(result) {
 			if (result) {
-				Dialog.showProgress( 1.0, "Deleting Event..." );
+				Dialog.showProgress( 1.0, self.workflow ? "Deleting Workflow..." : "Deleting Event..." );
 				app.api.post( 'app/delete_event', self.event, self.delete_event_finish.bind(self) );
 			}
 		} );
@@ -2170,6 +2228,7 @@ Page.Events = class Events extends Page.PageUtils {
 	delete_event_finish(resp) {
 		// finished deleting event
 		var self = this;
+		var thing = this.workflow ? "workflow" : "event";
 		Dialog.hideProgress();
 		if (!this.active) return; // sanity
 		
@@ -2177,7 +2236,7 @@ Page.Events = class Events extends Page.PageUtils {
 		this.deletePageDraft();
 		
 		Nav.go('Events?sub=list', 'force');
-		app.showMessage('success', "The event &ldquo;" + this.event.title + "&rdquo; was deleted successfully.");
+		app.showMessage('success', "The " + thing + " &ldquo;" + this.event.title + "&rdquo; was deleted successfully.");
 	}
 	
 	get_event_edit_html() {
@@ -2279,7 +2338,7 @@ Page.Events = class Events extends Page.PageUtils {
 			label: 'Targets:',
 			content: this.getFormMenuMulti({
 				id: 'fe_ee_targets',
-				title: 'Select targets to run the event',
+				title: 'Select targets for event',
 				placeholder: 'Select targets for event...',
 				options: target_items,
 				values: event.targets,
@@ -2287,7 +2346,7 @@ Page.Events = class Events extends Page.PageUtils {
 				// 'data-hold': 1
 				// 'data-shrinkwrap': 1
 			}),
-			caption: 'Select which groups and/or servers to run the event.'
+			caption: 'Select groups and/or servers to run the event.'
 		});
 		
 		// algo
@@ -2333,19 +2392,18 @@ Page.Events = class Events extends Page.PageUtils {
 			caption: 'Enter values for all the Plugin-defined parameters here.'
 		});
 		
-		// timings
+		// user fields
 		html += this.getFormRow({
-			label: 'Timing Rules:',
-			content: '<div id="d_ee_timing_table">' + this.getTimingTable() + '</div>',
-			caption: 'Select when and how often your event should run, with options like catch-up, continuous and single shot.  Leave this section blank to run your event on-demand.'
+			label: 'User Fields:',
+			content: '<div id="d_params_table"></div>',
+			caption: 'Optionally define a custom set of extra parameters to be collected when a user runs your event manually.'
 		});
 		
-		// actions
-		// (requires this.actions to be populated)
+		// timings
 		html += this.getFormRow({
-			label: 'Job Actions:',
-			content: '<div id="d_ee_jobact_table">' + this.getJobActionTable() + '</div>',
-			caption: 'Optionally select custom actions to perform for each job.  Actions may also be added at the category level.'
+			label: 'Launchers:',
+			content: '<div id="d_ee_timing_table">' + this.getTimingTable() + '</div>',
+			caption: 'Select how and when your event should run, including manual executions and scheduling options.'
 		});
 		
 		// default resource limits
@@ -2354,6 +2412,14 @@ Page.Events = class Events extends Page.PageUtils {
 			label: 'Resource Limits:',
 			content: '<div id="d_ee_reslim_table">' + this.getResLimitTable() + '</div>',
 			caption: 'Optionally select resource limits to assign to jobs.  These will override limits set at the category level.'
+		});
+		
+		// actions
+		// (requires this.actions to be populated)
+		html += this.getFormRow({
+			label: 'Job Actions:',
+			content: '<div id="d_ee_jobact_table">' + this.getJobActionTable() + '</div>',
+			caption: 'Optionally select custom actions to perform for each job.  Actions may also be added at the category level.'
 		});
 		
 		// notes
@@ -2473,70 +2539,12 @@ Page.Events = class Events extends Page.PageUtils {
 	getSortedTimings() {
 		// custom sort for display
 		return [].concat(
+			this.event.timings.filter( function(row) { return row.type == 'manual'; } ),
 			this.event.timings.filter( function(row) { return row.type == 'schedule'; } ),
 			this.event.timings.filter( function(row) { return row.type == 'single'; } ),
 			this.event.timings.filter( function(row) { return row.type == 'continuous'; } ),
-			this.event.timings.filter( function(row) { return !(row.type || '').match(/^(schedule|continuous|single)$/); } )
+			this.event.timings.filter( function(row) { return !(row.type || '').match(/^(schedule|continuous|single|manual)$/); } )
 		);
-	}
-	
-	prepTimingDisplay(item) {
-		// prep timing item for display
-		var nice_icon = '';
-		var nice_type = '';
-		var nice_desc = '';
-		
-		switch (item.type) {
-			case 'schedule':
-				nice_icon = '<i class="mdi mdi-calendar-clock"></i>';
-				nice_type = 'Schedule';
-				nice_desc = '<i class="mdi mdi-update">&nbsp;</i><b>Recurring:</b> ' + summarize_event_timing(item);
-			break;
-			
-			case 'continuous':
-				nice_icon = '<i class="mdi mdi-calendar-clock"></i>';
-				nice_type = 'Schedule';
-				nice_desc = '<i class="mdi mdi-all-inclusive">&nbsp;</i>Run Continuously';
-			break;
-			
-			case 'single':
-				nice_icon = '<i class="mdi mdi-calendar-clock"></i>';
-				nice_type = 'Schedule';
-				nice_desc = '<i class="mdi mdi-alarm-check">&nbsp;</i><b>Single Shot:</b> ' + summarize_event_timing(item);
-			break;
-			
-			case 'catchup':
-				nice_icon = '<i class="mdi mdi-cog-outline"></i>';
-				nice_type = 'Option';
-				nice_desc = '<i class="mdi mdi-run-fast">&nbsp;</i>Catch-Up';
-			break;
-			
-			case 'range':
-				nice_icon = '<i class="mdi mdi-cog-outline"></i>';
-				nice_type = 'Option';
-				nice_desc = '<i class="mdi mdi-calendar-range-outline">&nbsp;</i><b>Range:</b> ' + this.summarizeTimingRange(item);
-			break;
-			
-			case 'blackout':
-				nice_icon = '<i class="mdi mdi-cog-outline"></i>';
-				nice_type = 'Option';
-				nice_desc = '<i class="mdi mdi-circle">&nbsp;</i><b>Blackout:</b> ' + this.summarizeTimingRange(item);
-			break;
-			
-			case 'delay':
-				nice_icon = '<i class="mdi mdi-cog-outline"></i>';
-				nice_type = 'Option';
-				nice_desc = '<i class="mdi mdi-chat-sleep-outline">&nbsp;</i><b>Delay:</b> ' + get_text_from_seconds(item.duration || 0, false, true);
-			break;
-			
-			case 'plugin':
-				nice_icon = '<i class="mdi mdi-power-plug"></i>';
-				nice_type = 'Plugin';
-				nice_desc = this.getNicePlugin(item.plugin_id);
-			break;
-		} // switch item.type
-		
-		return { nice_icon, nice_type, nice_desc };
 	}
 	
 	getTimingTable() {
@@ -2544,7 +2552,9 @@ Page.Events = class Events extends Page.PageUtils {
 		var self = this;
 		var html = '';
 		var cols = ['<i class="mdi mdi-checkbox-marked-outline"></i>', 'Type', 'Description', 'Actions'];
-		var add_link = '<div class="button small secondary" onClick="$P().editTiming(-1)"><i class="mdi mdi-plus-circle-outline">&nbsp;</i>New Rule...</div>';
+		var add_link = '<div class="button small secondary" onClick="$P().editTiming(-1)"><i class="mdi mdi-plus-circle-outline">&nbsp;</i>New Launcher...</div>';
+		
+		if (!this.event.timings.length) return add_link;
 		
 		// custom sort
 		var rows = this.getSortedTimings();
@@ -2565,7 +2575,7 @@ Page.Events = class Events extends Page.PageUtils {
 			actions.push( '<span class="link" onClick="$P().editTiming('+idx+')"><b>Edit</b></span>' );
 			actions.push( '<span class="link danger" onClick="$P().deleteTiming('+idx+')"><b>Delete</b></span>' );
 			
-			var { nice_icon, nice_type, nice_desc } = self.prepTimingDisplay(item);
+			var { nice_icon, nice_type, nice_desc } = self.getTimingDisplayArgs(item);
 			
 			var tds = [
 				'<div class="td_drag_handle" style="cursor:default">' + self.getFormCheckbox({
@@ -2584,42 +2594,6 @@ Page.Events = class Events extends Page.PageUtils {
 		return html;
 	}
 	
-	summarizeTimingRange(timing) {
-		// summarize date/time range, or single start/end
-		var text = '';
-		var tz = timing.timezone || app.config.tz;
-		var opts = this.getDateOptions({
-			year: 'numeric',
-			month: 'short',
-			day: 'numeric',
-			hour: 'numeric',
-			minute: '2-digit',
-			timeZone: tz
-		});
-		var formatter = new Intl.DateTimeFormat(opts.locale, opts);
-		
-		if (timing.start && timing.end) {
-			// full range
-			text = formatter.formatRange( new Date(timing.start * 1000), new Date(timing.end * 1000) );
-		}
-		else if (timing.start) {
-			// start only
-			text = "Start on " + formatter.format( new Date(timing.start * 1000) );
-		}
-		else if (timing.end) {
-			// end only
-			text = "End on " + formatter.format( new Date(timing.end * 1000) );
-		}
-		else return "n/a";
-		
-		// show timezone if it differs from user's current
-		var ropts = Intl.DateTimeFormat().resolvedOptions();
-		var user_tz = app.user.timezone || ropts.timeZone;
-		if (user_tz != tz) text += ' (' + tz + ')';
-		
-		return text;
-	}
-	
 	toggleTimingEnabled(elem, idx) {
 		// toggle timing checkbox, actually do the enable/disable here, update row
 		var item = this.event.timings[idx];
@@ -2627,6 +2601,8 @@ Page.Events = class Events extends Page.PageUtils {
 		
 		if (item.enabled) $(elem).closest('ul').removeClass('disabled');
 		else $(elem).closest('ul').addClass('disabled');
+		
+		if (this.onAfterEditTiming) this.onAfterEditTiming(idx, item);
 	}
 	
 	editTiming(idx) {
@@ -2634,8 +2610,12 @@ Page.Events = class Events extends Page.PageUtils {
 		var self = this;
 		var new_item = { type: 'schedule', enabled: true, minutes: [0] };
 		var timing = (idx > -1) ? this.event.timings[idx] : new_item;
-		var title = (idx > -1) ? "Editing Timing Rule" : "New Timing Rule";
-		var btn = (idx > -1) ? ['check-circle', "Apply Changes"] : ['plus-circle', "Add Rule"];
+		var title = (idx > -1) ? "Editing Launcher" : "New Launcher";
+		var btn = (idx > -1) ? ['check-circle', "Apply"] : ['plus-circle', "Add Launcher"];
+		
+		// grab external ID if applicable (workflow node)
+		var ext_id = timing.id || '';
+		if (ext_id) title += ` <div class="dialog_title_widget mobile_hide"><span class="monospace">${this.getNiceCopyableID(ext_id)}</span></div>`;
 		
 		// if user's tz differs from server tz, pre-populate timezone menu with user's zone
 		var ropts = Intl.DateTimeFormat().resolvedOptions();
@@ -2650,10 +2630,10 @@ Page.Events = class Events extends Page.PageUtils {
 			label: 'Status:',
 			content: this.getFormCheckbox({
 				id: 'fe_et_enabled',
-				label: 'Rule Enabled',
+				label: 'Enabled',
 				checked: timing.enabled
 			}),
-			caption: 'Enable or disable this timing rule.'
+			caption: 'Enable or disable this launcher.'
 		});
 		
 		// type (tmode)
@@ -2678,32 +2658,16 @@ Page.Events = class Events extends Page.PageUtils {
 		
 		html += this.getFormRow({
 			id: 'd_et_type',
-			label: 'Rule Type:',
+			label: 'Type:',
 			content: this.getFormMenuSingle({
 				id: 'fe_et_type',
-				title: "Select Timing Type",
-				options: [ 
-					{ id: 'custom', title: "Custom", icon: 'order-bool-descending' },
-					{ id: 'yearly', title: "Yearly", icon: 'earth' },
-					{ id: 'monthly', title: "Monthly", icon: 'calendar-month-outline' },
-					{ id: 'weekly', title: "Weekly", icon: 'calendar-week-outline' },
-					{ id: 'daily', title: "Daily", icon: 'calendar-today-outline' },
-					{ id: 'hourly', title: "Hourly", icon: 'clock-outline' },
-					{ id: 'crontab', title: "Crontab", icon: 'file-clock-outline' },
-					{ id: 'continuous', title: "Continuous", icon: 'all-inclusive' },
-					{ id: 'single', title: "Single Shot", icon: 'alarm-check' },
-					{ id: 'plugin', title: "Plugin", icon: 'power-plug' },
-					
-					{ id: 'catchup', title: "Catch-Up", icon: 'run-fast', group: "Options" },
-					{ id: 'range', title: "Range", icon: 'calendar-range-outline' },
-					{ id: 'blackout', title: "Blackout", icon: 'circle' },
-					{ id: 'delay', title: "Delay", icon: 'chat-sleep-outline' }
-				],
+				title: "Select Launcher Type",
+				options: config.ui.event_timing_type_menu,
 				value: tmode,
 				'data-shrinkwrap': 1,
 				// 'data-nudgeheight': 1
 			}),
-			caption: 'Select the desired type for the timing rule.'
+			caption: 'Select the desired type for the launcher.'
 		});
 		
 		// years
@@ -2837,6 +2801,13 @@ Page.Events = class Events extends Page.PageUtils {
 			caption: 'Select a single date/time when the event should run in your local timezone (' + this.getUserTimezone() + ').  This can accompany other timing rules, or exist on its own.'
 		});
 		
+		// manual
+		html += this.getFormRow({
+			id: 'd_et_manual_desc',
+			label: 'Description:',
+			content: 'When manual mode is enabled, users and API keys with applicable privileges can run the event on demand.'
+		});
+		
 		// catch-up
 		html += this.getFormRow({
 			id: 'd_et_catchup_desc',
@@ -2965,6 +2936,10 @@ Page.Events = class Events extends Page.PageUtils {
 				enabled: $('#fe_et_enabled').is(':checked'),
 				type: $('#fe_et_type').val()
 			};
+			
+			// copy over external id if present (workflow node)
+			if (ext_id) timing.id = ext_id;
+			
 			switch (timing.type) {
 				case 'custom':
 					timing.type = 'schedule';
@@ -3047,6 +3022,13 @@ Page.Events = class Events extends Page.PageUtils {
 					if (!timing.epoch) return app.badField('#fe_et_single', "Please enter a valid date/time when the event should run.");
 				break;
 				
+				case 'manual':
+					// manual mode (no options)
+					if ((idx == -1) && find_object(self.event.timings, { type: 'manual' })) {
+						return app.doError("Sorry, you can only have one manual rule defined per event.");
+					}
+				break;
+				
 				case 'catchup':
 					// time machine
 					if ($('#fe_et_time_machine').val()) {
@@ -3104,11 +3086,13 @@ Page.Events = class Events extends Page.PageUtils {
 			// self.dirty = true;
 			Dialog.hide();
 			self.renderTimingTable();
+			if (self.onAfterEditTiming) self.onAfterEditTiming(idx, timing);
 		} ); // Dialog.confirm
 		
 		var change_timing_type = function(new_type) {
 			$('.dialog_box_content .form_row').hide();
 			$('#d_et_status, #d_et_type').show();
+			var new_btn_label = 'Add Launcher';
 			
 			switch (new_type) {
 				case 'custom':
@@ -3167,26 +3151,34 @@ Page.Events = class Events extends Page.PageUtils {
 					$('#d_et_single').show();
 				break;
 				
+				case 'manual':
+					$('#d_et_manual_desc').show();
+				break;
+				
 				case 'catchup':
 					$('#d_et_catchup_desc').show();
 					$('#d_et_time_machine').show();
+					new_btn_label = 'Add Option';
 				break;
 				
 				case 'range':
 					$('#d_et_range_desc').show();
 					$('#d_et_range_start').show();
 					$('#d_et_range_end').show();
+					new_btn_label = 'Add Option';
 				break;
 				
 				case 'blackout':
 					$('#d_et_blackout_desc').show();
 					$('#d_et_range_start').show();
 					$('#d_et_range_end').show();
+					new_btn_label = 'Add Option';
 				break;
 				
 				case 'delay':
 					$('#d_et_delay_desc').show();
 					$('#d_et_delay').show();
+					new_btn_label = 'Add Option';
 				break;
 				
 				case 'plugin':
@@ -3196,6 +3188,10 @@ Page.Events = class Events extends Page.PageUtils {
 					$('#d_et_tz').show();
 				break;
 			} // switch new_type
+			
+			if (idx == -1) {
+				$('#btn_dialog_confirm > span').html( new_btn_label );
+			}
 			
 			app.clearError();
 			Dialog.autoResize();
@@ -3207,6 +3203,7 @@ Page.Events = class Events extends Page.PageUtils {
 		
 		$('#fe_et_plugin').on('change', function() {
 			$('#d_et_param_editor').html( self.getPluginParamEditor( $(this).val(), timing.params || {} ) );
+			Dialog.autoResize();
 		}); // type change
 		
 		SingleSelect.init( $('#fe_et_type, #fe_et_tz, #fe_et_plugin') );
@@ -3223,8 +3220,15 @@ Page.Events = class Events extends Page.PageUtils {
 	
 	deleteTiming(idx) {
 		// delete selected timing
+		var timing = this.event.timings[idx];
+		
 		this.event.timings.splice( idx, 1 );
 		this.renderTimingTable();
+		
+		if (this.onAfterEditTiming) {
+			timing.deleted = true;
+			this.onAfterEditTiming(idx, timing);
+		}
 	}
 	
 	getYearOptions() {
