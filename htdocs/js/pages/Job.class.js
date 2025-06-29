@@ -205,7 +205,7 @@ Page.Job = class Job extends Page.PageUtils {
 					
 					html += '<div>';
 						html += '<div class="info_label">Targets</div>';
-						html += '<div class="info_value">' + this.getNiceTargetList(job.targets, ', ', 3) + '</div>';
+						html += '<div class="info_value">' + this.getNiceTargetList(job.targets, true) + '</div>';
 					html += '</div>';
 					
 					html += '<div>';
@@ -237,7 +237,7 @@ Page.Job = class Job extends Page.PageUtils {
 					// row 3
 					html += '<div>';
 						html += '<div class="info_label">Workflow</div>';
-						html += '<div class="info_value">' + this.getNiceWorkflowJob(job.workflow, true) + '</div>';
+						html += '<div class="info_value">' + this.getNiceWorkflowJob(job.workflow, true) + '</div>'; // TODO: is this still a thing?
 					html += '</div>';
 					
 					html += '<div>';
@@ -640,7 +640,7 @@ Page.Job = class Job extends Page.PageUtils {
 			else if (item.description || item.details) link = '<span class="link" onClick="$P().viewJobActionDetails(' + idx + ')">View Details...</span>';
 			
 			return [
-				'<b><i class="mdi mdi-eye-outline">&nbsp;</i>' + disp.trigger + '</b>',
+				'<b><i class="mdi mdi-' + disp.trigger.icon + '">&nbsp;</i>' + disp.trigger.title + '</b>',
 				'<i class="mdi mdi-' + disp.icon + '">&nbsp;</i>' + disp.type,
 				disp.desc,
 				self.getRelativeDateTime(item.date, true),
