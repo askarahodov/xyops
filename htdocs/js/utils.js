@@ -42,9 +42,12 @@ function summarize_event_timings(event) {
 	// summarize all event timings from event into human-readable string
 	// separate schedule items and options
 	var timings = event.timings.filter( function(timing) { return timing.enabled; } );
-	var schedules = timings.filter( function(timing) { return !!(timing.type || '').match(/^(schedule|continuous|single)$/); } );
+	var schedules = timings.filter( function(timing) { return !!(timing.type || '').match(/^(schedule|continuous|single|plugin)$/); } );
 	var parts = (schedules.length == 1) ? [summarize_event_timing(schedules[0])] : schedules.map( summarize_event_timing );
-	if (!parts.length) parts.push("On demand");
+	if (!parts.length) {
+		if (find_object(timings, { type: 'manual', enabled: true })) return "On Demand";
+		else return "Disabled";
+	}
 	var summary = (parts.length == 1) ? parts[0] : (parts.slice(0, parts.length - 1).join(', ') + ', and ' + parts[ parts.length - 1 ]);
 	
 	var opts = [];
@@ -52,7 +55,7 @@ function summarize_event_timings(event) {
 	if (find_object(timings, { type: 'range' })) opts.push("Date Range");
 	if (find_object(timings, { type: 'blackout' })) opts.push("Blackout");
 	if (find_object(timings, { type: 'delay' })) opts.push("Delay");
-	if (find_object(timings, { type: 'plugin' })) opts.push("Plugin");
+	// if (find_object(timings, { type: 'plugin' })) opts.push("Plugin");
 	if (opts.length) summary += ' (' + opts.join(', ') + ')';
 	
 	return summary;
@@ -61,6 +64,7 @@ function summarize_event_timings(event) {
 function summarize_event_timing(timing, idx) {
 	// summarize event timing into human-readable string
 	if (timing.type == 'continuous') return "Continuously";
+	if (timing.type == 'plugin') return "Plugin";
 	if (timing.type == 'single') {
 		var text = app.formatDate(timing.epoch, { year: 'numeric', month: 'short', day: 'numeric', hour: 'numeric', minute: '2-digit' });
 		return text;
@@ -356,4 +360,20 @@ function parse_crontab(raw, rand_seed) {
 	if ((parts.length > 5) && parts[5].length) parse_crontab_part( timing, parts[5], 'years', 1970, 3000, rand_seed );
 	
 	return timing;
+};
+
+function distance(a, b) {
+	// get distance between two points in 2d space
+	if ((a[0] == b[0]) && (a[1] == b[1])) return 0;
+	return Math.sqrt( Math.pow(Math.abs(b[0] - a[0]), 2) + Math.pow(Math.abs(b[1] - a[1]), 2) );
+};
+
+function gen_workflow_id(prefix) {
+	// generate short unique ID for workflow nodes
+	return get_short_id(prefix, 7);
+};
+
+function inline_marked(md) {
+	// render text to markdown, trimming and stripping outer <p> tag
+	return marked(md, config.ui.marked_config).trim().replace(/^<p>(.+)<\/p>$/, '$1')
 };
