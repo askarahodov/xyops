@@ -310,23 +310,23 @@ Page.Workflows = class Workflows extends Page.Events {
 			self.doEditSelection();
 		}); // mouseup (nodes)
 		
-		// add mouse handler for trigger entities
-		$cont.find('div.wf_trigger').on( 'mousedown', function(event) {
+		// add mouse handler for condition entities
+		$cont.find('div.wf_condition').on( 'mousedown', function(event) {
 			if (event.which !== 1) return; // only capture left-clicks
 			var conn_id = this.id.replace(/^d_wft_/, '');
 			
 			event.stopPropagation();
 			event.preventDefault();
 			
-			self.quickEditTrigger( $(this), conn_id );
-		}); // mousedown (triggers)
+			self.quickEditCondition( $(this), conn_id );
+		}); // mousedown (conditions)
 		
 		// update selection after all full draws
 		this.updateSelection();
 	}
 	
-	quickEditTrigger($trig, id) {
-		// popup menu to change trigger type
+	quickEditCondition($trig, id) {
+		// popup menu to change condition type
 		var self = this;
 		var workflow = this.workflow;
 		var conn = find_object( workflow.connections, { id: id } );
@@ -335,17 +335,17 @@ Page.Workflows = class Workflows extends Page.Events {
 		
 		SingleSelect.popupQuickMenu({
 			elem: '#d_wft_' + id,
-			title: 'Select Trigger',
+			title: 'Select Condition',
 			items: [ 
-				...config.ui.action_trigger_menu
+				...config.ui.action_condition_menu
 			].concat(
 				this.buildOptGroup( app.tags, "On Custom Tag:", 'tag-outline', 'tag:' )
 			),
-			value: conn.trigger,
+			value: conn.condition,
 			
 			callback: function(value) {
-				// new trigger type selected
-				conn.trigger = value;
+				// new condition type selected
+				conn.condition = value;
 				self.drawWorkflow(true);
 				self.afterDraw();
 				self.addState();
@@ -810,10 +810,10 @@ Page.Workflows = class Workflows extends Page.Events {
 			dest: solder.end_node
 		};
 		
-		// detect event-to-event or event-to-action and add default trigger prop
+		// detect event-to-event or event-to-action and add default condition prop
 		var node = find_object( workflow.nodes, { id: solder.start_node } );
 		if ((node.type == 'event') && (solder.start_pole == 'wf_output_pole')) {
-			conn.trigger = 'success';
+			conn.condition = 'success';
 		}
 		
 		// add our new connection
@@ -863,10 +863,10 @@ Page.Workflows = class Workflows extends Page.Events {
 			return;
 		}
 		
-		// detect event-to-event or event-to-action and add default trigger prop
+		// detect event-to-event or event-to-action and add default condition prop
 		var node = find_object( workflow.nodes, { id: solder.start_node } );
 		if ((node.type.match(/^(event|job)$/)) && (solder.start_pole == 'wf_output_pole')) {
-			conn.trigger = 'success';
+			conn.condition = 'success';
 		}
 		
 		// add our new connection
@@ -1260,7 +1260,7 @@ Page.Workflows = class Workflows extends Page.Events {
 			action: action,
 			title: title,
 			btn: btn,
-			show_trigger: false,
+			show_condition: false,
 			
 			action_type_filter: function(item) { 
 				return !item.id.match(/^(disable|delete)$/); 

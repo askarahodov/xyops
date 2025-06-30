@@ -148,7 +148,7 @@ Page.Job = class Job extends Page.PageUtils {
 		}
 		
 		// check if user will be notified on job completion
-		var notify_me = !!find_object( job.actions, { trigger: 'complete', type: 'email', email: app.user.email } );
+		var notify_me = !!find_object( job.actions, { condition: 'complete', type: 'email', email: app.user.email } );
 		var notify_icon = notify_me ? 'checkbox-marked-circle-outline' : 'email-outline';
 		
 		// summary
@@ -623,24 +623,24 @@ Page.Job = class Job extends Page.PageUtils {
 			return;
 		}
 		
-		var cols = ["Trigger", "Type", "Description", "Date/Time", "Elapsed", "Result", "Actions"];
+		var cols = ["Condition", "Type", "Description", "Date/Time", "Elapsed", "Result", "Actions"];
 		var html = '';
 		
 		var grid_args = {
-			rows: sort_by(actions, 'trigger'), // sort in place, so idx works below
+			rows: sort_by(actions, 'condition'), // sort in place, so idx works below
 			cols: cols,
 			data_type: 'action'
 		};
 		
 		html += this.getBasicGrid( grid_args, function(item, idx) {
-			var disp = self.getJobActionDisplayArgs(item, true); // trigger, type, text, desc, icon
+			var disp = self.getJobActionDisplayArgs(item, true); // condition, type, text, desc, icon
 			
 			var link = 'n/a';
 			if (item.loc) link = '<a href="' + item.loc + '">View Details...</a>';
 			else if (item.description || item.details) link = '<span class="link" onClick="$P().viewJobActionDetails(' + idx + ')">View Details...</span>';
 			
 			return [
-				'<b><i class="mdi mdi-' + disp.trigger.icon + '">&nbsp;</i>' + disp.trigger.title + '</b>',
+				'<b><i class="mdi mdi-' + disp.condition.icon + '">&nbsp;</i>' + disp.condition.title + '</b>',
 				'<i class="mdi mdi-' + disp.icon + '">&nbsp;</i>' + disp.type,
 				disp.desc,
 				self.getRelativeDateTime(item.date, true),
@@ -658,7 +658,7 @@ Page.Job = class Job extends Page.PageUtils {
 		// popup dialog to show action results
 		var self = this;
 		var action = this.actions[idx];
-		var disp = self.getJobActionDisplayArgs(action); // trigger, type, text, desc, icon
+		var disp = self.getJobActionDisplayArgs(action); // condition, type, text, desc, icon
 		var details = action.details || "";
 		
 		if (action.description) {
@@ -1117,7 +1117,7 @@ Page.Job = class Job extends Page.PageUtils {
 		html += this.getBasicTable({
 			attribs: { class: 'data_table' },
 			compact: true,
-			cols: ['Timestamp', 'Author', 'Message'],
+			cols: ['Timestamp', 'Server', 'Message'],
 			rows: activity,
 			data_type: 'row',
 			callback: function(row) {
@@ -1983,7 +1983,7 @@ Page.Job = class Job extends Page.PageUtils {
 	
 	onStatusUpdate(data) {
 		// hook main app status update (every 1s)
-		// use this as a trigger to update live job in progress
+		// use this as a condition to update live job in progress
 		// and to detect job completion
 		if (!this.job || (this.job.state == 'complete')) return;
 		

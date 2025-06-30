@@ -1768,16 +1768,16 @@ Page.Base = class Base extends Page {
 	
 	getJobActionDisplayArgs(action, link) {
 		// get display args for job action
-		// returns: { trigger, type, text, desc, icon }
+		// returns: { condition, type, text, desc, icon }
 		var disp = {
-			trigger: find_object( config.ui.action_trigger_menu, { id: action.trigger } )
+			condition: find_object( config.ui.action_condition_menu, { id: action.condition } )
 		};
 		
-		if (!disp.trigger && action.trigger.match(/^tag:(\w+)$/)) {
+		if (!disp.condition && action.condition.match(/^tag:(\w+)$/)) {
 			var tag_id = RegExp.$1;
 			var tag = find_object( app.tags, { id: tag_id } ) || { title: tag_id };
-			disp.trigger = { title: "On " + tag.title };
-			disp.trigger.icon = tag.icon || 'tag-outline';
+			disp.condition = { title: "On " + tag.title };
+			disp.condition.icon = tag.icon || 'tag-outline';
 		}
 		
 		switch (action.type) {
@@ -1850,7 +1850,7 @@ Page.Base = class Base extends Page {
 		var self = this;
 		var html = '';
 		var rows = this.actions;
-		var cols = ['<i class="mdi mdi-checkbox-marked-outline"></i>', 'Trigger', 'Type', 'Description', 'Actions'];
+		var cols = ['<i class="mdi mdi-checkbox-marked-outline"></i>', 'Condition', 'Type', 'Description', 'Actions'];
 		var add_link = '<div class="button small secondary" onMouseUp="$P().editJobAction(-1)"><i class="mdi mdi-plus-circle-outline">&nbsp;</i>New Action...</div>';
 		
 		if (!rows.length) return add_link;
@@ -1877,7 +1877,7 @@ Page.Base = class Base extends Page {
 					checked: item.enabled,
 					onChange: '$P().toggleJobActionEnabled(this,' + idx + ')'
 				}) + '</div>',
-				'<div class="td_big nowrap"><span class="link" onClick="$P().editJobAction('+idx+')"><i class="mdi mdi-' + disp.trigger.icon + '"></i>' + disp.trigger.title + '</span></div>',
+				'<div class="td_big nowrap"><span class="link" onClick="$P().editJobAction('+idx+')"><i class="mdi mdi-' + disp.condition.icon + '"></i>' + disp.condition.title + '</span></div>',
 				'<div class="td_big ellip"><i class="mdi mdi-' + disp.icon + '">&nbsp;</i>' + disp.type + '</div>',
 				'<div class="ellip">' + disp.desc + '</div>',
 				'<div class="">' + links.join(' | ') + '</div>'
@@ -1901,9 +1901,9 @@ Page.Base = class Base extends Page {
 	
 	editJobAction(idx) {
 		// show dialog to select job action for event
-		// action: { trigger, type, email?, url? }
+		// action: { condition, type, email?, url? }
 		var self = this;
-		var action = (idx > -1) ? this.actions[idx] : { trigger: 'error', type: 'email', email: '', enabled: true };
+		var action = (idx > -1) ? this.actions[idx] : { condition: 'error', type: 'email', email: '', enabled: true };
 		var title = (idx > -1) ? "Editing Job Action" : "New Job Action";
 		var btn = (idx > -1) ? ['check-circle', "Apply"] : ['plus-circle', "Add Action"];
 		
@@ -1911,7 +1911,7 @@ Page.Base = class Base extends Page {
 			action: action,
 			title: title,
 			btn: btn,
-			show_trigger: true,
+			show_condition: true,
 			
 			callback: function(action) {
 				// see if we need to add or replace
@@ -1921,7 +1921,7 @@ Page.Base = class Base extends Page {
 				else self.actions[idx] = action;
 				
 				// keep list sorted
-				sort_by(self.actions, 'trigger');
+				sort_by(self.actions, 'condition');
 				
 				// self.dirty = true;
 				self.renderJobActionEditor();
@@ -1947,21 +1947,21 @@ Page.Base = class Base extends Page {
 			caption: 'Enable or disable the job action.'
 		});
 		
-		if (opts.show_trigger) {
+		if (opts.show_condition) {
 			html += this.getFormRow({
-				label: 'Action Trigger:',
+				label: 'Condition:',
 				content: this.getFormMenuSingle({
-					id: 'fe_eja_trigger',
-					title: 'Select Action Trigger',
+					id: 'fe_eja_condition',
+					title: 'Select Condition',
 					options: [ 
-						...config.ui.action_trigger_menu.filter( function(item) { return item.id != 'continue'; } )
+						...config.ui.action_condition_menu.filter( function(item) { return item.id != 'continue'; } )
 					].concat(
 						this.buildOptGroup( app.tags, "On Custom Tag:", 'tag-outline', 'tag:' )
 					),
-					value: action.trigger,
+					value: action.condition,
 					'data-nudgeheight': 1
 				}),
-				caption: 'Select the desired action trigger.'
+				caption: 'Select the desired condition for the action.'
 			});
 		}
 		
@@ -2079,7 +2079,7 @@ Page.Base = class Base extends Page {
 				enabled: $('#fe_eja_enabled').is(':checked'),
 				type: $('#fe_eja_type').val()
 			};
-			if (opts.show_trigger) action.trigger = $('#fe_eja_trigger').val();
+			if (opts.show_condition) action.condition = $('#fe_eja_condition').val();
 			
 			switch (action.type) {
 				case 'email':
@@ -2172,7 +2172,7 @@ Page.Base = class Base extends Page {
 		}); // type change
 		
 		MultiSelect.init( $('#fe_eja_users') );
-		SingleSelect.init( $('#fe_eja_trigger, #fe_eja_type, #fe_eja_event, #fe_eja_channel, #fe_eja_web_hook, #fe_eja_plugin') );
+		SingleSelect.init( $('#fe_eja_condition, #fe_eja_type, #fe_eja_event, #fe_eja_channel, #fe_eja_web_hook, #fe_eja_plugin') );
 		
 		Dialog.autoResize();
 	}

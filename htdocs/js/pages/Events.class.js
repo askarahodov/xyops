@@ -971,7 +971,7 @@ Page.Events = class Events extends Page.PageUtils {
 		var self = this;
 		var html = '';
 		var rows = this.event.actions.filter( function(action) { return action.enabled; } );
-		var cols = ['Trigger', 'Type', 'Description'];
+		var cols = ['Condition', 'Type', 'Description'];
 		
 		html += '<div class="box_unit_title">Job Actions</div>';
 		
@@ -987,7 +987,7 @@ Page.Events = class Events extends Page.PageUtils {
 			var disp = self.getJobActionDisplayArgs(item);
 			
 			var tds = [
-				'<div class="td_big nowrap"><i class="mdi mdi-' + disp.trigger.icon + '"></i>' + disp.trigger.title + '</div>',
+				'<div class="td_big nowrap"><i class="mdi mdi-' + disp.condition.icon + '"></i>' + disp.condition.title + '</div>',
 				'<div class="td_big ellip"><i class="mdi mdi-' + disp.icon + '">&nbsp;</i>' + disp.type + '</div>',
 				'<div class="ellip">' + disp.desc + '</div>'
 			];
@@ -2130,7 +2130,7 @@ Page.Events = class Events extends Page.PageUtils {
 				if (!job.actions) job.actions = [];
 				job.actions.push({
 					enabled: true,
-					trigger: 'complete',
+					condition: 'complete',
 					type: 'email',
 					email: emails
 				});

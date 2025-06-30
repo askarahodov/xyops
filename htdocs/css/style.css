@@ -957,8 +957,8 @@ body.dark .box_buttons.floater {
 
 .plugin_param_editor_cont textarea {
 	/* resize:vertical; font-family:monospace; line-height:16px; */
-	font-family: var(--font-family-monospace);
-	font-size: 11px;
+	/* font-family: var(--font-family-monospace);
+	font-size: 11px; */
 	line-height: 16px;
 	background: var(--shadow-color);
 }
@@ -1743,7 +1743,7 @@ i.mdi.mdi-moon-waning-crescent:before {
 	.data_grid.webhook_grid { grid-template-columns: min-content auto auto 0px auto auto auto !important; }
 	.data_grid.webhook_grid > ul > div:nth-child(4) { visibility: hidden; }
 	
-	/* "Trigger", "Type", "Description", "Date/Time", "Elapsed", "Result", "Actions" */
+	/* "Condition", "Type", "Description", "Date/Time", "Elapsed", "Result", "Actions" */
 	.data_grid.action_grid { grid-template-columns: auto auto auto 0px auto auto auto !important; }
 	.data_grid.action_grid > ul > div:nth-child(4) { visibility: hidden; }
 	
@@ -2081,7 +2081,7 @@ i.mdi.mdi-moon-waning-crescent:before {
 	.data_grid.webhook_grid > ul > div:nth-child(4) { visibility: hidden; }
 	.data_grid.webhook_grid > ul > div:nth-child(5) { visibility: hidden; }
 	
-	/* "Trigger", "Type", "Description", "Date/Time", "Elapsed", "Result", "Actions" */
+	/* "Condition", "Type", "Description", "Date/Time", "Elapsed", "Result", "Actions" */
 	.data_grid.action_grid { grid-template-columns: auto auto auto 0px 0px auto auto !important; }
 	.data_grid.action_grid > ul > div:nth-child(4) { visibility: hidden; }
 	.data_grid.action_grid > ul > div:nth-child(5) { visibility: hidden; }
@@ -2516,7 +2516,7 @@ i.mdi.mdi-moon-waning-crescent:before {
 	.data_grid.webhook_grid > ul > div:nth-child(5) { visibility: hidden; }
 	.data_grid.webhook_grid > ul > div:nth-child(6) { visibility: hidden; }
 	
-	/* "Trigger", "Type", "Description", "Date/Time", "Elapsed", "Result", "Actions" */
+	/* "Condition", "Type", "Description", "Date/Time", "Elapsed", "Result", "Actions" */
 	.data_grid.action_grid { grid-template-columns: auto auto 0px 0px 0px auto auto !important; }
 	.data_grid.action_grid > ul > div:nth-child(3) { visibility: hidden; }
 	.data_grid.action_grid > ul > div:nth-child(4) { visibility: hidden; }

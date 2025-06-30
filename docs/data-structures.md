@@ -29,7 +29,7 @@ An event is an item on the schedule which launches [Jobs](#job).  It may or may 
 	"actions": [
 		{
 			"enabled": true,
-			"trigger": "error",
+			"condition": "error",
 			"type": "email",
 			"email": "admin@localhost"
 		}
@@ -261,7 +261,7 @@ A string ID indicating what spawned the job.  This will be one of:
 | `plugin` | Job was spawned from a Scheduler Plugin. |
 | `key` | Job was spawned via a HTTP request to the `run_event` API using an API Key.  There will be an additional property named `key` containing the internal API Key ID (non-secret). |
 | `user` | Job was spawned manually via user request in the UI.  There will be an additional property named `username` containing the username of the user who initiated the action. |
-| `action` | Job was spawned by a custom job action (i.e. start, complete, success or fail action trigger).  [Job.parent](#job-parent) will also be present in this case. |
+| `action` | Job was spawned by a custom job action (i.e. start, complete, success or fail action condition).  [Job.parent](#job-parent) will also be present in this case. |
 | `alert` | Job was spawned by an alert notification from the server monitoring system. |
 | `workflow` | Job was spawned as part of a workflow sequence. |
 
@@ -292,7 +292,7 @@ When a job is a retry, this property will contain the [Job.id](#job-id) of the p
 
 ## Job.jobs
 
-When a job launches other jobs, either by retry or action trigger, the newly launched jobs will be added to a `jobs` array in the parent (source) job.  Each item in the array is an object with `id` and `reason` properties.  The reason can be one of `action` or `retry`.
+When a job launches other jobs, either by retry or action condition, the newly launched jobs will be added to a `jobs` array in the parent (source) job.  Each item in the array is an object with `id` and `reason` properties.  The reason can be one of `action` or `retry`.
 
 ## Job.cpu
 
@@ -346,7 +346,7 @@ echo '{ "update_event": { "enabled": false }'
 A system by which the user code can push new [actions](#action) and [limits](#limit) onto the job while it is still running.  For example:
 
 ```sh
-echo '{ "push": { "actions": [ { "trigger":"success", "type":"email", "email":"you@yourdomain.com" } ] } }'
+echo '{ "push": { "actions": [ { "condition":"success", "type":"email", "email":"you@yourdomain.com" } ] } }'
 ```
 
 ## Job.procs
@@ -439,12 +439,12 @@ These objects are nested under other data structures, usually items of an array.
 
 ## Action
 
-Actions can be assigned to job related events such as start, completion, errors, and other triggers.  Here is an example:
+Actions can be assigned to job related events such as start, completion, errors, and other conditions.  Here is an example:
 
 ```json
 {
 	"enabled": true,
-	"trigger": "error",
+	"condition": "error",
 	"type": "email",
 	"email": "admin@myserver.com"
 }
@@ -457,16 +457,16 @@ Each action object should have the following properties:
 | Property Name | Type | Description |
 |---------------|------|-------------|
 | `enabled` | Boolean | Specifies whether the action is enabled (`true`) or disabled (`false`). |
-| `trigger` | String | Specifies the trigger which runs the action.  See [Action Triggers](#action-triggers) below. |
-| `type` | String | Specifies which action will take place when the trigger fires.  See [Action Types](#action-types) below. |
+| `condition` | String | Specifies the condition which runs the action.  See [Action Conditions](#action-conditions) below. |
+| `type` | String | Specifies which action will take place when the condition fires.  See [Action Types](#action-types) below. |
 
 Additional properties may be present based on the type.
 
-### Action Triggers
+### Action Conditions
 
-Each action has a `trigger` property which specifies when it will fire.  The value may be one of:
+Each action has a `condition` property which specifies when it will fire.  The value may be one of:
 
-| Trigger ID | Description |
+| Condition ID | Description |
 |------------|-------------|
 | `start` | Fires on job start. |
 | `complete` | Fires on job completion, regardless of the outcome. |
@@ -478,7 +478,7 @@ Each action has a `trigger` property which specifies when it will fire.  The val
 
 ### Action Types
 
-Each action has a `type` property which dictates what will happen when the trigger fires.  The different types are listed below:
+Each action has a `type` property which dictates what will happen when the condition fires.  The different types are listed below:
 
 | Type ID | Description |
 |---------|-------------|

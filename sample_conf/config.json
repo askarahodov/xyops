@@ -43,7 +43,7 @@
 		{
 			"enabled": true,
 			"hidden": true,
-			"trigger": "error",
+			"condition": "error",
 			"type": "snapshot"
 		}
 	],

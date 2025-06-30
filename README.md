@@ -517,42 +517,7 @@ If you upgrade to the `HEAD` version, this will grab the very latest from GitHub
 Orchestra writes its logs in a plain text, square-bracket delimited column format, which looks like this:
 
 ```
-[1582307632.086][2020-02-21 09:53:52][joe16.local][19657][Orchestra][debug][1][Orchestra v0.9.1 Starting Up][]
-[1582307632.088][2020-02-21 09:53:52][joe16.local][19657][Orchestra][debug][9][Writing PID File: logs/orchestra.pid: 19657][]
-[1582307632.089][2020-02-21 09:53:52][joe16.local][19657][Orchestra][debug][9][Confirmed PID File contents: logs/orchestra.pid: 19657][]
-[1582307632.09][2020-02-21 09:53:52][joe16.local][19657][Orchestra][debug][2][Server IP: 192.168.3.40, Daemon PID: 19657][]
-[1582307632.09][2020-02-21 09:53:52][joe16.local][19657][Orchestra][debug][3][Starting component: Storage][]
-[1582307632.094][2020-02-21 09:53:52][joe16.local][19657][Orchestra][debug][3][Starting component: Unbase][]
-[1582307632.095][2020-02-21 09:53:52][joe16.local][19657][Unbase][debug][2][Setting up Unbase v1.0.3][]
-[1582307632.097][2020-02-21 09:53:52][joe16.local][19657][Unbase][debug][3][Initializing index: messages][]
-[1582307632.097][2020-02-21 09:53:52][joe16.local][19657][Orchestra][debug][3][Starting component: WebServer][]
-[1582307632.098][2020-02-21 09:53:52][joe16.local][19657][WebServer][debug][2][pixl-server-web v1.1.28 starting up][]
-[1582307632.101][2020-02-21 09:53:52][joe16.local][19657][WebServer][debug][2][Starting HTTP server on port: 5522][]
-[1582307632.104][2020-02-21 09:53:52][joe16.local][19657][WebServer][debug][3][Now listening for HTTP connections][{"address":"::","family":"IPv6","port":5522}]
-[1582307632.104][2020-02-21 09:53:52][joe16.local][19657][Orchestra][debug][3][Starting component: API][]
-[1582307632.104][2020-02-21 09:53:52][joe16.local][19657][API][debug][3][API service listening for base URI: /api][]
-[1582307632.105][2020-02-21 09:53:52][joe16.local][19657][WebServer][debug][3][Adding custom URI handler: /\/api\/(\w+)/: API][]
-[1582307632.105][2020-02-21 09:53:52][joe16.local][19657][Orchestra][debug][3][Starting component: User][]
-[1582307632.105][2020-02-21 09:53:52][joe16.local][19657][User][debug][3][User Manager starting up][]
-[1582307632.105][2020-02-21 09:53:52][joe16.local][19657][API][debug][3][Adding API namespace: user][]
-[1582307632.106][2020-02-21 09:53:52][joe16.local][19657][Orchestra][debug][3][Starting component: ML][]
-[1582307632.106][2020-02-21 09:53:52][joe16.local][19657][ML][debug][3][ML subsystem starting up][]
-[1582307632.107][2020-02-21 09:53:52][joe16.local][19657][ML][debug][6][Loading model: ml/model.bin][]
-[1582307632.949][2020-02-21 09:53:52][joe16.local][19657][ML][debug][6][Model load complete][{"pid":19658}]
-[1582307632.949][2020-02-21 09:53:52][joe16.local][19657][Orchestra][debug][3][Starting component: Orchestra][]
-[1582307632.95][2020-02-21 09:53:52][joe16.local][19657][WebServer][debug][3][Adding custom URI handler: /^\/$/: Home][]
-[1582307632.95][2020-02-21 09:53:52][joe16.local][19657][API][debug][3][Adding API namespace: app][]
-[1582307632.95][2020-02-21 09:53:52][joe16.local][19657][WebServer][debug][3][Adding custom URI handler: /^\/files/: File][]
-[1582307632.95][2020-02-21 09:53:52][joe16.local][19657][WebServer][debug][3][Adding custom URI handler: /server-status: Server Status][]
-[1582307632.951][2020-02-21 09:53:52][joe16.local][19657][WebServer][debug][3][Adding custom URI handler: /^\/privacy/: Redirect][]
-[1582307632.951][2020-02-21 09:53:52][joe16.local][19657][WebServer][debug][3][Adding custom URI handler: /^\/terms/: Redirect][]
-[1582307632.951][2020-02-21 09:53:52][joe16.local][19657][WebServer][debug][3][Adding custom URI handler: /^\/optout/: Redirect][]
-[1582307632.951][2020-02-21 09:53:52][joe16.local][19657][WebServer][debug][3][Adding custom URI handler: /^\/login/: Redirect][]
-[1582307632.951][2020-02-21 09:53:52][joe16.local][19657][WebServer][debug][3][Adding custom URI handler: /^\/signup/: Redirect][]
-[1582307632.96][2020-02-21 09:53:52][joe16.local][19657][Orchestra][debug][3][Starting component: S3MailIngest][]
-[1582307632.961][2020-02-21 09:53:52][joe16.local][19657][Orchestra][debug][2][Startup complete, entering main loop][]
-[1582307632.971][2020-02-21 09:53:52][joe16.local][19657][Orchestra][debug][5][Setting up user search triggers][]
-[1582307632.976][2020-02-21 09:53:52][joe16.local][19657][Orchestra][debug][5][1 user search triggers added][]
+
 ```
 
 The log columns are defined as follows, from left to right:

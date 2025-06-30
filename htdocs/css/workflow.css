@@ -358,9 +358,9 @@ body.dark .wf_event_title {
 	transform: rotate(-45deg) scale(1.25);
 }
 
-/* Trigger lives inside of a wire connection */
+/* Condition lives inside of a wire connection */
 
-.wf_trigger {
+.wf_condition {
 	position: absolute;
 	width: 32px;
 	height: 32px;
@@ -373,31 +373,31 @@ body.dark .wf_event_title {
 	cursor: pointer;
 	text-shadow: 0px 1px 0px rgba(0, 0, 0, 0.5);
 }
-body.dark .wf_trigger {
+body.dark .wf_condition {
 	color: rgba(255, 255, 255, 0.8);
 }
 
-.wf_trigger.start { background: var(--orange); }
-.wf_trigger.complete { background: var(--blue); }
-.wf_trigger.continue { background: var(--teal); font-size: 26px; }
-.wf_trigger.success { background: var(--green); }
-.wf_trigger.error { background: var(--red); }
-.wf_trigger.warning { background: var(--yellow); font-size: 28px; }
-.wf_trigger.critical { background: var(--purple); }
-.wf_trigger.abort { background: var(--gray); }
-.wf_trigger.tag { background: var(--pink); font-size: 28px; }
+.wf_condition.start { background: var(--orange); }
+.wf_condition.complete { background: var(--blue); }
+.wf_condition.continue { background: var(--teal); font-size: 26px; }
+.wf_condition.success { background: var(--green); }
+.wf_condition.error { background: var(--red); }
+.wf_condition.warning { background: var(--yellow); font-size: 28px; }
+.wf_condition.critical { background: var(--purple); }
+.wf_condition.abort { background: var(--gray); }
+.wf_condition.tag { background: var(--pink); font-size: 28px; }
 
-.wf_trigger.start:hover { background: var(--orange-highlight); }
-.wf_trigger.complete:hover { background: var(--blue-highlight); }
-.wf_trigger.continue:hover { background: var(--teal-highlight); }
-.wf_trigger.success:hover { background: var(--green-highlight); }
-.wf_trigger.error:hover { background: var(--red-highlight); }
-.wf_trigger.warning:hover { background: var(--yellow-highlight); }
-.wf_trigger.critical:hover { background: var(--purple-highlight); }
-.wf_trigger.abort:hover { background: var(--gray-highlight); }
-.wf_trigger.tag:hover { background: var(--pink-highlight); }
+.wf_condition.start:hover { background: var(--orange-highlight); }
+.wf_condition.complete:hover { background: var(--blue-highlight); }
+.wf_condition.continue:hover { background: var(--teal-highlight); }
+.wf_condition.success:hover { background: var(--green-highlight); }
+.wf_condition.error:hover { background: var(--red-highlight); }
+.wf_condition.warning:hover { background: var(--yellow-highlight); }
+.wf_condition.critical:hover { background: var(--purple-highlight); }
+.wf_condition.abort:hover { background: var(--gray-highlight); }
+.wf_condition.tag:hover { background: var(--pink-highlight); }
 
-.wf_trigger.popped {
+.wf_condition.popped {
 	outline: 2px dashed var(--theme-color);
 }
 

@@ -774,8 +774,8 @@ Page.PageUtils = class PageUtils extends Page.Base {
 		} );
 		
 		workflow.connections.forEach( function(conn) {
-			if (!conn.trigger) return;
-			html += self.getWFTrigger(conn);
+			if (!conn.condition) return;
+			html += self.getWFCondition(conn);
 		} );
 		
 		html += '</div>'; // wf_fade
@@ -988,7 +988,7 @@ Page.PageUtils = class PageUtils extends Page.Base {
 		if (entire) {
 			// redraw entire workflow from scratch, for e.g. after undo/redo
 			var $fade = $cont.find('.wf_fade');
-			$fade.find('.wf_node, .wf_trigger').remove();
+			$fade.find('.wf_node, .wf_condition').remove();
 			
 			// append all wf_node elements
 			workflow.nodes.forEach( function(node) {
@@ -996,10 +996,10 @@ Page.PageUtils = class PageUtils extends Page.Base {
 				$fade.append( self[func](node, workflow) );
 			} );
 			
-			// append all connection w/trigger (wf_trigger) elements
+			// append all connection w/condition (wf_condition) elements
 			workflow.connections.forEach( function(conn) {
-				if (!conn.trigger) return;
-				$fade.append( self.getWFTrigger(conn) );
+				if (!conn.condition) return;
+				$fade.append( self.getWFCondition(conn) );
 			} );
 			
 			this.wfUpdateZoom();
@@ -1020,13 +1020,13 @@ Page.PageUtils = class PageUtils extends Page.Base {
 		this.renderWFConnections();
 	}
 	
-	getWFTrigger(conn) {
-		// get HTML for trigger inside wire
-		var classes = ['wf_trigger'];
+	getWFCondition(conn) {
+		// get HTML for condition inside wire
+		var classes = ['wf_condition'];
 		var icon = '';
 		var title = '';
 		
-		if (conn.trigger.match(/^tag\:(\w+)$/)) {
+		if (conn.condition.match(/^tag\:(\w+)$/)) {
 			// custom tag
 			var tag_id = RegExp.$1;
 			var tag = find_object( app.tags, { id: tag_id } );
@@ -1037,14 +1037,14 @@ Page.PageUtils = class PageUtils extends Page.Base {
 			title = tag.title;
 		}
 		else {
-			// std trigger
-			var trig = find_object( config.ui.action_trigger_menu, { id: conn.trigger } );
-			classes.push( conn.trigger );
+			// std condition
+			var trig = find_object( config.ui.action_condition_menu, { id: conn.condition } );
+			classes.push( conn.condition );
 			icon = trig.icon;
 			title = trig.title;
 			
 			// fudge icons a bit
-			if (conn.trigger.match(/^(start|complete)$/) && !icon.match(/\-outline$/)) icon += '-outline';
+			if (conn.condition.match(/^(start|complete)$/) && !icon.match(/\-outline$/)) icon += '-outline';
 		}
 		
 		return `<div class="${classes.join(' ')}" id="d_wft_${conn.id}"><i class="mdi mdi-${icon}"></i><div class="wf_trig_label">${title}</div></div>`;
@@ -1522,8 +1522,8 @@ Page.PageUtils = class PageUtils extends Page.Base {
 		return [ x + 1, y + 1 ];
 	}
 	
-	prepWFTrigger(trig, sel1, sel2) {
-		// position trigger element in place between two poles
+	prepWFCondition(trig, sel1, sel2) {
+		// position condition element in place between two poles
 		var a = this.getWFPoleCenterPoint(sel1);
 		var b = this.getWFPoleCenterPoint(sel2);
 		var c = [
@@ -1579,8 +1579,8 @@ Page.PageUtils = class PageUtils extends Page.Base {
 		ctx.stroke();
 		ctx.restore();
 		
-		if (opts.conn && opts.conn.trigger) {
-			this.prepWFTrigger( '#d_wft_' + opts.conn.id, sel1, sel2 );
+		if (opts.conn && opts.conn.condition) {
+			this.prepWFCondition( '#d_wft_' + opts.conn.id, sel1, sel2 );
 		}
 	}
 	
