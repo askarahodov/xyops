@@ -898,7 +898,7 @@ Page.ServerUtils = class ServerUtils extends Page.PageUtils {
 			args.limit = 1;
 		}
 		
-		// timing mode
+		// zoom level
 		html += this.getFormRow({
 			id: 'd_esh_mode',
 			label: 'Zoom Level:',

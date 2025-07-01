@@ -420,13 +420,13 @@ Page.Plugins = class Plugins extends Page.PageUtils {
 		
 		// type
 		html += this.getFormRow({
-			label: 'Plugin Type:',
+			label: 'Type:',
 			content: this.getFormMenuSingle({
 				id: 'fe_ep_type',
 				title: 'Select Plugin Type',
 				placeholder: 'Select type for plugin...',
 				options: [
-					{ id: 'action', title: 'Action Plugin', icon: 'eye-outline' },
+					{ id: 'action', title: 'Action Plugin', icon: 'gesture-tap' },
 					{ id: 'event', title: 'Event Plugin', icon: 'calendar-clock' },
 					{ id: 'monitor', title: 'Monitor Plugin', icon: 'console' },
 					{ id: 'scheduler', title: 'Scheduler Plugin', icon: 'clock-time-four-outline' }

@@ -209,7 +209,7 @@
 					"follow": true,
 					"ssl_cert_bypass": false
 				},
-				"timings": [
+				"triggers": [
 					{
 						"type": "schedule",
 						"enabled": true,
@@ -274,7 +274,7 @@
 					"burn": false,
 					"secret": "foo"
 				},
-				"timings": [
+				"triggers": [
 					{
 						"type": "schedule",
 						"enabled": true,
@@ -339,7 +339,7 @@
 					"burn": false,
 					"secret": "foo"
 				},
-				"timings": [
+				"triggers": [
 					{
 						"type": "schedule",
 						"enabled": true,
@@ -407,7 +407,7 @@
 					"burn": false,
 					"secret": "foo"
 				},
-				"timings": [
+				"triggers": [
 					{
 						"type": "single",
 						"enabled": true,
@@ -465,7 +465,7 @@
 					"follow": true,
 					"ssl_cert_bypass": false
 				},
-				"timings": [
+				"triggers": [
 					{
 						"type": "schedule",
 						"enabled": true,
@@ -530,7 +530,7 @@
 					"burn": false,
 					"secret": "foo"
 				},
-				"timings": [
+				"triggers": [
 					{
 						"type": "schedule",
 						"enabled": true,
@@ -595,7 +595,7 @@
 					"burn": false,
 					"secret": "foo"
 				},
-				"timings": [
+				"triggers": [
 					{
 						"type": "schedule",
 						"enabled": true,
@@ -667,7 +667,7 @@
 					"follow": true,
 					"ssl_cert_bypass": false
 				},
-				"timings": [
+				"triggers": [
 					{
 						"type": "schedule",
 						"enabled": true,
@@ -727,7 +727,7 @@
 					"annotate": false,
 					"json": false
 				},
-				"timings": [
+				"triggers": [
 					{
 						"type": "schedule",
 						"enabled": true,
@@ -781,7 +781,7 @@
 					"annotate": false,
 					"json": false
 				},
-				"timings": [
+				"triggers": [
 					{
 						"type": "schedule",
 						"enabled": true,
@@ -838,7 +838,7 @@
 					"annotate": false,
 					"json": false
 				},
-				"timings": [
+				"triggers": [
 					{
 						"type": "schedule",
 						"enabled": true,
@@ -900,7 +900,7 @@
 					"burn": false,
 					"secret": "foo"
 				},
-				"timings": [
+				"triggers": [
 					{
 						"type": "single",
 						"enabled": true,
@@ -952,7 +952,7 @@
 					"annotate": false,
 					"json": false
 				},
-				"timings": [
+				"triggers": [
 					{
 						"type": "schedule",
 						"enabled": true,
@@ -1021,7 +1021,7 @@
 					"follow": true,
 					"ssl_cert_bypass": false
 				},
-				"timings": [
+				"triggers": [
 					{
 						"type": "single",
 						"enabled": true,
@@ -1073,7 +1073,7 @@
 					"annotate": false,
 					"json": false
 				},
-				"timings": [
+				"triggers": [
 					{
 						"type": "schedule",
 						"enabled": true,
@@ -1136,7 +1136,7 @@
 					"follow": true,
 					"ssl_cert_bypass": false
 				},
-				"timings": [
+				"triggers": [
 					{
 						"type": "schedule",
 						"enabled": true,
@@ -1198,7 +1198,7 @@
 					"burn": false,
 					"secret": "foo"
 				},
-				"timings": [
+				"triggers": [
 					{
 						"type": "schedule",
 						"enabled": true,
@@ -1252,7 +1252,7 @@
 					"annotate": false,
 					"json": false
 				},
-				"timings": [
+				"triggers": [
 					{
 						"type": "schedule",
 						"enabled": true,
@@ -1308,7 +1308,7 @@
 					"burn": false,
 					"secret": "foo"
 				},
-				"timings": [
+				"triggers": [
 					{
 						"type": "schedule",
 						"enabled": true,
@@ -1370,7 +1370,7 @@
 					"burn": false,
 					"secret": "foo"
 				},
-				"timings": [
+				"triggers": [
 					{
 						"type": "schedule",
 						"enabled": true,
@@ -1429,7 +1429,7 @@
 					"burn": false,
 					"secret": "foo"
 				},
-				"timings": [
+				"triggers": [
 					{
 						"type": "schedule",
 						"enabled": true,
@@ -1486,7 +1486,7 @@
 					"annotate": false,
 					"json": false
 				},
-				"timings": [
+				"triggers": [
 					{
 						"type": "schedule",
 						"enabled": true,
@@ -1546,7 +1546,7 @@
 					"follow": true,
 					"ssl_cert_bypass": false
 				},
-				"timings": [
+				"triggers": [
 					{
 						"type": "schedule",
 						"enabled": true,
@@ -1609,7 +1609,7 @@
 					"follow": true,
 					"ssl_cert_bypass": false
 				},
-				"timings": [
+				"triggers": [
 					{
 						"type": "single",
 						"enabled": true,
@@ -1667,7 +1667,7 @@
 					"follow": true,
 					"ssl_cert_bypass": false
 				},
-				"timings": [
+				"triggers": [
 					{
 						"type": "single",
 						"enabled": true,
@@ -1719,7 +1719,7 @@
 					"annotate": false,
 					"json": false
 				},
-				"timings": [
+				"triggers": [
 					{
 						"type": "schedule",
 						"enabled": true,
@@ -1785,7 +1785,7 @@
 					"follow": true,
 					"ssl_cert_bypass": false
 				},
-				"timings": [
+				"triggers": [
 					{
 						"type": "single",
 						"enabled": true,
@@ -1839,7 +1839,7 @@
 					"burn": false,
 					"secret": "foo"
 				},
-				"timings": [
+				"triggers": [
 					{
 						"type": "schedule",
 						"enabled": true,
@@ -1893,7 +1893,7 @@
 					"annotate": false,
 					"json": false
 				},
-				"timings": [
+				"triggers": [
 					{
 						"type": "single",
 						"enabled": true,
@@ -1945,7 +1945,7 @@
 					"annotate": false,
 					"json": false
 				},
-				"timings": [
+				"triggers": [
 					{
 						"type": "schedule",
 						"enabled": true,
@@ -2005,7 +2005,7 @@
 					"follow": true,
 					"ssl_cert_bypass": false
 				},
-				"timings": [
+				"triggers": [
 					{
 						"type": "schedule",
 						"enabled": true,
@@ -2071,7 +2071,7 @@
 					"follow": true,
 					"ssl_cert_bypass": false
 				},
-				"timings": [
+				"triggers": [
 					{
 						"type": "single",
 						"enabled": true,
@@ -2129,7 +2129,7 @@
 					"follow": true,
 					"ssl_cert_bypass": false
 				},
-				"timings": [
+				"triggers": [
 					{
 						"type": "schedule",
 						"enabled": true,
@@ -2201,7 +2201,7 @@
 					"follow": true,
 					"ssl_cert_bypass": false
 				},
-				"timings": [
+				"triggers": [
 					{
 						"type": "schedule",
 						"enabled": true,
@@ -2270,7 +2270,7 @@
 					"follow": true,
 					"ssl_cert_bypass": false
 				},
-				"timings": [
+				"triggers": [
 					{
 						"type": "schedule",
 						"enabled": true,
@@ -2329,7 +2329,7 @@
 					"burn": false,
 					"secret": "foo"
 				},
-				"timings": [
+				"triggers": [
 					{
 						"type": "schedule",
 						"enabled": true,
@@ -2392,7 +2392,7 @@
 					"follow": true,
 					"ssl_cert_bypass": false
 				},
-				"timings": [
+				"triggers": [
 					{
 						"type": "schedule",
 						"enabled": true,
@@ -2458,7 +2458,7 @@
 					"follow": true,
 					"ssl_cert_bypass": false
 				},
-				"timings": [
+				"triggers": [
 					{
 						"type": "schedule",
 						"enabled": true,
@@ -2521,7 +2521,7 @@
 					"follow": true,
 					"ssl_cert_bypass": false
 				},
-				"timings": [
+				"triggers": [
 					{
 						"type": "schedule",
 						"enabled": true,
@@ -2577,7 +2577,7 @@
 					"burn": false,
 					"secret": "foo"
 				},
-				"timings": [
+				"triggers": [
 					{
 						"type": "schedule",
 						"enabled": true,
@@ -2636,7 +2636,7 @@
 					"burn": false,
 					"secret": "foo"
 				},
-				"timings": [
+				"triggers": [
 					{
 						"type": "schedule",
 						"enabled": true,
@@ -2698,7 +2698,7 @@
 					"burn": false,
 					"secret": "foo"
 				},
-				"timings": [
+				"triggers": [
 					{
 						"type": "schedule",
 						"enabled": true,
@@ -2763,7 +2763,7 @@
 					"burn": false,
 					"secret": "foo"
 				},
-				"timings": [
+				"triggers": [
 					{
 						"type": "schedule",
 						"enabled": true,
@@ -2817,7 +2817,7 @@
 					"annotate": false,
 					"json": false
 				},
-				"timings": [
+				"triggers": [
 					{
 						"type": "schedule",
 						"enabled": true,
@@ -2874,7 +2874,7 @@
 					"annotate": false,
 					"json": false
 				},
-				"timings": [
+				"triggers": [
 					{
 						"type": "single",
 						"enabled": true,
@@ -2926,7 +2926,7 @@
 					"annotate": false,
 					"json": false
 				},
-				"timings": [
+				"triggers": [
 					{
 						"type": "schedule",
 						"enabled": true,
@@ -2989,7 +2989,7 @@
 					"annotate": false,
 					"json": false
 				},
-				"timings": [
+				"triggers": [
 					{
 						"type": "schedule",
 						"enabled": true,
@@ -3048,7 +3048,7 @@
 					"burn": false,
 					"secret": "foo"
 				},
-				"timings": [
+				"triggers": [
 					{
 						"type": "schedule",
 						"enabled": true,
@@ -3102,7 +3102,7 @@
 					"annotate": false,
 					"json": false
 				},
-				"timings": [
+				"triggers": [
 					{
 						"type": "single",
 						"enabled": true,
@@ -3160,7 +3160,7 @@
 					"follow": true,
 					"ssl_cert_bypass": false
 				},
-				"timings": [
+				"triggers": [
 					{
 						"type": "schedule",
 						"enabled": true,
@@ -3219,7 +3219,7 @@
 					"burn": false,
 					"secret": "foo"
 				},
-				"timings": [
+				"triggers": [
 					{
 						"type": "schedule",
 						"enabled": true,
@@ -3281,7 +3281,7 @@
 					"burn": false,
 					"secret": "foo"
 				},
-				"timings": [
+				"triggers": [
 					{
 						"type": "schedule",
 						"enabled": true,
@@ -3350,7 +3350,7 @@
 					"follow": true,
 					"ssl_cert_bypass": false
 				},
-				"timings": [
+				"triggers": [
 					{
 						"type": "schedule",
 						"enabled": true,
@@ -3409,7 +3409,7 @@
 					"burn": false,
 					"secret": "foo"
 				},
-				"timings": [
+				"triggers": [
 					{
 						"type": "schedule",
 						"enabled": true,
@@ -3465,7 +3465,7 @@
 					"burn": false,
 					"secret": "foo"
 				},
-				"timings": [
+				"triggers": [
 					{
 						"type": "schedule",
 						"enabled": true,
@@ -3531,7 +3531,7 @@
 					"annotate": false,
 					"json": false
 				},
-				"timings": [
+				"triggers": [
 					{
 						"type": "schedule",
 						"enabled": true,
@@ -3597,7 +3597,7 @@
 					"annotate": false,
 					"json": false
 				},
-				"timings": [
+				"triggers": [
 					{
 						"type": "schedule",
 						"enabled": true,
@@ -3666,7 +3666,7 @@
 					"follow": true,
 					"ssl_cert_bypass": false
 				},
-				"timings": [
+				"triggers": [
 					{
 						"type": "schedule",
 						"enabled": true,
@@ -3729,7 +3729,7 @@
 					"annotate": false,
 					"json": false
 				},
-				"timings": [
+				"triggers": [
 					{
 						"type": "schedule",
 						"enabled": true,
@@ -3786,7 +3786,7 @@
 					"annotate": false,
 					"json": false
 				},
-				"timings": [
+				"triggers": [
 					{
 						"type": "schedule",
 						"enabled": true,
@@ -3851,7 +3851,7 @@
 					"burn": false,
 					"secret": "foo"
 				},
-				"timings": [
+				"triggers": [
 					{
 						"type": "schedule",
 						"enabled": true,
@@ -3905,7 +3905,7 @@
 					"annotate": false,
 					"json": false
 				},
-				"timings": [
+				"triggers": [
 					{
 						"type": "schedule",
 						"enabled": true,
@@ -3961,7 +3961,7 @@
 					"burn": false,
 					"secret": "foo"
 				},
-				"timings": [
+				"triggers": [
 					{
 						"type": "schedule",
 						"enabled": true,
@@ -4021,7 +4021,7 @@
 					"annotate": false,
 					"json": false
 				},
-				"timings": [
+				"triggers": [
 					{
 						"type": "schedule",
 						"enabled": true,
@@ -4084,7 +4084,7 @@
 					"follow": true,
 					"ssl_cert_bypass": false
 				},
-				"timings": [
+				"triggers": [
 					{
 						"type": "schedule",
 						"enabled": true,
@@ -4143,7 +4143,7 @@
 					"burn": false,
 					"secret": "foo"
 				},
-				"timings": [
+				"triggers": [
 					{
 						"type": "schedule",
 						"enabled": true,
@@ -4200,7 +4200,7 @@
 					"annotate": false,
 					"json": false
 				},
-				"timings": [
+				"triggers": [
 					{
 						"type": "schedule",
 						"enabled": true,
@@ -4260,7 +4260,7 @@
 					"annotate": false,
 					"json": false
 				},
-				"timings": [
+				"triggers": [
 					{
 						"type": "schedule",
 						"enabled": true,
@@ -4322,7 +4322,7 @@
 					"burn": false,
 					"secret": "foo"
 				},
-				"timings": [
+				"triggers": [
 					{
 						"type": "schedule",
 						"enabled": true,
@@ -4387,7 +4387,7 @@
 					"burn": false,
 					"secret": "foo"
 				},
-				"timings": [
+				"triggers": [
 					{
 						"type": "schedule",
 						"enabled": true,
@@ -4453,7 +4453,7 @@
 					"annotate": false,
 					"json": false
 				},
-				"timings": [
+				"triggers": [
 					{
 						"type": "schedule",
 						"enabled": true,
@@ -4516,7 +4516,7 @@
 					"annotate": false,
 					"json": false
 				},
-				"timings": [
+				"triggers": [
 					{
 						"type": "single",
 						"enabled": true,
@@ -4570,7 +4570,7 @@
 					"burn": false,
 					"secret": "foo"
 				},
-				"timings": [
+				"triggers": [
 					{
 						"type": "schedule",
 						"enabled": true,
@@ -4630,7 +4630,7 @@
 					"follow": true,
 					"ssl_cert_bypass": false
 				},
-				"timings": [
+				"triggers": [
 					{
 						"type": "schedule",
 						"enabled": true,
@@ -4698,7 +4698,7 @@
 					"burn": false,
 					"secret": "foo"
 				},
-				"timings": [
+				"triggers": [
 					{
 						"type": "schedule",
 						"enabled": true,
@@ -4755,7 +4755,7 @@
 					"annotate": false,
 					"json": false
 				},
-				"timings": [
+				"triggers": [
 					{
 						"type": "single",
 						"enabled": true,
@@ -4813,7 +4813,7 @@
 					"follow": true,
 					"ssl_cert_bypass": false
 				},
-				"timings": [
+				"triggers": [
 					{
 						"type": "schedule",
 						"enabled": true,
@@ -4867,7 +4867,7 @@
 					"annotate": false,
 					"json": false
 				},
-				"timings": [
+				"triggers": [
 					{
 						"type": "single",
 						"enabled": true,
@@ -4921,7 +4921,7 @@
 					"burn": false,
 					"secret": "foo"
 				},
-				"timings": [
+				"triggers": [
 					{
 						"type": "schedule",
 						"enabled": true,
@@ -4987,7 +4987,7 @@
 					"follow": true,
 					"ssl_cert_bypass": false
 				},
-				"timings": [
+				"triggers": [
 					{
 						"type": "schedule",
 						"enabled": true,
@@ -5056,7 +5056,7 @@
 					"follow": true,
 					"ssl_cert_bypass": false
 				},
-				"timings": [
+				"triggers": [
 					{
 						"type": "schedule",
 						"enabled": true,
@@ -5115,7 +5115,7 @@
 					"burn": false,
 					"secret": "foo"
 				},
-				"timings": [
+				"triggers": [
 					{
 						"type": "schedule",
 						"enabled": true,
@@ -5171,7 +5171,7 @@
 					"burn": false,
 					"secret": "foo"
 				},
-				"timings": [
+				"triggers": [
 					{
 						"type": "schedule",
 						"enabled": true,
@@ -5231,7 +5231,7 @@
 					"annotate": false,
 					"json": false
 				},
-				"timings": [
+				"triggers": [
 					{
 						"type": "schedule",
 						"enabled": true,
@@ -5294,7 +5294,7 @@
 					"annotate": false,
 					"json": false
 				},
-				"timings": [
+				"triggers": [
 					{
 						"type": "schedule",
 						"enabled": true,
@@ -5353,7 +5353,7 @@
 					"burn": false,
 					"secret": "foo"
 				},
-				"timings": [
+				"triggers": [
 					{
 						"type": "schedule",
 						"enabled": true,
@@ -5413,7 +5413,7 @@
 					"annotate": false,
 					"json": false
 				},
-				"timings": [
+				"triggers": [
 					{
 						"type": "schedule",
 						"enabled": true,
@@ -5475,7 +5475,7 @@
 					"burn": false,
 					"secret": "foo"
 				},
-				"timings": [
+				"triggers": [
 					{
 						"type": "schedule",
 						"enabled": true,
@@ -5538,7 +5538,7 @@
 					"follow": true,
 					"ssl_cert_bypass": false
 				},
-				"timings": [
+				"triggers": [
 					{
 						"type": "schedule",
 						"enabled": true,
@@ -5601,7 +5601,7 @@
 					"follow": true,
 					"ssl_cert_bypass": false
 				},
-				"timings": [
+				"triggers": [
 					{
 						"type": "schedule",
 						"enabled": true,
@@ -5657,7 +5657,7 @@
 					"burn": false,
 					"secret": "foo"
 				},
-				"timings": [
+				"triggers": [
 					{
 						"type": "schedule",
 						"enabled": true,
@@ -5717,7 +5717,7 @@
 					"annotate": false,
 					"json": false
 				},
-				"timings": [
+				"triggers": [
 					{
 						"type": "schedule",
 						"enabled": true,
@@ -5780,7 +5780,7 @@
 					"annotate": false,
 					"json": false
 				},
-				"timings": [
+				"triggers": [
 					{
 						"type": "schedule",
 						"enabled": true,
@@ -5836,7 +5836,7 @@
 					"burn": false,
 					"secret": "foo"
 				},
-				"timings": [
+				"triggers": [
 					{
 						"type": "schedule",
 						"enabled": true,
@@ -5899,7 +5899,7 @@
 					"follow": true,
 					"ssl_cert_bypass": false
 				},
-				"timings": [
+				"triggers": [
 					{
 						"type": "single",
 						"enabled": true,
@@ -5953,7 +5953,7 @@
 					"burn": false,
 					"secret": "foo"
 				},
-				"timings": [
+				"triggers": [
 					{
 						"type": "schedule",
 						"enabled": true,
@@ -6021,7 +6021,7 @@
 					"burn": false,
 					"secret": "foo"
 				},
-				"timings": [
+				"triggers": [
 					{
 						"type": "schedule",
 						"enabled": true,
@@ -6084,7 +6084,7 @@
 					"annotate": false,
 					"json": false
 				},
-				"timings": [
+				"triggers": [
 					{
 						"type": "schedule",
 						"enabled": true,
@@ -6146,7 +6146,7 @@
 					"burn": false,
 					"secret": "foo"
 				},
-				"timings": [
+				"triggers": [
 					{
 						"type": "schedule",
 						"enabled": true,
@@ -6211,7 +6211,7 @@
 					"burn": false,
 					"secret": "foo"
 				},
-				"timings": [
+				"triggers": [
 					{
 						"type": "schedule",
 						"enabled": true,

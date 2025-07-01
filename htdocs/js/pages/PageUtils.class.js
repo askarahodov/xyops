@@ -514,7 +514,7 @@ Page.PageUtils = class PageUtils extends Page.Base {
 				rows: this.upcomingJobs.slice( this.upcomingOffset, this.upcomingOffset + config.alt_items_per_page ),
 				list: { length: this.upcomingJobs.length }
 			},
-			cols: ['Event', 'Category', 'Target', 'Source', 'Scheduled Time', 'Countdown', 'Actions'],
+			cols: ['Event', 'Category', 'Targets', 'Source', 'Scheduled Time', 'Countdown', 'Actions'],
 			data_type: 'job',
 			offset: this.upcomingOffset,
 			limit: config.alt_items_per_page,
@@ -560,8 +560,8 @@ Page.PageUtils = class PageUtils extends Page.Base {
 		var msg = 'Are you sure you want to skip the upcoming job at "' + this.getShortDateTimeText( job.epoch ) + '"?';
 		
 		switch (job.type) {
-			case 'single': msg += '  Since this is a "Single Shot" timing rule, it will simply be disabled.'; break;
-			case 'schedule': msg += '  Since this is a scheduled timing rule, a new "Blackout" range will be added to disable it.'; break;
+			case 'single': msg += '  Since this is a "Single Shot" trigger, it will simply be disabled.'; break;
+			case 'schedule': msg += '  Since this is a scheduled trigger, a new "Blackout" range will be added to disable it.'; break;
 		}
 		
 		Dialog.confirmDanger( 'Skip Upcoming Job', msg, ['alert-decagram', 'Skip Job'], function(result) {
@@ -571,15 +571,15 @@ Page.PageUtils = class PageUtils extends Page.Base {
 			
 			switch (job.type) {
 				case 'single':
-					delete_object( event.timings, { type: 'single', enabled: true, epoch: job.epoch } );
+					delete_object( event.triggers, { type: 'single', enabled: true, epoch: job.epoch } );
 				break;
 				
 				case 'schedule':
-					event.timings.push({ type: 'blackout', enabled: true, start: job.epoch, end: job.epoch }); // Note: end is inclusive!
+					event.triggers.push({ type: 'blackout', enabled: true, start: job.epoch, end: job.epoch }); // Note: end is inclusive!
 				break;
 			} // switch job.type
 			
-			app.api.post( 'app/update_event', { id: event.id, timings: event.timings }, function(resp) {
+			app.api.post( 'app/update_event', { id: event.id, triggers: event.triggers }, function(resp) {
 				Dialog.hideProgress();
 				app.showMessage('success', "The selected upcoming job will be skipped.");
 				
@@ -1365,25 +1365,24 @@ Page.PageUtils = class PageUtils extends Page.Base {
 		return html;
 	}
 	
-	getWF_launcher(node, workflow) {
-		// get HTML for single workflow node of type launcher
+	getWF_trigger(node, workflow) {
+		// get HTML for single workflow node of type trigger
 		var html = '';
 		var pos = this.getWFPos(node);
-		var timing = find_object( this.event.timings, { id: node.id } );
-		if (!timing) return; // sanity
+		var trigger = find_object( this.event.triggers, { id: node.id } );
+		if (!trigger) return; // sanity
 		
 		var classes = ['wf_node', 'wf_entity'];
-		if (!timing.enabled) classes.push('disabled');
+		if (!trigger.enabled) classes.push('disabled');
 		
-		var { nice_icon, nice_type, nice_desc, alt_icon, short_desc } = this.getTimingDisplayArgs(timing);
+		var { nice_icon, nice_type, nice_desc, alt_icon, short_desc } = this.getTriggerDisplayArgs(trigger);
 		var nice_title = nice_type;
 		var icon = alt_icon;
 		
-		if (!timing.enabled) short_desc = '(Disabled)';
-		if (nice_title == 'Option') nice_title = 'Launcher';
+		if (!trigger.enabled) short_desc = '(Disabled)';
 		
 		html += `<div id="d_wfn_${node.id}" class="${classes.join(' ')}" style="left:${pos.x}px; top:${pos.y}px;">
-			<div class="wf_ent_launcher">
+			<div class="wf_ent_trigger">
 				<i class="mdi mdi-${icon}"></i>
 				<div class="wf_pole wf_output_pole"><i class="mdi mdi-chevron-right"></i></div>
 			</div>
@@ -1487,9 +1486,9 @@ Page.PageUtils = class PageUtils extends Page.Base {
 				style.end_dir = 'top';
 				style.custom = { strokeStyle: app.getCSSVar('--cyan'), lineDash: [4, 4] };
 			}
-			else if (source.type == 'launcher') {
-				var timing = find_object( self.event.timings, { id: source.id } );
-				if (timing && timing.enabled) style.custom = { strokeStyle: app.getCSSVar('--orange') };
+			else if (source.type == 'trigger') {
+				var trigger = find_object( self.event.triggers, { id: source.id } );
+				if (trigger && trigger.enabled) style.custom = { strokeStyle: app.getCSSVar('--orange') };
 			}
 			
 			self.renderWFConnection({
@@ -2032,15 +2031,15 @@ Page.PageUtils = class PageUtils extends Page.Base {
 		return is_valid ? params : false;
 	}
 	
-	getTimingDisplayArgs(item) {
-		// prep timing item for display
+	getTriggerDisplayArgs(item) {
+		// prep trigger item for display
 		var nice_icon = '';
 		var alt_icon = '';
 		var nice_type = '';
 		var nice_desc = '';
 		var short_desc = '';
 		
-		var menu_item = find_object( config.ui.event_timing_type_menu, { id: item.type } );
+		var menu_item = find_object( config.ui.event_trigger_type_menu, { id: item.type } );
 		if (menu_item) alt_icon = menu_item.icon;
 		
 		switch (item.type) {
@@ -2050,19 +2049,19 @@ Page.PageUtils = class PageUtils extends Page.Base {
 				short_desc = summarize_event_timing(item);
 				nice_desc = '<i class="mdi mdi-update">&nbsp;</i><b>Recurring:</b> ' + short_desc;
 				
-				// find actual sub-type based on schedule timing params
-				var timing = item;
+				// find actual sub-type based on schedule trigger params
+				var trigger = item;
 				var tmode = 'hourly';
-				if (timing.years && timing.years.length) tmode = 'custom';
-				else if (timing.months && timing.months.length && timing.weekdays && timing.weekdays.length) tmode = 'custom';
-				else if (timing.days && timing.days.length && timing.weekdays && timing.weekdays.length) tmode = 'custom';
-				else if (timing.months && timing.months.length) tmode = 'yearly';
-				else if (timing.weekdays && timing.weekdays.length) tmode = 'weekly';
-				else if (timing.days && timing.days.length) tmode = 'monthly';
-				else if (timing.hours && timing.hours.length) tmode = 'daily';
-				else if (timing.minutes && timing.minutes.length) tmode = 'hourly';
+				if (trigger.years && trigger.years.length) tmode = 'custom';
+				else if (trigger.months && trigger.months.length && trigger.weekdays && trigger.weekdays.length) tmode = 'custom';
+				else if (trigger.days && trigger.days.length && trigger.weekdays && trigger.weekdays.length) tmode = 'custom';
+				else if (trigger.months && trigger.months.length) tmode = 'yearly';
+				else if (trigger.weekdays && trigger.weekdays.length) tmode = 'weekly';
+				else if (trigger.days && trigger.days.length) tmode = 'monthly';
+				else if (trigger.hours && trigger.hours.length) tmode = 'daily';
+				else if (trigger.minutes && trigger.minutes.length) tmode = 'hourly';
 				
-				menu_item = find_object( config.ui.event_timing_type_menu, { id: tmode } );
+				menu_item = find_object( config.ui.event_trigger_type_menu, { id: tmode } );
 				alt_icon = menu_item.icon;
 			break;
 			
@@ -2082,8 +2081,8 @@ Page.PageUtils = class PageUtils extends Page.Base {
 			
 			case 'manual':
 				nice_icon = '<i class="mdi mdi-cog-outline"></i>';
-				nice_type = 'Option';
-				nice_desc = '<i class="mdi mdi-run-fast">&nbsp;</i>Allow Manual Run';
+				nice_type = 'Other';
+				nice_desc = '<i class="mdi mdi-run-fast">&nbsp;</i>Manual Run';
 				short_desc = "Manual Run";
 			break;
 			
@@ -2128,10 +2127,10 @@ Page.PageUtils = class PageUtils extends Page.Base {
 		return { nice_icon, nice_type, nice_desc, alt_icon, short_desc };
 	}
 	
-	summarizeTimingRange(timing) {
+	summarizeTimingRange(trigger) {
 		// summarize date/time range, or single start/end
 		var text = '';
-		var tz = timing.timezone || app.config.tz;
+		var tz = trigger.timezone || app.config.tz;
 		var opts = this.getDateOptions({
 			year: 'numeric',
 			month: 'short',
@@ -2142,17 +2141,17 @@ Page.PageUtils = class PageUtils extends Page.Base {
 		});
 		var formatter = new Intl.DateTimeFormat(opts.locale, opts);
 		
-		if (timing.start && timing.end) {
+		if (trigger.start && trigger.end) {
 			// full range
-			text = formatter.formatRange( new Date(timing.start * 1000), new Date(timing.end * 1000) );
+			text = formatter.formatRange( new Date(trigger.start * 1000), new Date(trigger.end * 1000) );
 		}
-		else if (timing.start) {
+		else if (trigger.start) {
 			// start only
-			text = "Start on " + formatter.format( new Date(timing.start * 1000) );
+			text = "Start on " + formatter.format( new Date(trigger.start * 1000) );
 		}
-		else if (timing.end) {
+		else if (trigger.end) {
 			// end only
-			text = "End on " + formatter.format( new Date(timing.end * 1000) );
+			text = "End on " + formatter.format( new Date(trigger.end * 1000) );
 		}
 		else return "n/a";
 		

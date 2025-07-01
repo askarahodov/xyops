@@ -115,11 +115,11 @@ request.json( 'https://random-data-api.com/api/company/random_company?size=100',
 			break;
 		}
 		
-		// timings
+		// triggers
 		var dargs = Tools.getDateArgs( Tools.timeNow(true) + Math.floor( Math.random() * 86400 * 365 ) );
 		switch (Math.floor(Math.random() * 7)) {
 			case 0:
-				event.timings = [{
+				event.triggers = [{
 					type: 'schedule',
 					enabled: true,
 					years: [ dargs.year ],
@@ -131,7 +131,7 @@ request.json( 'https://random-data-api.com/api/company/random_company?size=100',
 			break;
 			
 			case 1:
-				event.timings = [{
+				event.triggers = [{
 					type: 'schedule',
 					enabled: true,
 					// years: [ dargs.year ],
@@ -143,7 +143,7 @@ request.json( 'https://random-data-api.com/api/company/random_company?size=100',
 			break;
 			
 			case 2:
-				event.timings = [{
+				event.triggers = [{
 					type: 'schedule',
 					enabled: true,
 					// years: [ dargs.year ],
@@ -155,7 +155,7 @@ request.json( 'https://random-data-api.com/api/company/random_company?size=100',
 			break;
 			
 			case 3:
-				event.timings = [{
+				event.triggers = [{
 					type: 'schedule',
 					enabled: true,
 					// years: [ dargs.year ],
@@ -167,7 +167,7 @@ request.json( 'https://random-data-api.com/api/company/random_company?size=100',
 			break;
 			
 			case 4:
-				event.timings = [{
+				event.triggers = [{
 					type: 'schedule',
 					enabled: true,
 					// years: [ dargs.year ],
@@ -179,7 +179,7 @@ request.json( 'https://random-data-api.com/api/company/random_company?size=100',
 			break;
 			
 			case 5:
-				event.timings = [{
+				event.triggers = [{
 					type: 'schedule',
 					enabled: true,
 					// years: [ dargs.year ],
@@ -192,7 +192,7 @@ request.json( 'https://random-data-api.com/api/company/random_company?size=100',
 			break;
 			
 			case 6:
-				event.timings = [{
+				event.triggers = [{
 					type: 'single',
 					enabled: true,
 					epoch: dargs.epoch
@@ -200,7 +200,7 @@ request.json( 'https://random-data-api.com/api/company/random_company?size=100',
 			break;
 		}
 		
-		// if (Math.random() < 0.1) event.timings.push({ type: 'catchup', enabled: true });
+		// if (Math.random() < 0.1) event.triggers.push({ type: 'catchup', enabled: true });
 		
 		data.storage.push([ "listPush", "global/events", event ]);
 	}

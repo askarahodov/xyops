@@ -40,7 +40,7 @@ An event is an item on the schedule which launches [Jobs](#job).  It may or may 
 		"annotate": false,
 		"json": false
 	},
-	"timings": [
+	"triggers": [
 		{
 			"type": "schedule",
 			"enabled": true,
@@ -127,9 +127,9 @@ An array of [Limit](#limit) items to apply to running jobs, e.g. CPU and memory 
 
 The event's [Category](#category) can define limits which act as defaults to the event limits.
 
-## Event.timings
+## Event.triggers
 
-An array of [Timing](#timing) items to schedule future job runs and set timing rules, e.g. blackout dates.
+An array of [Trigger](#trigger) items to schedule future job runs and set rules, e.g. blackout dates.
 
 # Job
 
@@ -143,7 +143,7 @@ A job is a running (or previously ran) instance of an event.  The job structure 
 | `enabled` | Removed from job structure when event is copied. |
 | `created` | Removed from job structure when event is copied. |
 | `modified` | Removed from job structure when event is copied. |
-| `timings` | Removed from job structure when event is copied. |
+| `triggers` | Removed from job structure when event is copied. |
 
 And these additions:
 
@@ -384,11 +384,11 @@ User writable property for providing a text-formatted report.  Should be specifi
 
 ## Job.single
 
-This is set to `true` by the scheduler when a job was launched from a "single-shot" timing configuration.  Only used for UI hinting.
+This is set to `true` by the scheduler when a job was launched from a "single-shot" trigger configuration.  Only used for UI hinting.
 
 ## Job.splugin
 
-This is set to a Plugin ID by the scheduler when a job was launched from a Plugin based timing configuration.  Only used for UI hinting.
+This is set to a Plugin ID by the scheduler when a job was launched from a Plugin based trigger configuration.  Only used for UI hinting.
 
 ## Job.label
 
@@ -528,9 +528,9 @@ Each limit has a `type` property which specifies what it governs.  The different
 | `retry` | Set a maximum number of retries allowed for failed jobs.  The number of retries should be in a property named `amount`, and optionally the delay between retries should be in a property named `duration`, specified as seconds. |
 | `queue` | Set a maximum number of jobs that may be queued up, if other limits prevent them from running concurrently.  The number should be in a property named `amount`. |
 
-## Timing
+## Trigger
 
-Events are scheduled using one or more timing objects, which can define repeating invocations (hourly, daily, etc.), single-shots on an exact future date/time, and other misc. timing rules such as blackout dates.  Here is an example:
+Events are scheduled using one or more trigger objects, which can define repeating invocations (hourly, daily, etc.), single-shots on an exact future date/time, and other misc. rules such as blackout dates.  Here is an example:
 
 ```json
 {
@@ -543,18 +543,18 @@ Events are scheduled using one or more timing objects, which can define repeatin
 
 This would run every day at 4:30 AM (repeating).
 
-Each timing object should have the following properties:
+Each trigger object should have the following properties:
 
 | Property Name | Type | Description |
 |---------------|------|-------------|
-| `enabled` | Boolean | Specifies whether the timing rule is enabled (`true`) or disabled (`false`). |
-| `type` | String | Specifies the type of timing rule.  See [Timing Types](#timing-types) below. |
+| `enabled` | Boolean | Specifies whether the trigger is enabled (`true`) or disabled (`false`). |
+| `type` | String | Specifies the type of trigger.  See [Trigger Types](#trigger-types) below. |
 
 Additional properties may be present based on the type.
 
-### Timing Types
+### Trigger Types
 
-Each timing rule has a `type` property which describes its behavior.  The different types are listed below:
+Each trigger has a `type` property which describes its behavior.  The different types are listed below:
 
 | Type ID | Description |
 |---------|-------------|
@@ -571,7 +571,7 @@ Each timing rule has a `type` property which describes its behavior.  The differ
 
 The `schedule` type describes a repeating event (when and how frequent it should run jobs).  It works similarly to the [Unix Cron](https://en.wikipedia.org/wiki/Cron) system, with selections of years, months, days, weekdays, hours and/or minutes.  Each property should be an array of numerical values.  If omitted, it means the same as "all" in that category (i.e. asterisk `*` in Cron syntax).
 
-For example, an event with this timing object would run once per hour, on the hour:
+For example, an event with this trigger object would run once per hour, on the hour:
 
 ```js
 {
@@ -609,9 +609,9 @@ For a more complex example, this would run only in year 2023, from March to May,
 }
 ```
 
-Here is a list of all the `schedule` type timing object properties and their descriptions:
+Here is a list of all the `schedule` type trigger object properties and their descriptions:
 
-| Timing Property | Range | Description |
+| Trigger Property | Range | Description |
 |-----------------|-------|-------------|
 | `years` | ∞ | One or more years in YYYY format. |
 | `months` | 1 - 12 | One or more months, where January is 1 and December is 12. |

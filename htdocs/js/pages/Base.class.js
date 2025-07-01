@@ -2484,7 +2484,7 @@ Page.Base = class Base extends Page {
 		
 		opts.events = deep_copy_object(opts.events).filter( function(event) { 
 			if (!event.enabled) return false;
-			if (!event.timings || !event.timings.length) return false; // on-demand
+			if (!event.triggers || !event.triggers.length) return false; // on-demand
 			
 			// check for disabled category
 			var category = find_object( app.categories, { id: event.category } );
@@ -2496,15 +2496,15 @@ Page.Base = class Base extends Page {
 				if (plugin && !plugin.enabled) return false;
 			}
 			
-			// process timings
-			var timings = event.timings.filter( function(timing) { return timing.enabled; } );
-			var schedules = timings.filter( function(timing) { return (timing.type == 'schedule') || (timing.type == 'single'); } );
+			// process triggers
+			var triggers = event.triggers.filter( function(trigger) { return trigger.enabled; } );
+			var schedules = triggers.filter( function(trigger) { return (trigger.type == 'schedule') || (trigger.type == 'single'); } );
 			if (!schedules.length) return false;
 			
 			// setup all unique timezones (intl formatters)
-			schedules.forEach( function(timing) {
-				if (timing.type != 'schedule') return;
-				var tz = timing.timezone || app.config.tz;
+			schedules.forEach( function(trigger) {
+				if (trigger.type != 'schedule') return;
+				var tz = trigger.timezone || app.config.tz;
 				if (tz in opts.formatters) return; // already setup
 				
 				opts.formatters[tz] = new Intl.DateTimeFormat('en-US', 
@@ -2514,7 +2514,7 @@ Page.Base = class Base extends Page {
 			
 			// store some props for fast access below
 			event.schedules = schedules;
-			event.ranges = timings.filter( function(timing) { return (timing.type == 'range') || (timing.type == 'blackout'); } );
+			event.ranges = triggers.filter( function(trigger) { return (trigger.type == 'range') || (trigger.type == 'blackout'); } );
 			return true;
 		} ); // filter events
 		
@@ -2565,22 +2565,22 @@ Page.Base = class Base extends Page {
 			opts.events.forEach( function(event) {
 				var scheduled = false;
 				
-				event.schedules.forEach( function(timing) {
-					if ((timing.type == 'single') && (timing.epoch == opts.epoch)) {
+				event.schedules.forEach( function(trigger) {
+					if ((trigger.type == 'single') && (trigger.epoch == opts.epoch)) {
 						scheduled = 'single';
 						return;
 					}
 					
-					if (timing.type != 'schedule') return; // sanity
-					var tz = timing.timezone || app.config.tz;
+					if (trigger.type != 'schedule') return; // sanity
+					var tz = trigger.timezone || app.config.tz;
 					var dargs = tzargs[tz];
 					
-					if (timing.years && timing.years.length && !timing.years.includes(dargs.year)) return;
-					if (timing.months && timing.months.length && !timing.months.includes(dargs.month)) return;
-					if (timing.days && timing.days.length && !timing.days.includes(dargs.day) && !timing.days.includes(dargs.rday)) return;
-					if (timing.weekdays && timing.weekdays.length && !timing.weekdays.includes(dargs.weekday)) return;
-					if (timing.hours && timing.hours.length && !timing.hours.includes(dargs.hour)) return;
-					if (timing.minutes && timing.minutes.length && !timing.minutes.includes(dargs.minute)) return;
+					if (trigger.years && trigger.years.length && !trigger.years.includes(dargs.year)) return;
+					if (trigger.months && trigger.months.length && !trigger.months.includes(dargs.month)) return;
+					if (trigger.days && trigger.days.length && !trigger.days.includes(dargs.day) && !trigger.days.includes(dargs.rday)) return;
+					if (trigger.weekdays && trigger.weekdays.length && !trigger.weekdays.includes(dargs.weekday)) return;
+					if (trigger.hours && trigger.hours.length && !trigger.hours.includes(dargs.hour)) return;
+					if (trigger.minutes && trigger.minutes.length && !trigger.minutes.includes(dargs.minute)) return;
 					
 					scheduled = 'schedule';
 				} ); // foreach schedule
@@ -2589,15 +2589,15 @@ Page.Base = class Base extends Page {
 				
 				// check ranges
 				// (both start/end dates are INCLUSIVE)
-				event.ranges.forEach( function(timing) {
-					switch (timing.type) {
+				event.ranges.forEach( function(trigger) {
+					switch (trigger.type) {
 						case 'range':
-							if (timing.start && (opts.epoch < timing.start)) scheduled = false;
-							else if (timing.end && (opts.epoch > timing.end)) scheduled = false;
+							if (trigger.start && (opts.epoch < trigger.start)) scheduled = false;
+							else if (trigger.end && (opts.epoch > trigger.end)) scheduled = false;
 						break;
 						
 						case 'blackout':
-							if ((opts.epoch >= timing.start) && (opts.epoch <= timing.end)) scheduled = false;
+							if ((opts.epoch >= trigger.start) && (opts.epoch <= trigger.end)) scheduled = false;
 						break;
 					}
 				} );

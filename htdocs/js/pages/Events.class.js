@@ -134,20 +134,20 @@ Page.Events = class Events extends Page.PageUtils {
 					});
 				html += '</div>';
 				
-				// timing
+				// trigger
 				html += '<div class="form_cell">';
 					html += this.getFormRow({
-						label: '<i class="icon mdi mdi-calendar-clock">&nbsp;</i>Timing:',
+						label: '<i class="icon mdi mdi-rocket-launch-outline">&nbsp;</i>Trigger:',
 						content: this.getFormMenuSingle({
-							id: 'fe_el_timing',
-							title: 'Select Timing',
+							id: 'fe_el_trigger',
+							title: 'Select Trigger',
 							options: [
-								['', 'Any Timing'], 
-								{ id: 'manual', title: 'On Demand', icon: 'button-cursor' },
+								['', 'Any Trigger'], 
+								{ id: 'manual', title: 'Manual', icon: 'run-fast' },
 								{ id: 'schedule', title: 'Scheduled', icon: 'update' },
 								{ id: 'continuous', title: "Continuous", icon: 'all-inclusive' },
 								{ id: 'single', title: "Single Shot", icon: 'alarm-check' },
-								{ id: 'catchup', title: "Catch-Up", icon: 'run-fast' },
+								{ id: 'catchup', title: "Catch-Up", icon: 'calendar-refresh-outline' },
 								{ id: 'range', title: "Range", icon: 'calendar-range-outline' },
 								{ id: 'blackout', title: "Blackout", icon: 'circle' },
 								{ id: 'delay', title: "Delay", icon: 'chat-sleep-outline' },
@@ -156,7 +156,7 @@ Page.Events = class Events extends Page.PageUtils {
 							].concat(
 								this.buildOptGroup( scheduler_plugins, "Scheduler Plugins:", 'power-plug-outline', 'p_' )
 							),
-							value: args.timing || '',
+							value: args.trigger || '',
 							'data-shrinkwrap': 1
 						})
 					});
@@ -165,7 +165,7 @@ Page.Events = class Events extends Page.PageUtils {
 				// action
 				html += '<div class="form_cell">';
 					html += this.getFormRow({
-						label: '<i class="icon mdi mdi-eye-outline">&nbsp;</i>Action:',
+						label: '<i class="icon mdi mdi-gesture-tap">&nbsp;</i>Action:',
 						content: this.getFormMenuSingle({
 							id: 'fe_el_action',
 							title: 'Select Action',
@@ -221,10 +221,10 @@ Page.Events = class Events extends Page.PageUtils {
 		this.div.html( html );
 		
 		// MultiSelect.init( this.div.find('#fe_el_tags') );
-		SingleSelect.init( this.div.find('#fe_el_status, #fe_el_category, #fe_el_target, #fe_el_plugin, #fe_el_tag, #fe_el_timing, #fe_el_username, #fe_el_action') );
+		SingleSelect.init( this.div.find('#fe_el_status, #fe_el_category, #fe_el_target, #fe_el_plugin, #fe_el_tag, #fe_el_trigger, #fe_el_username, #fe_el_action') );
 		// $('.header_search_widget').hide();
 		
-		this.div.find('#fe_el_tag, #fe_el_status, #fe_el_category, #fe_el_target, #fe_el_plugin, #fe_el_timing, #fe_el_username, #fe_el_action').on('change', function() {
+		this.div.find('#fe_el_tag, #fe_el_status, #fe_el_category, #fe_el_target, #fe_el_plugin, #fe_el_trigger, #fe_el_username, #fe_el_action').on('change', function() {
 			self.applyTableFilters(true);
 		});
 		
@@ -273,7 +273,7 @@ Page.Events = class Events extends Page.PageUtils {
 		} );
 		
 		// NOTE: Don't change these columns without also changing the responsive css column collapse rules in style.css
-		var cols = ['<i class="mdi mdi-checkbox-marked-outline"></i>', 'Event Title', 'Category', 'Plugin', 'Target', 'Timing', 'Status', 'Actions'];
+		var cols = ['<i class="mdi mdi-checkbox-marked-outline"></i>', 'Event Title', 'Category', 'Plugin', 'Target', 'Trigger', 'Status', 'Actions'];
 		
 		html += '<div class="box" id="d_el_results">';
 		html += '<div class="box_title">';
@@ -421,7 +421,7 @@ Page.Events = class Events extends Page.PageUtils {
 		if (reset_max) this.eventsPerPage = config.events_per_page;
 		
 		// single-selects
-		['search', 'status', 'category', 'target', 'plugin', 'tag', 'timing', 'username', 'action'].forEach( function(key) {
+		['search', 'status', 'category', 'target', 'plugin', 'tag', 'trigger', 'username', 'action'].forEach( function(key) {
 			var value = $('#fe_el_' + key).val();
 			if (value.length) { args[key] = value; num_filters++; }
 			else delete args[key];
@@ -502,7 +502,7 @@ Page.Events = class Events extends Page.PageUtils {
 		var args = this.args;
 		var num_filters = 0;
 		
-		['search', 'status', 'category', 'target', 'plugin', 'timing', 'username', 'action', 'tag'].forEach( function(key) {
+		['search', 'status', 'category', 'target', 'plugin', 'trigger', 'username', 'action', 'tag'].forEach( function(key) {
 			if (key in args) num_filters++;
 		} );
 		
@@ -515,7 +515,7 @@ Page.Events = class Events extends Page.PageUtils {
 			return true; // show
 		}
 		
-		// allow keywords to search titles, usernames, notes, targets, and timing plugins
+		// allow keywords to search titles, usernames, notes, targets, and trigger plugins
 		if (('search' in args) && args.search.length) {
 			var words = [item.title, item.username, item.notes].concat(item.targets);
 			if (words.join(' ').toLowerCase().indexOf(args.search.toLowerCase()) == -1) return false; // hide
@@ -552,15 +552,15 @@ Page.Events = class Events extends Page.PageUtils {
 			if (item.username != args.username) return false; // hide
 		}
 		
-		// timing
-		if ('timing' in args) {
+		// trigger
+		if ('trigger' in args) {
 			// types: manual, schedule, continuous, single, plugin, catchup, range, blackout, delay
 			var types = {};
-			(item.timings || []).forEach( function(timing) { 
-				types[timing.type || 'N/A'] = 1; 
-				if (timing.type == 'plugin') types[ 'p_' + timing.plugin_id ] = 1;
+			(item.triggers || []).forEach( function(trigger) { 
+				types[trigger.type || 'N/A'] = 1; 
+				if (trigger.type == 'plugin') types[ 'p_' + trigger.plugin_id ] = 1;
 			} );
-			if (!types[args.timing]) return false; // hide
+			if (!types[args.trigger]) return false; // hide
 		}
 		
 		// action
@@ -815,7 +815,7 @@ Page.Events = class Events extends Page.PageUtils {
 		
 		// event details
 		html += '<div class="box_grid">';
-			html += '<div class="box_unity">' + this.getTimingDetails() + '</div>';
+			html += '<div class="box_unity">' + this.getTriggerDetails() + '</div>';
 			html += '<div class="box_unity">' + this.getActionDetails() + '</div>';
 			html += '<div class="box_unity">' + this.getLimitDetails() + '</div>';
 		html += '</div>';
@@ -931,16 +931,16 @@ Page.Events = class Events extends Page.PageUtils {
 		this.setupJobHistoryDayGraph();
 	}
 	
-	getTimingDetails() {
-		// get timing details in compact table (read-only)
+	getTriggerDetails() {
+		// get trigger details in compact table (read-only)
 		var self = this;
 		var html = '';
 		var cols = ['Type', 'Description'];
 		
-		html += '<div class="box_unit_title">Timing Rules</div>';
+		html += '<div class="box_unit_title">Triggers</div>';
 		
 		// custom sort, and only enabled ones
-		var rows = this.getSortedTimings().filter( function(timing) { return timing.enabled; } );
+		var rows = this.getSortedTriggers().filter( function(trigger) { return trigger.enabled; } );
 		
 		var targs = {
 			rows: rows,
@@ -952,7 +952,7 @@ Page.Events = class Events extends Page.PageUtils {
 		};
 		
 		html += this.getCompactGrid(targs, function(item, idx) {
-			var { nice_icon, nice_type, nice_desc } = self.getTimingDisplayArgs(item);
+			var { nice_icon, nice_type, nice_desc } = self.getTriggerDisplayArgs(item);
 			
 			var tds = [
 				'<div class="td_big nowrap">' + nice_icon + nice_type + '</div>',
@@ -1629,8 +1629,8 @@ Page.Events = class Events extends Page.PageUtils {
 		var msg = 'Are you sure you want to skip the upcoming job at "' + self.getShortDateTimeText( job.epoch ) + '"?';
 		
 		switch (job.type) {
-			case 'single': msg += '  Since this is a "Single Shot" timing rule, it will simply be disabled.'; break;
-			case 'schedule': msg += '  Since this is a scheduled timing rule, a new "Blackout" range will be added to disable it.'; break;
+			case 'single': msg += '  Since this is a "Single Shot" trigger, it will simply be disabled.'; break;
+			case 'schedule': msg += '  Since this is a scheduled trigger, a new "Blackout" range will be added to disable it.'; break;
 		}
 		
 		Dialog.confirmDanger( 'Skip Upcoming Job', msg, ['alert-decagram', 'Skip Job'], function(result) {
@@ -1640,15 +1640,15 @@ Page.Events = class Events extends Page.PageUtils {
 			
 			switch (job.type) {
 				case 'single':
-					delete_object( self.event.timings, { type: 'single', enabled: true, epoch: job.epoch } );
+					delete_object( self.event.triggers, { type: 'single', enabled: true, epoch: job.epoch } );
 				break;
 				
 				case 'schedule':
-					self.event.timings.push({ type: 'blackout', enabled: true, start: job.epoch, end: job.epoch }); // Note: end is inclusive!
+					self.event.triggers.push({ type: 'blackout', enabled: true, start: job.epoch, end: job.epoch }); // Note: end is inclusive!
 				break;
 			} // switch job.type
 			
-			app.api.post( 'app/update_event', { id: self.event.id, timings: self.event.timings }, function(resp) {
+			app.api.post( 'app/update_event', { id: self.event.id, triggers: self.event.triggers }, function(resp) {
 				Dialog.hideProgress();
 				app.showMessage('success', "The selected upcoming job will be skipped.");
 				
@@ -2404,10 +2404,10 @@ Page.Events = class Events extends Page.PageUtils {
 			caption: 'Optionally define a custom set of extra parameters to be collected when a user runs your event manually.'
 		});
 		
-		// timings
+		// triggers
 		html += this.getFormRow({
-			label: 'Launchers:',
-			content: '<div id="d_ee_timing_table">' + this.getTimingTable() + '</div>',
+			label: 'Triggers:',
+			content: '<div id="d_ee_trigger_table">' + this.getTriggerTable() + '</div>',
 			caption: 'Select how and when your event should run, including manual executions and scheduling options.'
 		});
 		
@@ -2535,35 +2535,35 @@ Page.Events = class Events extends Page.PageUtils {
 		$('#fe_etd_title').focus();
 	}
 	
-	renderTimingTable() {
+	renderTriggerTable() {
 		// render res limit editor
-		var html = this.getTimingTable();
-		this.div.find('#d_ee_timing_table').html( html );
+		var html = this.getTriggerTable();
+		this.div.find('#d_ee_trigger_table').html( html );
 	}
 	
-	getSortedTimings() {
+	getSortedTriggers() {
 		// custom sort for display
 		return [].concat(
-			this.event.timings.filter( function(row) { return row.type == 'manual'; } ),
-			this.event.timings.filter( function(row) { return row.type == 'schedule'; } ),
-			this.event.timings.filter( function(row) { return row.type == 'single'; } ),
-			this.event.timings.filter( function(row) { return row.type == 'continuous'; } ),
-			this.event.timings.filter( function(row) { return !(row.type || '').match(/^(schedule|continuous|single|manual)$/); } )
+			this.event.triggers.filter( function(row) { return row.type == 'manual'; } ),
+			this.event.triggers.filter( function(row) { return row.type == 'schedule'; } ),
+			this.event.triggers.filter( function(row) { return row.type == 'single'; } ),
+			this.event.triggers.filter( function(row) { return row.type == 'continuous'; } ),
+			this.event.triggers.filter( function(row) { return !(row.type || '').match(/^(schedule|continuous|single|manual)$/); } )
 		);
 	}
 	
-	getTimingTable() {
-		// get html for timing table
+	getTriggerTable() {
+		// get html for trigger table
 		var self = this;
 		var html = '';
 		var cols = ['<i class="mdi mdi-checkbox-marked-outline"></i>', 'Type', 'Description', 'Actions'];
-		var add_link = '<div class="button small secondary" onClick="$P().editTiming(-1)"><i class="mdi mdi-plus-circle-outline">&nbsp;</i>New Launcher...</div>';
+		var add_link = '<div class="button small secondary" onClick="$P().editTrigger(-1)"><i class="mdi mdi-plus-circle-outline">&nbsp;</i>New Trigger...</div>';
 		
-		if (!this.event.timings.length) return add_link;
+		if (!this.event.triggers.length) return add_link;
 		
 		// custom sort
-		var rows = this.getSortedTimings();
-		this.event.timings = rows; // for idx-based selections to work, we have to commit the sort
+		var rows = this.getSortedTriggers();
+		this.event.triggers = rows; // for idx-based selections to work, we have to commit the sort
 		
 		var targs = {
 			rows: rows,
@@ -2577,17 +2577,17 @@ Page.Events = class Events extends Page.PageUtils {
 		
 		html += this.getCompactGrid(targs, function(item, idx) {
 			var actions = [];
-			actions.push( '<span class="link" onClick="$P().editTiming('+idx+')"><b>Edit</b></span>' );
-			actions.push( '<span class="link danger" onClick="$P().deleteTiming('+idx+')"><b>Delete</b></span>' );
+			actions.push( '<span class="link" onClick="$P().editTrigger('+idx+')"><b>Edit</b></span>' );
+			actions.push( '<span class="link danger" onClick="$P().deleteTrigger('+idx+')"><b>Delete</b></span>' );
 			
-			var { nice_icon, nice_type, nice_desc } = self.getTimingDisplayArgs(item);
+			var { nice_icon, nice_type, nice_desc } = self.getTriggerDisplayArgs(item);
 			
 			var tds = [
 				'<div class="td_drag_handle" style="cursor:default">' + self.getFormCheckbox({
 					checked: item.enabled,
-					onChange: '$P().toggleTimingEnabled(this,' + idx + ')'
+					onChange: '$P().toggleTriggerEnabled(this,' + idx + ')'
 				}) + '</div>',
-				'<div class="td_big nowrap">' + '<span class="link" onClick="$P().editTiming('+idx+')">' + nice_icon + nice_type + '</span></div>',
+				'<div class="td_big nowrap">' + '<span class="link" onClick="$P().editTrigger('+idx+')">' + nice_icon + nice_type + '</span></div>',
 				'<div class="ellip">' + nice_desc + '</div>',
 				'<span class="nowrap">' + actions.join(' | ') + '</span>'
 			];
@@ -2599,27 +2599,27 @@ Page.Events = class Events extends Page.PageUtils {
 		return html;
 	}
 	
-	toggleTimingEnabled(elem, idx) {
-		// toggle timing checkbox, actually do the enable/disable here, update row
-		var item = this.event.timings[idx];
+	toggleTriggerEnabled(elem, idx) {
+		// toggle trigger checkbox, actually do the enable/disable here, update row
+		var item = this.event.triggers[idx];
 		item.enabled = !!$(elem).is(':checked');
 		
 		if (item.enabled) $(elem).closest('ul').removeClass('disabled');
 		else $(elem).closest('ul').addClass('disabled');
 		
-		if (this.onAfterEditTiming) this.onAfterEditTiming(idx, item);
+		if (this.onAfterEditTrigger) this.onAfterEditTrigger(idx, item);
 	}
 	
-	editTiming(idx) {
-		// show dialog to select timing
+	editTrigger(idx) {
+		// show dialog to select trigger
 		var self = this;
 		var new_item = { type: 'schedule', enabled: true, minutes: [0] };
-		var timing = (idx > -1) ? this.event.timings[idx] : new_item;
-		var title = (idx > -1) ? "Editing Launcher" : "New Launcher";
-		var btn = (idx > -1) ? ['check-circle', "Apply"] : ['plus-circle', "Add Launcher"];
+		var trigger = (idx > -1) ? this.event.triggers[idx] : new_item;
+		var title = (idx > -1) ? "Editing Trigger" : "New Trigger";
+		var btn = (idx > -1) ? ['check-circle', "Apply"] : ['plus-circle', "Add Trigger"];
 		
 		// grab external ID if applicable (workflow node)
-		var ext_id = timing.id || '';
+		var ext_id = trigger.id || '';
 		if (ext_id) title += ` <div class="dialog_title_widget mobile_hide"><span class="monospace">${this.getNiceCopyableID(ext_id)}</span></div>`;
 		
 		// if user's tz differs from server tz, pre-populate timezone menu with user's zone
@@ -2635,44 +2635,44 @@ Page.Events = class Events extends Page.PageUtils {
 			label: 'Status:',
 			content: this.getFormCheckbox({
 				id: 'fe_et_enabled',
-				label: 'Enabled',
-				checked: timing.enabled
+				label: 'Trigger Enabled',
+				checked: trigger.enabled
 			}),
-			caption: 'Enable or disable this launcher.'
+			caption: 'Enable or disable this trigger.'
 		});
 		
 		// type (tmode)
 		var tmode = '';
-		switch (timing.type) {
+		switch (trigger.type) {
 			case 'schedule':
 				tmode = 'hourly';
-				if (timing.years && timing.years.length) tmode = 'custom';
-				else if (timing.months && timing.months.length && timing.weekdays && timing.weekdays.length) tmode = 'custom';
-				else if (timing.days && timing.days.length && timing.weekdays && timing.weekdays.length) tmode = 'custom';
-				else if (timing.months && timing.months.length) tmode = 'yearly';
-				else if (timing.weekdays && timing.weekdays.length) tmode = 'weekly';
-				else if (timing.days && timing.days.length) tmode = 'monthly';
-				else if (timing.hours && timing.hours.length) tmode = 'daily';
-				else if (timing.minutes && timing.minutes.length) tmode = 'hourly';
+				if (trigger.years && trigger.years.length) tmode = 'custom';
+				else if (trigger.months && trigger.months.length && trigger.weekdays && trigger.weekdays.length) tmode = 'custom';
+				else if (trigger.days && trigger.days.length && trigger.weekdays && trigger.weekdays.length) tmode = 'custom';
+				else if (trigger.months && trigger.months.length) tmode = 'yearly';
+				else if (trigger.weekdays && trigger.weekdays.length) tmode = 'weekly';
+				else if (trigger.days && trigger.days.length) tmode = 'monthly';
+				else if (trigger.hours && trigger.hours.length) tmode = 'daily';
+				else if (trigger.minutes && trigger.minutes.length) tmode = 'hourly';
 			break;
 			
 			default:
-				tmode = timing.type;
+				tmode = trigger.type;
 			break;
-		} // switch timing.type
+		} // switch trigger.type
 		
 		html += this.getFormRow({
 			id: 'd_et_type',
 			label: 'Type:',
 			content: this.getFormMenuSingle({
 				id: 'fe_et_type',
-				title: "Select Launcher Type",
-				options: config.ui.event_timing_type_menu,
+				title: "Select Trigger Type",
+				options: config.ui.event_trigger_type_menu,
 				value: tmode,
 				'data-shrinkwrap': 1,
 				// 'data-nudgeheight': 1
 			}),
-			caption: 'Select the desired type for the launcher.'
+			caption: 'Select the desired type for the trigger.'
 		});
 		
 		// years
@@ -2684,7 +2684,7 @@ Page.Events = class Events extends Page.PageUtils {
 				title: 'Select Years',
 				placeholder: '(Every Year)',
 				options: this.getYearOptions(),
-				values: timing.years || [],
+				values: trigger.years || [],
 				'data-hold': 1,
 				'data-shrinkwrap': 1,
 				// 'data-compact': 1
@@ -2700,7 +2700,7 @@ Page.Events = class Events extends Page.PageUtils {
 				title: 'Select Months',
 				placeholder: '(Every Month)',
 				options: this.getMonthOptions(),
-				values: timing.months || [],
+				values: trigger.months || [],
 				'data-hold': 1,
 				'data-shrinkwrap': 1,
 				// 'data-compact': 1
@@ -2716,7 +2716,7 @@ Page.Events = class Events extends Page.PageUtils {
 				title: 'Select Weekdays',
 				placeholder: '(Every Weekday)',
 				options: this.getWeekdayOptions(),
-				values: timing.weekdays || [],
+				values: trigger.weekdays || [],
 				'data-hold': 1,
 				'data-shrinkwrap': 1,
 				// 'data-compact': 1
@@ -2732,7 +2732,7 @@ Page.Events = class Events extends Page.PageUtils {
 				title: 'Select Days',
 				placeholder: '(Every Day)',
 				options: this.getDayOptions(),
-				values: timing.days || [],
+				values: trigger.days || [],
 				'data-hold': 1,
 				'data-shrinkwrap': 1,
 				// 'data-compact': 1
@@ -2748,7 +2748,7 @@ Page.Events = class Events extends Page.PageUtils {
 				title: 'Select Hours',
 				placeholder: '(Every Hour)',
 				options: this.getHourOptions(),
-				values: timing.hours || [],
+				values: trigger.hours || [],
 				'data-hold': 1,
 				'data-shrinkwrap': 1,
 				// 'data-compact': 1
@@ -2764,7 +2764,7 @@ Page.Events = class Events extends Page.PageUtils {
 				title: 'Select Minutes',
 				placeholder: '(Every Minute)',
 				options: this.getMinuteOptions(),
-				values: timing.minutes || [],
+				values: trigger.minutes || [],
 				'data-hold': 1,
 				'data-shrinkwrap': 1,
 				// 'data-compact': 1
@@ -2782,14 +2782,14 @@ Page.Events = class Events extends Page.PageUtils {
 				maxlength: 64,
 				value: ''
 			}),
-			caption: 'Use this to import event timing settings from a <a href="https://en.wikipedia.org/wiki/Cron#CRON_expression" target="_blank">Crontab expression</a>.  This is a string comprising five (or six) fields separated by white space that represents a set of dates/times.  Example: <b>30 4 1 * *</b> (First day of every month at 4:30 AM)'
+			caption: 'Use this to import event trigger settings from a <a href="https://en.wikipedia.org/wiki/Cron#CRON_expression" target="_blank">Crontab expression</a>.  This is a string comprising five (or six) fields separated by white space that represents a set of dates/times.  Example: <b>30 4 1 * *</b> (First day of every month at 4:30 AM)'
 		});
 		
 		// continuous
 		html += this.getFormRow({
 			id: 'd_et_continuous_desc',
 			label: 'Description:',
-			content: 'Add this timing rule to keep your job running continuously.  If it exits or crashes for any reason (besides a manual user abort), Orchestra will immediately start it up again.'
+			content: 'Add this trigger to keep your job running continuously.  If it exits or crashes for any reason (besides a manual user abort), Orchestra will immediately start it up again.'
 		});
 		
 		// single shot
@@ -2801,9 +2801,9 @@ Page.Events = class Events extends Page.PageUtils {
 				type: 'datetime-local',
 				spellcheck: 'false',
 				autocomplete: 'off',
-				value: timing.epoch ? this.formatDateISO( timing.epoch, this.getUserTimezone() ) : ''
+				value: trigger.epoch ? this.formatDateISO( trigger.epoch, this.getUserTimezone() ) : ''
 			}),
-			caption: 'Select a single date/time when the event should run in your local timezone (' + this.getUserTimezone() + ').  This can accompany other timing rules, or exist on its own.'
+			caption: 'Select a single date/time when the event should run in your local timezone (' + this.getUserTimezone() + ').  This can accompany other triggers, or exist on its own.'
 		});
 		
 		// manual
@@ -2817,7 +2817,7 @@ Page.Events = class Events extends Page.PageUtils {
 		html += this.getFormRow({
 			id: 'd_et_catchup_desc',
 			label: 'Description:',
-			content: 'When Catch-Up Mode mode is enabled on an event, the scheduler will do its best to ensure that <i>every</i> scheduled job will run, even if they have to run late.  This is useful for time-sensitive events such as generating reports, and is designed to accompany other timing rules.'
+			content: 'When Catch-Up Mode mode is enabled on an event, the scheduler will do its best to ensure that <i>every</i> scheduled job will run, even if they have to run late.  This is useful for time-sensitive events such as generating reports, and is designed to accompany other triggers.'
 		});
 		html += this.getFormRow({
 			id: 'd_et_time_machine',
@@ -2836,14 +2836,14 @@ Page.Events = class Events extends Page.PageUtils {
 		html += this.getFormRow({
 			id: 'd_et_range_desc',
 			label: 'Description:',
-			content: 'This option allows you to set a starting and/or ending date/time for the event.  Jobs will not be scheduled before your start date/time, nor after your end date/time.  This is designed to accompany other timing rules.'
+			content: 'This option allows you to set a starting and/or ending date/time for the event.  Jobs will not be scheduled before your start date/time, nor after your end date/time.  This is designed to accompany other triggers.'
 		});
 		
 		// blackout
 		html += this.getFormRow({
 			id: 'd_et_blackout_desc',
 			label: 'Description:',
-			content: 'This option allows you to set a "blackout" period for the event, meaning jobs will not be scheduled during this time.  Examples include company holidays, and maintenance windows.  This is designed to accompany other timing rules.'
+			content: 'This option allows you to set a "blackout" period for the event, meaning jobs will not be scheduled during this time.  Examples include company holidays, and maintenance windows.  This is designed to accompany other triggers.'
 		});
 		
 		// delay
@@ -2861,7 +2861,7 @@ Page.Events = class Events extends Page.PageUtils {
 				spellcheck: 'false',
 				autocomplete: 'off',
 				min: 1,
-				value: timing.duration || 1
+				value: trigger.duration || 1
 			}),
 			caption: 'Specify your custom job starting delay in seconds.'
 		});
@@ -2874,7 +2874,7 @@ Page.Events = class Events extends Page.PageUtils {
 				id: 'fe_et_plugin',
 				title: 'Select Scheduler Plugin',
 				options: app.plugins.filter( function(plugin) { return plugin.type == 'scheduler'; } ),
-				value: timing.plugin_id,
+				value: trigger.plugin_id,
 				default_icon: 'power-plug-outline'
 			}),
 			caption: 'Select Plugin to use for custom scheduling.'
@@ -2897,7 +2897,7 @@ Page.Events = class Events extends Page.PageUtils {
 				type: 'datetime-local',
 				spellcheck: 'false',
 				autocomplete: 'off',
-				value: timing.start ? this.formatDateISO( timing.start, this.getUserTimezone() ) : ''
+				value: trigger.start ? this.formatDateISO( trigger.start, this.getUserTimezone() ) : ''
 			}),
 			caption: 'Select a start date/time for the range in your local timezone(' + this.getUserTimezone() + ').'
 		});
@@ -2909,7 +2909,7 @@ Page.Events = class Events extends Page.PageUtils {
 				type: 'datetime-local',
 				spellcheck: 'false',
 				autocomplete: 'off',
-				value: timing.end ? this.formatDateISO( timing.end, this.getUserTimezone() ) : ''
+				value: trigger.end ? this.formatDateISO( trigger.end, this.getUserTimezone() ) : ''
 			}),
 			caption: 'Select an end date/time for the range in your local timezone (' + this.getUserTimezone() + ').'
 		});
@@ -2927,9 +2927,9 @@ Page.Events = class Events extends Page.PageUtils {
 				id: 'fe_et_tz',
 				title: 'Select Timezone',
 				options: zones,
-				value: timing.timezone || ''
+				value: trigger.timezone || ''
 			}),
-			caption: 'Select the desired timezone for the timing rule.'
+			caption: 'Select the desired timezone for the trigger.'
 		});
 		
 		html += '</div>';
@@ -2937,99 +2937,99 @@ Page.Events = class Events extends Page.PageUtils {
 			if (!result) return;
 			app.clearError();
 			
-			timing = {
+			trigger = {
 				enabled: $('#fe_et_enabled').is(':checked'),
 				type: $('#fe_et_type').val()
 			};
 			
 			// copy over external id if present (workflow node)
-			if (ext_id) timing.id = ext_id;
+			if (ext_id) trigger.id = ext_id;
 			
-			switch (timing.type) {
+			switch (trigger.type) {
 				case 'custom':
-					timing.type = 'schedule';
-					if ($('#fe_et_years').val().length) timing.years = $('#fe_et_years').val().map( function(v) { return parseInt(v); } );
-					if ($('#fe_et_months').val().length) timing.months = $('#fe_et_months').val().map( function(v) { return parseInt(v); } );
-					if ($('#fe_et_weekdays').val().length) timing.weekdays = $('#fe_et_weekdays').val().map( function(v) { return parseInt(v); } );
-					if ($('#fe_et_days').val().length) timing.days = $('#fe_et_days').val().map( function(v) { return parseInt(v); } );
-					if ($('#fe_et_hours').val().length) timing.hours = $('#fe_et_hours').val().map( function(v) { return parseInt(v); } );
-					if ($('#fe_et_minutes').val().length) timing.minutes = $('#fe_et_minutes').val().map( function(v) { return parseInt(v); } );
-					if ($('#fe_et_tz').val().length) timing.timezone = $('#fe_et_tz').val();
+					trigger.type = 'schedule';
+					if ($('#fe_et_years').val().length) trigger.years = $('#fe_et_years').val().map( function(v) { return parseInt(v); } );
+					if ($('#fe_et_months').val().length) trigger.months = $('#fe_et_months').val().map( function(v) { return parseInt(v); } );
+					if ($('#fe_et_weekdays').val().length) trigger.weekdays = $('#fe_et_weekdays').val().map( function(v) { return parseInt(v); } );
+					if ($('#fe_et_days').val().length) trigger.days = $('#fe_et_days').val().map( function(v) { return parseInt(v); } );
+					if ($('#fe_et_hours').val().length) trigger.hours = $('#fe_et_hours').val().map( function(v) { return parseInt(v); } );
+					if ($('#fe_et_minutes').val().length) trigger.minutes = $('#fe_et_minutes').val().map( function(v) { return parseInt(v); } );
+					if ($('#fe_et_tz').val().length) trigger.timezone = $('#fe_et_tz').val();
 				break;
 				
 				case 'yearly':
-					timing.type = 'schedule';
-					if ($('#fe_et_months').val().length) timing.months = $('#fe_et_months').val().map( function(v) { return parseInt(v); } );
-					if ($('#fe_et_days').val().length) timing.days = $('#fe_et_days').val().map( function(v) { return parseInt(v); } );
-					if ($('#fe_et_hours').val().length) timing.hours = $('#fe_et_hours').val().map( function(v) { return parseInt(v); } );
-					if ($('#fe_et_minutes').val().length) timing.minutes = $('#fe_et_minutes').val().map( function(v) { return parseInt(v); } );
-					if ($('#fe_et_tz').val().length) timing.timezone = $('#fe_et_tz').val();
+					trigger.type = 'schedule';
+					if ($('#fe_et_months').val().length) trigger.months = $('#fe_et_months').val().map( function(v) { return parseInt(v); } );
+					if ($('#fe_et_days').val().length) trigger.days = $('#fe_et_days').val().map( function(v) { return parseInt(v); } );
+					if ($('#fe_et_hours').val().length) trigger.hours = $('#fe_et_hours').val().map( function(v) { return parseInt(v); } );
+					if ($('#fe_et_minutes').val().length) trigger.minutes = $('#fe_et_minutes').val().map( function(v) { return parseInt(v); } );
+					if ($('#fe_et_tz').val().length) trigger.timezone = $('#fe_et_tz').val();
 				break;
 				
 				case 'monthly':
-					timing.type = 'schedule';
-					if ($('#fe_et_days').val().length) timing.days = $('#fe_et_days').val().map( function(v) { return parseInt(v); } );
-					if ($('#fe_et_hours').val().length) timing.hours = $('#fe_et_hours').val().map( function(v) { return parseInt(v); } );
-					if ($('#fe_et_minutes').val().length) timing.minutes = $('#fe_et_minutes').val().map( function(v) { return parseInt(v); } );
-					if ($('#fe_et_tz').val().length) timing.timezone = $('#fe_et_tz').val();
+					trigger.type = 'schedule';
+					if ($('#fe_et_days').val().length) trigger.days = $('#fe_et_days').val().map( function(v) { return parseInt(v); } );
+					if ($('#fe_et_hours').val().length) trigger.hours = $('#fe_et_hours').val().map( function(v) { return parseInt(v); } );
+					if ($('#fe_et_minutes').val().length) trigger.minutes = $('#fe_et_minutes').val().map( function(v) { return parseInt(v); } );
+					if ($('#fe_et_tz').val().length) trigger.timezone = $('#fe_et_tz').val();
 				break;
 				
 				case 'weekly':
-					timing.type = 'schedule';
-					if ($('#fe_et_weekdays').val().length) timing.weekdays = $('#fe_et_weekdays').val().map( function(v) { return parseInt(v); } );
-					if ($('#fe_et_days').val().length) timing.days = $('#fe_et_days').val().map( function(v) { return parseInt(v); } );
-					if ($('#fe_et_hours').val().length) timing.hours = $('#fe_et_hours').val().map( function(v) { return parseInt(v); } );
-					if ($('#fe_et_minutes').val().length) timing.minutes = $('#fe_et_minutes').val().map( function(v) { return parseInt(v); } );
-					if ($('#fe_et_tz').val().length) timing.timezone = $('#fe_et_tz').val();
+					trigger.type = 'schedule';
+					if ($('#fe_et_weekdays').val().length) trigger.weekdays = $('#fe_et_weekdays').val().map( function(v) { return parseInt(v); } );
+					if ($('#fe_et_days').val().length) trigger.days = $('#fe_et_days').val().map( function(v) { return parseInt(v); } );
+					if ($('#fe_et_hours').val().length) trigger.hours = $('#fe_et_hours').val().map( function(v) { return parseInt(v); } );
+					if ($('#fe_et_minutes').val().length) trigger.minutes = $('#fe_et_minutes').val().map( function(v) { return parseInt(v); } );
+					if ($('#fe_et_tz').val().length) trigger.timezone = $('#fe_et_tz').val();
 				break;
 				
 				case 'daily':
-					timing.type = 'schedule';
-					if ($('#fe_et_hours').val().length) timing.hours = $('#fe_et_hours').val().map( function(v) { return parseInt(v); } );
-					if ($('#fe_et_minutes').val().length) timing.minutes = $('#fe_et_minutes').val().map( function(v) { return parseInt(v); } );
-					if ($('#fe_et_tz').val().length) timing.timezone = $('#fe_et_tz').val();
+					trigger.type = 'schedule';
+					if ($('#fe_et_hours').val().length) trigger.hours = $('#fe_et_hours').val().map( function(v) { return parseInt(v); } );
+					if ($('#fe_et_minutes').val().length) trigger.minutes = $('#fe_et_minutes').val().map( function(v) { return parseInt(v); } );
+					if ($('#fe_et_tz').val().length) trigger.timezone = $('#fe_et_tz').val();
 				break;
 				
 				case 'hourly':
-					timing.type = 'schedule';
-					if ($('#fe_et_minutes').val().length) timing.minutes = $('#fe_et_minutes').val().map( function(v) { return parseInt(v); } );
-					if ($('#fe_et_tz').val().length) timing.timezone = $('#fe_et_tz').val();
+					trigger.type = 'schedule';
+					if ($('#fe_et_minutes').val().length) trigger.minutes = $('#fe_et_minutes').val().map( function(v) { return parseInt(v); } );
+					if ($('#fe_et_tz').val().length) trigger.timezone = $('#fe_et_tz').val();
 				break;
 				
 				case 'crontab':
-					timing.type = 'schedule';
+					trigger.type = 'schedule';
 					var cron_exp = $('#fe_et_crontab').val().toLowerCase();
 					if (!cron_exp) return app.badField('#fe_et_crontab', "Please enter a crontab date/time expression.");
 					
-					// validate, convert to timing object
-					var ctiming = null;
+					// validate, convert to trigger object
+					var ctrigger = null;
 					try {
-						ctiming = parse_crontab( cron_exp, $('#fe_ee_title').val() );
+						ctrigger = parse_crontab( cron_exp, $('#fe_ee_title').val() );
 					}
 					catch (e) {
 						return app.badField('#fe_et_crontab', e.toString());
 					}
 					
-					merge_hash_into(timing, ctiming);
-					if ($('#fe_et_tz').val().length) timing.timezone = $('#fe_et_tz').val();
+					merge_hash_into(trigger, ctrigger);
+					if ($('#fe_et_tz').val().length) trigger.timezone = $('#fe_et_tz').val();
 				break;
 				
 				case 'continuous':
 					// continuous mode (no options)
-					if ((idx == -1) && find_object(self.event.timings, { type: 'continuous' })) {
+					if ((idx == -1) && find_object(self.event.triggers, { type: 'continuous' })) {
 						return app.doError("Sorry, you can only have one continuous rule defined per event.");
 					}
 				break;
 				
 				case 'single':
 					// single shot
-					timing.epoch = self.parseDateTZ( $('#fe_et_single').val(), self.getUserTimezone() );
-					if (!timing.epoch) return app.badField('#fe_et_single', "Please enter a valid date/time when the event should run.");
+					trigger.epoch = self.parseDateTZ( $('#fe_et_single').val(), self.getUserTimezone() );
+					if (!trigger.epoch) return app.badField('#fe_et_single', "Please enter a valid date/time when the event should run.");
 				break;
 				
 				case 'manual':
 					// manual mode (no options)
-					if ((idx == -1) && find_object(self.event.timings, { type: 'manual' })) {
+					if ((idx == -1) && find_object(self.event.triggers, { type: 'manual' })) {
 						return app.doError("Sorry, you can only have one manual rule defined per event.");
 					}
 				break;
@@ -3041,63 +3041,63 @@ Page.Events = class Events extends Page.PageUtils {
 							cursor: self.parseDateTZ( $('#fe_et_time_machine').val(), self.getUserTimezone() )
 						};
 					}
-					if ((idx == -1) && find_object(self.event.timings, { type: 'catchup' })) {
+					if ((idx == -1) && find_object(self.event.triggers, { type: 'catchup' })) {
 						return app.doError("Sorry, you can only have one catch-up rule defined per event.");
 					}
 				break;
 				
 				case 'range':
-					timing.start = self.parseDateTZ( $('#fe_et_range_start').val(), self.getUserTimezone() ) || 0;
-					timing.end = self.parseDateTZ( $('#fe_et_range_end').val(), self.getUserTimezone() ) || 0;
-					if (timing.start && timing.end && (timing.start > timing.end)) {
+					trigger.start = self.parseDateTZ( $('#fe_et_range_start').val(), self.getUserTimezone() ) || 0;
+					trigger.end = self.parseDateTZ( $('#fe_et_range_end').val(), self.getUserTimezone() ) || 0;
+					if (trigger.start && trigger.end && (trigger.start > trigger.end)) {
 						return app.badField('#fe_et_range_start', "Invalid date range entered.  The start date cannot come after the end date.");
 					}
-					if ((idx == -1) && find_object(self.event.timings, { type: 'range' })) {
+					if ((idx == -1) && find_object(self.event.triggers, { type: 'range' })) {
 						return app.doError("Sorry, you can only have one date/time range defined per event.");
 					}
 				break;
 				
 				case 'blackout':
-					timing.start = self.parseDateTZ( $('#fe_et_range_start').val(), self.getUserTimezone() ) || 0;
-					timing.end = self.parseDateTZ( $('#fe_et_range_end').val(), self.getUserTimezone() ) || 0;
-					if (!timing.start) return app.badField('#fe_et_range_start', "Please select both a start and an end for the range.");
-					if (!timing.end) return app.badField('#fe_et_range_end', "Please select both a start and an end for the range.");
-					if (timing.start > timing.end) return app.badField('#fe_et_range_start', "Invalid date range entered.  The start date cannot come after the end date.");
+					trigger.start = self.parseDateTZ( $('#fe_et_range_start').val(), self.getUserTimezone() ) || 0;
+					trigger.end = self.parseDateTZ( $('#fe_et_range_end').val(), self.getUserTimezone() ) || 0;
+					if (!trigger.start) return app.badField('#fe_et_range_start', "Please select both a start and an end for the range.");
+					if (!trigger.end) return app.badField('#fe_et_range_end', "Please select both a start and an end for the range.");
+					if (trigger.start > trigger.end) return app.badField('#fe_et_range_start', "Invalid date range entered.  The start date cannot come after the end date.");
 				break;
 				
 				case 'delay':
 					// starting delay
-					if ((idx == -1) && find_object(self.event.timings, { type: 'delay' })) {
+					if ((idx == -1) && find_object(self.event.triggers, { type: 'delay' })) {
 						return app.doError("Sorry, you can only have one delay rule defined per event.");
 					}
-					timing.duration = parseInt( $('#fe_et_delay').val() );
-					if (!timing.duration) return app.badField('#fe_et_delay', "Please enter or select the number of seconds to delay.");
+					trigger.duration = parseInt( $('#fe_et_delay').val() );
+					if (!trigger.duration) return app.badField('#fe_et_delay', "Please enter or select the number of seconds to delay.");
 				break;
 				
 				case 'plugin':
-					timing.plugin_id = $('#fe_et_plugin').val();
-					if (!timing.plugin_id) return app.badField('#fe_et_plugin', "Please select a Plugin for scheduling.");
-					timing.params = self.getPluginParamValues( timing.plugin_id );
-					if ($('#fe_et_tz').val().length) timing.timezone = $('#fe_et_tz').val();
+					trigger.plugin_id = $('#fe_et_plugin').val();
+					if (!trigger.plugin_id) return app.badField('#fe_et_plugin', "Please select a Plugin for scheduling.");
+					trigger.params = self.getPluginParamValues( trigger.plugin_id );
+					if ($('#fe_et_tz').val().length) trigger.timezone = $('#fe_et_tz').val();
 				break;
-			} // switch timing.type
+			} // switch trigger.type
 			
 			// see if we need to add or replace
 			if (idx == -1) {
-				self.event.timings.push(timing);
+				self.event.triggers.push(trigger);
 			}
-			else self.event.timings[idx] = timing;
+			else self.event.triggers[idx] = trigger;
 			
 			// self.dirty = true;
 			Dialog.hide();
-			self.renderTimingTable();
-			if (self.onAfterEditTiming) self.onAfterEditTiming(idx, timing);
+			self.renderTriggerTable();
+			if (self.onAfterEditTrigger) self.onAfterEditTrigger(idx, trigger);
 		} ); // Dialog.confirm
 		
-		var change_timing_type = function(new_type) {
+		var change_trigger_type = function(new_type) {
 			$('.dialog_box_content .form_row').hide();
 			$('#d_et_status, #d_et_type').show();
-			var new_btn_label = 'Add Launcher';
+			var new_btn_label = 'Add Trigger';
 			
 			switch (new_type) {
 				case 'custom':
@@ -3189,7 +3189,7 @@ Page.Events = class Events extends Page.PageUtils {
 				case 'plugin':
 					$('#d_et_plugin').show();
 					$('#d_et_plugin_params').show();
-					$('#d_et_param_editor').html( self.getPluginParamEditor( $('#fe_et_plugin').val(), timing.params || {} ) );
+					$('#d_et_param_editor').html( self.getPluginParamEditor( $('#fe_et_plugin').val(), trigger.params || {} ) );
 					$('#d_et_tz').show();
 				break;
 			} // switch new_type
@@ -3203,11 +3203,11 @@ Page.Events = class Events extends Page.PageUtils {
 		}; // change_action_type
 		
 		$('#fe_et_type').on('change', function() {
-			change_timing_type( $(this).val() );
+			change_trigger_type( $(this).val() );
 		}); // type change
 		
 		$('#fe_et_plugin').on('change', function() {
-			$('#d_et_param_editor').html( self.getPluginParamEditor( $(this).val(), timing.params || {} ) );
+			$('#d_et_param_editor').html( self.getPluginParamEditor( $(this).val(), trigger.params || {} ) );
 			Dialog.autoResize();
 		}); // type change
 		
@@ -3215,7 +3215,7 @@ Page.Events = class Events extends Page.PageUtils {
 		MultiSelect.init( $('#fe_et_years, #fe_et_months, #fe_et_weekdays, #fe_et_days, #fe_et_hours, #fe_et_minutes') );
 		// this.updateAddRemoveMe('#fe_eja_email');
 		
-		change_timing_type( tmode );
+		change_trigger_type( tmode );
 	}
 	
 	resetTimeMachine() {
@@ -3223,16 +3223,16 @@ Page.Events = class Events extends Page.PageUtils {
 		$('#fe_et_time_machine').val( this.formatDateISO( time_now(), this.getUserTimezone() ) );
 	}
 	
-	deleteTiming(idx) {
-		// delete selected timing
-		var timing = this.event.timings[idx];
+	deleteTrigger(idx) {
+		// delete selected trigger
+		var trigger = this.event.triggers[idx];
 		
-		this.event.timings.splice( idx, 1 );
-		this.renderTimingTable();
+		this.event.triggers.splice( idx, 1 );
+		this.renderTriggerTable();
 		
-		if (this.onAfterEditTiming) {
-			timing.deleted = true;
-			this.onAfterEditTiming(idx, timing);
+		if (this.onAfterEditTrigger) {
+			trigger.deleted = true;
+			this.onAfterEditTrigger(idx, trigger);
 		}
 	}
 	

@@ -39,55 +39,55 @@ function get_pretty_int_list(arr, ranges) {
 }
 
 function summarize_event_timings(event) {
-	// summarize all event timings from event into human-readable string
+	// summarize all event triggers from event into human-readable string
 	// separate schedule items and options
-	var timings = event.timings.filter( function(timing) { return timing.enabled; } );
-	var schedules = timings.filter( function(timing) { return !!(timing.type || '').match(/^(schedule|continuous|single|plugin)$/); } );
+	var triggers = event.triggers.filter( function(trigger) { return trigger.enabled; } );
+	var schedules = triggers.filter( function(trigger) { return !!(trigger.type || '').match(/^(schedule|continuous|single|plugin)$/); } );
 	var parts = (schedules.length == 1) ? [summarize_event_timing(schedules[0])] : schedules.map( summarize_event_timing );
 	if (!parts.length) {
-		if (find_object(timings, { type: 'manual', enabled: true })) return "On Demand";
+		if (find_object(triggers, { type: 'manual', enabled: true })) return "On Demand";
 		else return "Disabled";
 	}
 	var summary = (parts.length == 1) ? parts[0] : (parts.slice(0, parts.length - 1).join(', ') + ', and ' + parts[ parts.length - 1 ]);
 	
 	var opts = [];
-	if (find_object(timings, { type: 'catchup' })) opts.push("Catch-Up");
-	if (find_object(timings, { type: 'range' })) opts.push("Date Range");
-	if (find_object(timings, { type: 'blackout' })) opts.push("Blackout");
-	if (find_object(timings, { type: 'delay' })) opts.push("Delay");
-	// if (find_object(timings, { type: 'plugin' })) opts.push("Plugin");
+	if (find_object(triggers, { type: 'catchup' })) opts.push("Catch-Up");
+	if (find_object(triggers, { type: 'range' })) opts.push("Date Range");
+	if (find_object(triggers, { type: 'blackout' })) opts.push("Blackout");
+	if (find_object(triggers, { type: 'delay' })) opts.push("Delay");
+	// if (find_object(triggers, { type: 'plugin' })) opts.push("Plugin");
 	if (opts.length) summary += ' (' + opts.join(', ') + ')';
 	
 	return summary;
 }
 
-function summarize_event_timing(timing, idx) {
-	// summarize event timing into human-readable string
-	if (timing.type == 'continuous') return "Continuously";
-	if (timing.type == 'plugin') return "Plugin";
-	if (timing.type == 'single') {
-		var text = app.formatDate(timing.epoch, { year: 'numeric', month: 'short', day: 'numeric', hour: 'numeric', minute: '2-digit' });
+function summarize_event_timing(trigger, idx) {
+	// summarize event trigger into human-readable string
+	if (trigger.type == 'continuous') return "Continuously";
+	if (trigger.type == 'plugin') return "Plugin";
+	if (trigger.type == 'single') {
+		var text = app.formatDate(trigger.epoch, { year: 'numeric', month: 'short', day: 'numeric', hour: 'numeric', minute: '2-digit' });
 		return text;
 	} // single shot
 	
 	// years
 	var year_str = '';
-	if (timing.years && timing.years.length) {
-		year_str = get_pretty_int_list(timing.years, true);
+	if (trigger.years && trigger.years.length) {
+		year_str = get_pretty_int_list(trigger.years, true);
 	}
 	
 	// months
 	var mon_str = '';
-	if (timing.months && timing.months.length) {
-		mon_str = get_pretty_int_list(timing.months, true).replace(/(\d+)/g, function(m_all, m_g1) {
+	if (trigger.months && trigger.months.length) {
+		mon_str = get_pretty_int_list(trigger.months, true).replace(/(\d+)/g, function(m_all, m_g1) {
 			return _months[ parseInt(m_g1) - 1 ][1];
 		});
 	}
 	
 	// days
 	var mday_str = '';
-	if (timing.days && timing.days.length) {
-		mday_str = get_pretty_int_list(timing.days, true).replace(/(\-?\d+)/g, function(m_all, m_g1) {
+	if (trigger.days && trigger.days.length) {
+		mday_str = get_pretty_int_list(trigger.days, true).replace(/(\-?\d+)/g, function(m_all, m_g1) {
 			var result = '';
 			switch (m_g1) {
 				case '-1': result = 'last day'; break;
@@ -105,8 +105,8 @@ function summarize_event_timing(timing, idx) {
 	
 	// weekdays	
 	var wday_str = '';
-	if (timing.weekdays && timing.weekdays.length) {
-		wday_str = get_pretty_int_list(timing.weekdays, true).replace(/(\d+)/g, function(m_all, m_g1) {
+	if (trigger.weekdays && trigger.weekdays.length) {
+		wday_str = get_pretty_int_list(trigger.weekdays, true).replace(/(\d+)/g, function(m_all, m_g1) {
 			return _day_names[ parseInt(m_g1) ] + 's';
 		});
 		wday_str = wday_str.replace(/Mondays\s+\-\s+Fridays/, 'weekdays');
@@ -114,16 +114,16 @@ function summarize_event_timing(timing, idx) {
 	
 	// hours
 	var hour_str = '';
-	if (timing.hours && timing.hours.length) {
-		hour_str = get_pretty_int_list(timing.hours, true).replace(/(\d+)/g, function(m_all, m_g1) {
+	if (trigger.hours && trigger.hours.length) {
+		hour_str = get_pretty_int_list(trigger.hours, true).replace(/(\d+)/g, function(m_all, m_g1) {
 			return _hour_names[ parseInt(m_g1) ];
 		});
 	}
 	
 	// minutes
 	var min_str = '';
-	if (timing.minutes && timing.minutes.length) {
-		min_str = get_pretty_int_list(timing.minutes, false).replace(/(\d+)/g, function(m_all, m_g1) {
+	if (trigger.minutes && trigger.minutes.length) {
+		min_str = get_pretty_int_list(trigger.minutes, false).replace(/(\d+)/g, function(m_all, m_g1) {
 			return ':' + ((m_g1.length == 1) ? ('0'+m_g1) : m_g1);
 		});
 	}
@@ -138,7 +138,7 @@ function summarize_event_timing(timing, idx) {
 	}
 	else if (mon_str) {
 		// compress single month + single day
-		if (timing.months && timing.months.length == 1 && timing.days && timing.days.length == 1) {
+		if (trigger.months && trigger.months.length == 1 && trigger.days && trigger.days.length == 1) {
 			groups.push( 'on ' + mon_str + ' ' + mday_str );
 			mday_compressed = true;
 		}
@@ -154,7 +154,7 @@ function summarize_event_timing(timing, idx) {
 	if (wday_str) groups.push( 'on ' + wday_str );
 	
 	// compress single hour + single minute
-	if (timing.hours && timing.hours.length == 1 && timing.minutes && timing.minutes.length == 1) {
+	if (trigger.hours && trigger.hours.length == 1 && trigger.minutes && trigger.minutes.length == 1) {
 		hour_str.match(/^(\d+)(\w+)$/);
 		var hr = RegExp.$1;
 		var ampm = RegExp.$2;
@@ -171,12 +171,12 @@ function summarize_event_timing(timing, idx) {
 		}
 		else {
 			// check for repeating minute pattern
-			if (timing.minutes && timing.minutes.length) {
-				var interval = detect_num_interval( timing.minutes, 60 );
+			if (trigger.minutes && trigger.minutes.length) {
+				var interval = detect_num_interval( trigger.minutes, 60 );
 				if (interval) {
 					var new_str = 'every ' + interval + ' minutes';
-					if (timing.minutes[0] > 0) {
-						var m_g1 = timing.minutes[0].toString();
+					if (trigger.minutes[0] > 0) {
+						var m_g1 = trigger.minutes[0].toString();
 						new_str += ' starting on the :' + ((m_g1.length == 1) ? ('0'+m_g1) : m_g1);
 					}
 					groups.push( new_str );
@@ -198,7 +198,7 @@ function summarize_event_timing(timing, idx) {
 	var text = (typeof(idx) != 'undefined') ? groups.join(' ') : groups.join(', ');
 	var output = text;
 	if (!idx) output = text.substring(0, 1).toUpperCase() + text.substring(1, text.length);
-	if (timing.timezone) output += ' (' + timing.timezone + ')';
+	if (trigger.timezone) output += ' (' + trigger.timezone + ')';
 	
 	return output;
 };
@@ -249,7 +249,7 @@ var cron_aliases = {
 };
 var cron_alias_re = new RegExp("\\b(" + hash_keys_to_array(cron_aliases).join('|') + ")\\b", "g");
 
-function parse_crontab_part(timing, raw, key, min, max, rand_seed) {
+function parse_crontab_part(trigger, raw, key, min, max, rand_seed) {
 	// parse one crontab part, e.g. 1,2,3,5,20-25,30-35,59
 	// can contain single number, and/or list and/or ranges and/or these things: */5 or 10-50/5
 	if (raw == '*') { return; } // wildcard
@@ -320,15 +320,15 @@ function parse_crontab_part(timing, raw, key, min, max, rand_seed) {
 		list[idx] = parseInt( list[idx] );
 	}
 	list = list.sort( function(a, b) { return a - b; } );
-	if (list.length) timing[key] = list;
+	if (list.length) trigger[key] = list;
 };
 
 function parse_crontab(raw, rand_seed) {
-	// parse standard crontab syntax, return timing object
+	// parse standard crontab syntax, return trigger object
 	// e.g. 1,2,3,5,20-25,30-35,59 23 31 12 * *
 	// optional 6th element == years
 	if (!rand_seed) rand_seed = get_unique_id();
-	var timing = {};
+	var trigger = {};
 	
 	// resolve all @shortcuts
 	raw = trim(raw).toLowerCase();
@@ -352,14 +352,14 @@ function parse_crontab(raw, rand_seed) {
 	if (!parts[0].length) throw new Error("Invalid crontab format");
 	
 	// parse each part
-	if ((parts.length > 0) && parts[0].length) parse_crontab_part( timing, parts[0], 'minutes', 0, 59, rand_seed );
-	if ((parts.length > 1) && parts[1].length) parse_crontab_part( timing, parts[1], 'hours', 0, 23, rand_seed );
-	if ((parts.length > 2) && parts[2].length) parse_crontab_part( timing, parts[2], 'days', 1, 31, rand_seed );
-	if ((parts.length > 3) && parts[3].length) parse_crontab_part( timing, parts[3], 'months', 1, 12, rand_seed );
-	if ((parts.length > 4) && parts[4].length) parse_crontab_part( timing, parts[4], 'weekdays', 0, 6, rand_seed );
-	if ((parts.length > 5) && parts[5].length) parse_crontab_part( timing, parts[5], 'years', 1970, 3000, rand_seed );
+	if ((parts.length > 0) && parts[0].length) parse_crontab_part( trigger, parts[0], 'minutes', 0, 59, rand_seed );
+	if ((parts.length > 1) && parts[1].length) parse_crontab_part( trigger, parts[1], 'hours', 0, 23, rand_seed );
+	if ((parts.length > 2) && parts[2].length) parse_crontab_part( trigger, parts[2], 'days', 1, 31, rand_seed );
+	if ((parts.length > 3) && parts[3].length) parse_crontab_part( trigger, parts[3], 'months', 1, 12, rand_seed );
+	if ((parts.length > 4) && parts[4].length) parse_crontab_part( trigger, parts[4], 'weekdays', 0, 6, rand_seed );
+	if ((parts.length > 5) && parts[5].length) parse_crontab_part( trigger, parts[5], 'years', 1970, 3000, rand_seed );
 	
-	return timing;
+	return trigger;
 };
 
 function distance(a, b) {

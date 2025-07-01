@@ -87,7 +87,7 @@
 			"modified": 1434125333,
 			"created": 1434125333,
 			"params": [
-				{ "id":"script", "type":"textarea", "title":"Script Source", "value": "#!/bin/sh\n\n# Enter your shell script code here", "locked": true },
+				{ "id":"script", "type":"code", "title":"Script Source", "value": "#!/bin/sh\n\n# Enter your shell script code here", "locked": true },
 				{ "id":"annotate", "type":"checkbox", "title":"Add Date/Time Stamps to Log", "value": false },
 				{ "id":"json", "type":"checkbox", "title":"Interpret JSON in Output", "value": false }
 			]

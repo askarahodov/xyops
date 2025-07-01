@@ -163,7 +163,7 @@
 			"targets": [],
 			"params": {},
 			"fields": [],
-			"timings": [
+			"triggers": [
 				{
 					"enabled": true,
 					"type": "manual"

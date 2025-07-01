@@ -214,7 +214,7 @@ body.dark .wf_event_title {
 .wf_pole_button.wf_down_pole { background: var(--cyan); }
 .wf_pole_button.wf_down_pole:hover { background: var(--cyan-highlight); }
 
-.wf_ent_launcher > .wf_pole_button.wf_output_pole:hover { background: var(--orange-highlight); }
+.wf_ent_trigger > .wf_pole_button.wf_output_pole:hover { background: var(--orange-highlight); }
 .wf_ent_action > .wf_pole_button.wf_input_pole:hover { background: var(--blue-highlight); }
 .wf_ent_limit > .wf_pole_button.wf_up_pole:hover { background: var(--cyan-highlight); }
 
@@ -263,7 +263,7 @@ body.dark .wf_event_title {
 	color: var(--red) !important;
 	border-color: var(--red) !important;
 }
-.wf_ent_launcher, .wf_ent_action, .wf_ent_limit, .wf_ent_controller {
+.wf_ent_trigger, .wf_ent_action, .wf_ent_limit, .wf_ent_controller {
 	position: relative;
 	left: 0px;
 	width: 64px;
@@ -277,7 +277,7 @@ body.dark .wf_event_title {
 	
 	/* outline: 2px dashed var(--theme-color); */
 }
-.wf_ent_launcher {
+.wf_ent_trigger {
 	border-radius: 999em 0px 0px 999em;
 	color: var(--orange);
 }
@@ -330,7 +330,7 @@ body.dark .wf_event_title {
 	text-overflow: ellipsis;
 }
 
-.wf_ent_launcher > .wf_output_pole {
+.wf_ent_trigger > .wf_output_pole {
 	left: calc(100% + 1px);
 	background: var(--orange);
 }

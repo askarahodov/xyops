@@ -54,7 +54,7 @@ Page.Workflows = class Workflows extends Page.Events {
 		else {
 			this.event = deep_copy_object( app.config.new_event_template );
 		
-			this.event.timings = []; // the user needs to add these by hand
+			this.event.triggers = []; // the user needs to add these by hand
 		
 			this.event.workflow = this.workflow = {
 				nodes: [],
@@ -516,7 +516,7 @@ Page.Workflows = class Workflows extends Page.Events {
 				// these only have one input pole
 				if (conn.dest == id) yes_delete = true;
 			}
-			else if (node.type.match(/^(launcher)$/)) {
+			else if (node.type.match(/^(trigger)$/)) {
 				// these only have one output pole
 				if (conn.source == id) yes_delete = true;
 			}
@@ -590,8 +590,8 @@ Page.Workflows = class Workflows extends Page.Events {
 			var $elem = $cont.find('#d_wfn_' + node.id);
 			
 			// some nodes cannot connect to action nodes, in either direction (despite having "compatible" poles)
-			if ((start_node.type.match(/^(controller|launcher)$/)) && (node.type == 'action')) return;
-			if ((node.type.match(/^(controller|launcher)$/)) && (start_node.type == 'action')) return;
+			if ((start_node.type.match(/^(controller|trigger)$/)) && (node.type == 'action')) return;
+			if ((node.type.match(/^(controller|trigger)$/)) && (start_node.type == 'action')) return;
 			
 			$elem.find('.wf_pole.' + end_pole).each( function() {
 				var $pole = $(this);
@@ -737,14 +737,14 @@ Page.Workflows = class Workflows extends Page.Events {
 			
 			if (start_node.type.match(/^(event|job)$/)) { allowed_types.action = 1; allowed_types.controller = 1; }
 			if (start_node.type == 'controller') { allowed_types.controller = 1; }
-			if (start_node.type == 'launcher') { allowed_types.controller = 1; }
+			if (start_node.type == 'trigger') { allowed_types.controller = 1; }
 		}
 		else if (start_pole == 'wf_input_pole') {
 			allowed_types.event = 1;
 			allowed_types.job = 1;
 			
-			if (start_node.type.match(/^(event|job)$/)) { allowed_types.launcher = 1; allowed_types.controller = 1; }
-			if (start_node.type == 'controller') { allowed_types.launcher = 1; allowed_types.controller = 1; }
+			if (start_node.type.match(/^(event|job)$/)) { allowed_types.trigger = 1; allowed_types.controller = 1; }
+			if (start_node.type == 'controller') { allowed_types.trigger = 1; allowed_types.controller = 1; }
 		}
 		
 		SingleSelect.popupQuickMenu({
@@ -1360,31 +1360,31 @@ Page.Workflows = class Workflows extends Page.Events {
 		}); // showEditResLimitDialog
 	}
 	
-	doEditNode_launcher(node) {
-		// show dialog to add/edit launcher (timing)
-		var idx = node ? find_object_idx( this.event.timings, { id: node.id } ) : -1;
-		this.editTiming(idx);
+	doEditNode_trigger(node) {
+		// show dialog to add/edit trigger (trigger)
+		var idx = node ? find_object_idx( this.event.triggers, { id: node.id } ) : -1;
+		this.editTrigger(idx);
 	}
 	
-	onAfterEditTiming(idx, timing) {
-		// called by editTiming dialog after change made
+	onAfterEditTrigger(idx, trigger) {
+		// called by editTrigger dialog after change made
 		var self = this;
 		var workflow = this.workflow;
 		var $cont = this.wfGetContainer();
 		var do_create = (idx == -1);
-		var do_delete = !!timing.deleted;
+		var do_delete = !!trigger.deleted;
 		var node = null;
 		
 		// early exit unless user created/edited a node we care about (schedule / manual / magic link / etc.)
-		if (!timing.type.match(/^(schedule|continuous|single|manual|plugin)$/)) return; // TODO: add magic link to this list, once we figure it out
+		if (!trigger.type.match(/^(schedule|continuous|single|manual|plugin)$/)) return; // TODO: add magic link to this list, once we figure it out
 		
 		if (do_create) {
-			// create new node and associate with timing element
+			// create new node and associate with trigger element
 			node = { 
 				id: gen_workflow_id('n'),
-				type: 'launcher'
+				type: 'trigger'
 			};
-			timing.id = node.id;
+			trigger.id = node.id;
 			
 			// add new node
 			workflow.nodes.push(node);
@@ -1419,8 +1419,8 @@ Page.Workflows = class Workflows extends Page.Events {
 		} // do_create
 		
 		else if (do_delete) {
-			// timing was deleted, so also delete node (and connections!)
-			node = find_object( this.workflow.nodes, { id: timing.id } );
+			// trigger was deleted, so also delete node (and connections!)
+			node = find_object( this.workflow.nodes, { id: trigger.id } );
 			if (!node) return; // sanity
 			
 			// set selection then delete it
@@ -1673,12 +1673,12 @@ Page.Workflows = class Workflows extends Page.Events {
 			id_map[old_node.id] = new_node.id;
 			workflow.nodes.push(new_node);
 			
-			// if we duped a launcher node, update the timing table accordingly
-			if (new_node.type == 'launcher') {
-				var old_timing = find_object( self.event.timings, { id: old_node.id } );
-				var new_timing = deep_copy_object(old_timing);
-				new_timing.id = new_node.id;
-				self.event.timings.push(new_timing);
+			// if we duped a trigger node, update the trigger table accordingly
+			if (new_node.type == 'trigger') {
+				var old_trigger = find_object( self.event.triggers, { id: old_node.id } );
+				var new_trigger = deep_copy_object(old_trigger);
+				new_trigger.id = new_node.id;
+				self.event.triggers.push(new_trigger);
 			}
 		} );
 		
@@ -1700,10 +1700,10 @@ Page.Workflows = class Workflows extends Page.Events {
 		
 		this.drawWorkflow(true);
 		this.afterDraw();
-		this.renderTimingTable();
+		this.renderTriggerTable();
 		this.addState();
 		
-		// prevent scroll jump due to timing table redraw
+		// prevent scroll jump due to trigger table redraw
 		app.scrollToBottom();
 	}
 	
@@ -1741,10 +1741,10 @@ Page.Workflows = class Workflows extends Page.Events {
 			if (selection[node.id]) {
 				$elem.remove(); // delete
 				
-				// if node is a launcher, also delete the associated timing entry
-				if (node.type == 'launcher') {
-					var idx = find_object_idx( self.event.timings, { id: node.id } );
-					if (idx > -1) self.event.timings.splice( idx, 1 ); // note: may already be deleted
+				// if node is a trigger, also delete the associated trigger entry
+				if (node.type == 'trigger') {
+					var idx = find_object_idx( self.event.triggers, { id: node.id } );
+					if (idx > -1) self.event.triggers.splice( idx, 1 ); // note: may already be deleted
 				}
 			}
 			else new_nodes.push(node); // keep
@@ -1763,7 +1763,7 @@ Page.Workflows = class Workflows extends Page.Events {
 		// redraw and add state
 		this.drawWorkflow(true);
 		this.afterDraw();
-		this.renderTimingTable();
+		this.renderTriggerTable();
 		this.addState();
 	}
 	
@@ -1791,7 +1791,7 @@ Page.Workflows = class Workflows extends Page.Events {
 			scroll: deep_copy_object(this.wfScroll),
 			zoom: this.wfZoom,
 			selection: deep_copy_object(this.wfSelection),
-			timings: deep_copy_object(this.event.timings)
+			triggers: deep_copy_object(this.event.triggers)
 		});
 		
 		if (this.wfSnapshots.length > 100) this.wfSnapshots.shift();
@@ -1808,13 +1808,13 @@ Page.Workflows = class Workflows extends Page.Events {
 			this.wfScroll = snapshot.scroll;
 			this.wfZoom = snapshot.zoom;
 			this.wfSelection = snapshot.selection;
-			this.event.timings = snapshot.timings;
+			this.event.triggers = snapshot.triggers;
 			
 			this.drawWorkflow(true);
 			this.afterDraw();
-			this.renderTimingTable();
+			this.renderTriggerTable();
 			
-			// prevent scroll jump due to timing table redraw
+			// prevent scroll jump due to trigger table redraw
 			app.scrollToBottom();
 		}
 	}
@@ -1829,13 +1829,13 @@ Page.Workflows = class Workflows extends Page.Events {
 			this.wfScroll = snapshot.scroll;
 			this.wfZoom = snapshot.zoom;
 			this.wfSelection = snapshot.selection;
-			this.event.timings = snapshot.timings;
+			this.event.triggers = snapshot.triggers;
 			
 			this.drawWorkflow(true);
 			this.afterDraw();
-			this.renderTimingTable();
+			this.renderTriggerTable();
 			
-			// prevent scroll jump due to timing table redraw
+			// prevent scroll jump due to trigger table redraw
 			app.scrollToBottom();
 		}
 	}
@@ -1936,10 +1936,10 @@ Page.Workflows = class Workflows extends Page.Events {
 			caption: 'Optionally define custom parameters to be collected when a user runs your workflow manually.'
 		});
 		
-		// timings
+		// triggers
 		html += this.getFormRow({
-			label: 'Launchers:',
-			content: '<div id="d_ee_timing_table">' + this.getTimingTable() + '</div>',
+			label: 'Triggers:',
+			content: '<div id="d_ee_trigger_table">' + this.getTriggerTable() + '</div>',
 			caption: 'Select how and when your workflow should run, including manual executions and scheduling options.'
 		});
 		
