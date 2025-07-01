@@ -77,13 +77,16 @@
 	cursor: grabbing;
 }
 
-.wf_sel_msg {
+.wf_sel_msg, .wf_zoom_msg {
 	background: var(--box-background-color);
 	margin-left: 14px;
 	font-size: 12px;
 	text-transform: uppercase;
 	color: var(--label-color);
 	line-height: 30px;
+}
+.wf_zoom_msg {
+	margin-left: 10px;
 }
 
 .wf_node {

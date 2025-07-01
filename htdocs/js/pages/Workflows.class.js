@@ -2005,6 +2005,7 @@ Page.Workflows = class Workflows extends Page.Events {
 			<div class="button icon left" onClick="$P().wfZoomAuto()" title="Auto-fit workflow"><i class="mdi mdi-home"></i></div>
 			<div class="button icon left" onClick="$P().wfZoomOut()" title="Zoom out"><i class="mdi mdi-magnify-minus"></i></div>
 			<div class="button icon left" onClick="$P().wfZoomIn()" title="Zoom in"><i class="mdi mdi-magnify-plus"></i></div>
+			<div class="wf_zoom_msg left tablet_hide"></div>
 			<div class="wf_button_separator left"></div>
 			
 			${btns}

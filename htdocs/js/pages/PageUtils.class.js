@@ -863,7 +863,8 @@ Page.PageUtils = class PageUtils extends Page.Base {
 	
 	wfUpdateZoom() {
 		// update zoom value in editor div, and set/unset special classes
-		var $editor = this.wfGetContainer().find('#d_wf_editor');
+		var $cont = this.wfGetContainer();
+		var $editor = $cont.find('#d_wf_editor');
 		$editor.css('zoom', this.wfZoom);
 		
 		if (app.safari) {
@@ -871,6 +872,10 @@ Page.PageUtils = class PageUtils extends Page.Base {
 			if (this.wfZoom == 0.25) $editor.addClass('zoom_quarter');
 			else $editor.removeClass('zoom_quarter');
 		}
+		
+		// show zoom percentage
+		var zoom_pct = Math.round( this.wfZoom * 100 );
+		$cont.find('.wf_zoom_msg').html( zoom_pct + '%' );
 	}
 	
 	wfZoomAuto() {
@@ -895,17 +900,12 @@ Page.PageUtils = class PageUtils extends Page.Base {
 		
 		// start at default zoom, and only zoom out to fit, never in
 		var dest_zoom = 1;
-		if ((bounds.width > cont_width) || (bounds.height > cont_height)) {
-			// zoom: 0.5
-			dest_zoom /= 2;
-			cont_width *= 2;
-			cont_height *= 2;
-		}
-		if ((bounds.width > cont_width) || (bounds.height > cont_height)) {
-			// zoom: 0.25
-			dest_zoom /= 2;
-			cont_width *= 2;
-			cont_height *= 2;
+		
+		while ((bounds.width > cont_width) || (bounds.height > cont_height)) {
+			dest_zoom -= 0.25;
+			cont_width = $cont.width() / dest_zoom;
+			cont_height = $cont.height() / dest_zoom;
+			if (dest_zoom <= 0.25) break;
 		}
 		
 		this.wfZoom = dest_zoom;
@@ -936,7 +936,7 @@ Page.PageUtils = class PageUtils extends Page.Base {
 				cy = bounds.cy;
 			}
 			
-			if (this.wfZoom < 1) this.wfZoom *= 2;
+			if (this.wfZoom < 1) this.wfZoom += 0.25;
 			else this.wfZoom += 0.5;
 			
 			// var bounds = this.wfComputeBounds();
@@ -962,7 +962,7 @@ Page.PageUtils = class PageUtils extends Page.Base {
 			var cy = Math.floor( this.wfScroll.y + (($cont.height() / this.wfZoom) / 2) );
 			
 			if (this.wfZoom > 1) this.wfZoom -= 0.5;
-			else this.wfZoom /= 2;
+			else this.wfZoom -= 0.25;
 			
 			// var bounds = this.wfComputeBounds();
 			var cont_width = $cont.width() / this.wfZoom;
