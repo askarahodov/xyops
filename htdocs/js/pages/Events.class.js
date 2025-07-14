@@ -829,7 +829,8 @@ Page.Events = class Events extends Page.PageUtils {
 			html += '<div class="wf_container preview" id="d_wf_container" style="height:40vh; min-height:400px;">';
 			
 			html += `<div class="wf_grid_header">
-				<div class="wf_title left"><i class="mdi mdi-clipboard-flow-outline">&nbsp;</i>Workflow Preview</div>
+				<div class="wf_title left"><i class="mdi mdi-clipboard-flow-outline">&nbsp;</i>Workflow Map</div>
+				<div class="button secondary right" onClick="$P().goEditWorkflow()"><i class="mdi mdi-clipboard-edit-outline">&nbsp;</i>Edit...</div>
 				<div class="clear"></div>
 			</div>`;
 			
@@ -956,6 +957,11 @@ Page.Events = class Events extends Page.PageUtils {
 		this.fetchRevisionHistory();
 		this.setupJobHistoryDayGraph();
 		this.setupWorkflow();
+	}
+	
+	goEditWorkflow() {
+		// jump over to editing workflow (scroll it too)
+		Nav.go(`#Workflows?sub=edit&id=${this.event.id}&scroll=bottom`);
 	}
 	
 	getTriggerDetails() {
@@ -1150,7 +1156,10 @@ Page.Events = class Events extends Page.PageUtils {
 		// show all active jobs for event
 		var self = this;
 		var html = '';
-		var rows = Object.values(app.activeJobs).filter( function(job) { return job.event == self.event.id } ).sort( function(a, b) {
+		
+		var rows = Object.values(app.activeJobs).filter( function(job) { 
+			return (job.event == self.event.id) && (job.type != 'adhoc')
+		} ).sort( function(a, b) {
 			return (a.started < b.started) ? 1 : -1;
 		} );
 		
@@ -2128,6 +2137,9 @@ Page.Events = class Events extends Page.PageUtils {
 			
 			var job = deep_copy_object(event);
 			job.enabled = true; // override event disabled, so test actually runs
+			job.test = true;
+			job.label = "Test";
+			job.icon = "test-tube";
 			
 			if (!$('#fe_ete_actions').is(':checked')) {
 				job.actions = [];
@@ -2139,7 +2151,7 @@ Page.Events = class Events extends Page.PageUtils {
 			// parse custom input json
 			var raw_json = $('#fe_ete_input').val();
 			if (raw_json) try {
-				job.input = JSON.parse( raw_json );
+				job.input = { data: JSON.parse( raw_json ), files: [] };
 			}
 			catch (err) {
 				return app.badField( '#fe_ete_input', "Invalid JSON: " + err.message );
