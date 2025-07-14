@@ -194,7 +194,6 @@ Page.Workflows = class Workflows extends Page.Events {
 			<div class="button primary right mobile_collapse" onClick="$P().do_save_workflow()"><i class="mdi mdi-floppy">&nbsp;</i>Save Changes</div>
 			<div class="button secondary right mobile_collapse" onClick="$P().go_edit_history()"><i class="mdi mdi-history">&nbsp;</i><span>History...</span></div>
 			<div class="button secondary right mobile_collapse" onClick="$P().do_export()"><i class="mdi mdi-cloud-download-outline">&nbsp;</i><span>Export...</span></div>
-			<div class="button secondary right mobile_collapse" onClick="$P().do_test_event()"><i class="mdi mdi-test-tube">&nbsp;</i><span>Test...</span></div>
 			<div class="button danger right mobile_collapse" onClick="$P().show_delete_event_dialog()"><i class="mdi mdi-trash-can-outline">&nbsp;</i><span>Delete...</span></div>
 			<div class="button right mobile_collapse" onClick="$P().cancel_workflow_edit()"><i class="mdi mdi-close-circle-outline">&nbsp;</i><span>Cancel</span></div>
 		`);
@@ -212,6 +211,7 @@ Page.Workflows = class Workflows extends Page.Events {
 		this.setupWorkflowEditor();
 		
 		if (do_snap) this.savePageSnapshot( this.get_event_form_json(true) );
+		if (this.args.scroll == 'bottom') app.scrollToBottom();
 	}
 	
 	do_save_workflow() {
@@ -812,7 +812,7 @@ Page.Workflows = class Workflows extends Page.Events {
 		
 		// detect event-to-event or event-to-action and add default condition prop
 		var node = find_object( workflow.nodes, { id: solder.start_node } );
-		if ((node.type == 'event') && (solder.start_pole == 'wf_output_pole')) {
+		if ((node.type.match(/^(event|job)$/)) && (solder.start_pole == 'wf_output_pole')) {
 			conn.condition = 'success';
 		}
 		
@@ -876,6 +876,159 @@ Page.Workflows = class Workflows extends Page.Events {
 		this.drawWorkflow(true);
 		this.afterDraw();
 		this.addState();
+	}
+	
+	doTestSelection() {
+		// test current selection
+		var self = this;
+		var event = this.event;
+		var title = "Test Workflow";
+		var btn = ['open-in-new', 'Run Now'];
+		var id = first_key(this.wfSelection);
+		var node = find_object( this.workflow.nodes, { id: id } );
+		
+		// TODO: actions handled separately
+		if (node.type == 'action') return this.doTestNode_action(node);
+		
+		app.clearError();
+		var event = this.get_event_form_json();
+		if (!event) return; // error
+		
+		var html = '<div class="dialog_box_content scroll maximize">';
+		
+		// test scope
+		if (node.type.match(/^(event|job)$/)) {
+			html += this.getFormRow({
+				label: 'Test Scope:',
+				content: this.getFormMenuSingle({
+					id: 'fe_ete_scope',
+					title: 'Select Test Scope',
+					options: [
+						{ id: 'single', title: "Single Node", icon: 'timer-play-outline' },
+						{ id: 'entire', title: "Entire Workflow", icon: 'clipboard-play-outline' }
+					],
+					value: 'single'
+				}),
+				caption: 'Choose whether to test the selected node by itself, or the entire workflow from starting from the selected node.'
+			});
+		}
+		
+		// actions
+		html += this.getFormRow({
+			label: 'Actions:',
+			content: this.getFormCheckbox({
+				id: 'fe_ete_actions',
+				label: 'Enable All Actions',
+				checked: false
+			}),
+			caption: 'Enable all actions for the test run (includes both workflow and individual node actions).'
+		});
+		
+		// limits
+		html += this.getFormRow({
+			label: 'Limits:',
+			content: this.getFormCheckbox({
+				id: 'fe_ete_limits',
+				label: 'Enable All Limits',
+				checked: false
+			}),
+			caption: 'Enable all resource limits for the test run (includes both workflow and individual node limits).'
+		});
+		
+		// custom input json
+		html += this.getFormRow({
+			label: 'Custom JSON Input:',
+			content: this.getFormTextarea({
+				id: 'fe_ete_input',
+				rows: 1,
+				value: `{\n\t\n}`,
+				style: 'display:none'
+			}) + '<div class="button small secondary" onClick="$P().edit_test_input()">Edit JSON...</div>',
+			caption: 'Optionally customize the JSON input data for the first job.  This is used to simulate data being passed to it from a previous job.'
+		});
+		
+		// user form fields
+		html += this.getFormRow({
+			label: 'Workflow Parameters:',
+			content: '<div class="plugin_param_editor_cont">' + this.getParamEditor(event.fields, {}) + '</div>',
+			caption: (event.fields && event.fields.length) ? 'Enter values for all the event-defined parameters here.' : ''
+		});
+		
+		html += '</div>';
+		Dialog.confirm( title, html, btn, function(result) {
+			if (!result) return;
+			app.clearError();
+			
+			var job = deep_copy_object(event);
+			job.enabled = true; // override event disabled, so test actually runs
+			job.test = true;
+			job.label = "Test";
+			job.icon = "test-tube";
+			job.workflow.start = node.id; // set starting node
+			
+			if (node.type.match(/^(event|job)$/)) {
+				// event + job nodes have the scope menu
+				var scope = $('#fe_ete_scope').val();
+				if (scope == 'single') {
+					// restrict test to just a single node
+					job.workflow.nodes = [ node ];
+					job.workflow.connections = [];
+				}
+			}
+			
+			if (!$('#fe_ete_actions').is(':checked')) {
+				// disable both workflow actions and action nodes
+				job.actions = [];
+				find_objects( job.workflow.nodes, { type: 'action' } ).forEach( function(action) {
+					action.enabled = false;
+				} );
+			}
+			if (!$('#fe_ete_limits').is(':checked')) {
+				// disable both workflow limits and limit nodes
+				job.limits = [];
+				find_objects( job.workflow.nodes, { type: 'limit' } ).forEach( function(limit) {
+					limit.enabled = false;
+				} );
+			}
+			
+			// parse custom input json
+			var raw_json = $('#fe_ete_input').val();
+			if (raw_json) try {
+				job.input = { data: JSON.parse( raw_json ), files: [] };
+			}
+			catch (err) {
+				return app.badField( '#fe_ete_input', "Invalid JSON: " + err.message );
+			}
+			
+			var params = self.getParamValues(self.event.fields);
+			if (!params) return; // validation error
+			
+			if (!job.params) job.params = {};
+			merge_hash_into( job.params, params );
+			
+			// pre-open new window/tab for job details
+			var win = window.open('', '_blank');
+			
+			app.api.post( 'app/run_event', job, function(resp) {
+				// Dialog.hideProgress();
+				if (!self.active) return; // sanity
+				
+				// jump immediately to live details page in new window
+				// Nav.go('Job?id=' + resp.id);
+				win.location.href = '#Job?id=' + resp.id;
+			}, 
+			function(err) {
+				// capture error so we can close the window we just opened
+				win.close();
+				app.doError("API Error: " + err.description);
+			});
+			
+			Dialog.hide();
+		}); // Dialog.confirm
+		
+		if (node.type.match(/^(event|job)$/)) {
+			SingleSelect.init( $('#fe_ete_scope') );
+		}
 	}
 	
 	doEditSelection() {
@@ -1048,11 +1201,11 @@ Page.Workflows = class Workflows extends Page.Events {
 			};
 			
 			if (find_object(app.categories, { id: 'general' })) node.data.category = 'general';
-			else if (!app.categories.length) return app.doError("You must define at least one category to add workflow job nodes.");
+			else if (!app.categories.length) return app.doError("You must define at least one category to add workflow plugin nodes.");
 			else node.data.category = app.categories[0].id;
 			
 			if (find_object(app.plugins, { id: 'shellplug' })) node.data.plugin = 'shellplug';
-			else if (!app.plugins.length) return app.doError("You must create at least one Plugin to add workflow job nodes.");
+			else if (!app.plugins.length) return app.doError("You must create at least one Plugin to add workflow plugin nodes.");
 			else node.data.plugin = app.plugins[0].id;
 		} // do_create
 		
@@ -1060,22 +1213,37 @@ Page.Workflows = class Workflows extends Page.Events {
 		if (!plugin) return app.doError(`Plugin ID "${node.data.plugin}" could not be found.  Did someone delete it?`);
 		var params = node.data.params;
 		
-		var title = do_create ? "New Job Node" : "Editing Job Node";
+		var title = do_create ? "New Plugin Node" : "Editing Plugin Node";
 		var btn = do_create ? ['plus-circle', "Add Node"] : ['check-circle', "Apply"];
 		
 		if (!do_create) title += ` <div class="dialog_title_widget mobile_hide"><span class="monospace">${this.getNiceCopyableID(node.id)}</span></div>`;
 		
 		var html = '<div class="dialog_box_content scroll maximize">';
 		
+		// plugin
+		html += this.getFormRow({
+			label: 'Plugin:',
+			content: this.getFormMenuSingle({
+				id: 'fe_wfd_plugin',
+				title: 'Select Plugin for node',
+				placeholder: 'Select Plugin for node...',
+				options: app.plugins.filter( function(plugin) { return plugin.type == 'event'; } ),
+				value: node.data.plugin || '',
+				default_icon: 'power-plug-outline'
+				// 'data-shrinkwrap': 1
+			}),
+			caption: 'Select the desired Plugin for the node.  Plugin parameters will appear below.'
+		});
+		
 		// title
 		html += this.getFormRow({
-			label: 'Job Title:',
+			label: 'Custom Title:',
 			content: this.getFormText({
 				id: 'fe_wfd_title',
 				spellcheck: 'false',
 				value: node.data.label
 			}),
-			caption: 'Enter a title for the job, for display purposes.'
+			caption: 'Optionally customize the title for the node (defaults to the Plugin name).'
 		});
 		
 		// icon
@@ -1089,7 +1257,7 @@ Page.Workflows = class Workflows extends Page.Events {
 				value: node.data.icon || '',
 				// 'data-shrinkwrap': 1
 			}),
-			caption: 'Optionally choose a custom icon for the job.'
+			caption: 'Optionally choose a custom icon for the plugin node (defaults to the Plugin icon).'
 		});
 		
 		// category
@@ -1104,7 +1272,7 @@ Page.Workflows = class Workflows extends Page.Events {
 				default_icon: 'folder-open-outline',
 				// 'data-shrinkwrap': 1
 			}),
-			caption: 'Select a category for the job (category limits and actions will apply)'
+			caption: 'Select a category for the plugin job (category limits and actions will apply)'
 		});
 		
 		// targets
@@ -1123,7 +1291,7 @@ Page.Workflows = class Workflows extends Page.Events {
 				// 'data-hold': 1
 				// 'data-shrinkwrap': 1
 			}),
-			caption: 'Select groups and/or servers to run the job.'
+			caption: 'Select groups and/or servers to run the plugin job.'
 		});
 		
 		// algo
@@ -1144,24 +1312,9 @@ Page.Workflows = class Workflows extends Page.Events {
 			caption: 'Select the desired algorithm for choosing a server from the target list.'
 		});
 		
-		// plugin
-		html += this.getFormRow({
-			label: 'Plugin:',
-			content: this.getFormMenuSingle({
-				id: 'fe_wfd_plugin',
-				title: 'Select Plugin for job',
-				placeholder: 'Select Plugin for job...',
-				options: app.plugins.filter( function(plugin) { return plugin.type == 'event'; } ),
-				value: node.data.plugin || '',
-				default_icon: 'power-plug-outline'
-				// 'data-shrinkwrap': 1
-			}),
-			caption: 'Select the desired Plugin for the job.  Plugin parameters will appear below.'
-		});
-		
 		// params
 		html += this.getFormRow({
-			label: 'Parameters:',
+			label: 'Plugin Parameters:',
 			content: '<div id="d_wfd_param_editor" class="plugin_param_editor_cont"></div>',
 			caption: 'Enter values for all the Plugin-defined parameters here.'
 		});
@@ -1178,8 +1331,7 @@ Page.Workflows = class Workflows extends Page.Events {
 			node.data.targets = $('#fe_wfd_targets').val();
 			node.data.algo = $('#fe_wfd_algo').val();
 			
-			if (!node.data.label) return app.badField('#fe_wfd_title', "You must enter a title for the job.");
-			if (!node.data.targets.length) return app.badField('#fe_wfd_targets', "You must select at least one target for the job.");
+			if (!node.data.targets.length) return app.badField('#fe_wfd_targets', "You must select at least one target for the plugin job.");
 			
 			node.data.params = self.getPluginParamValues( node.data.plugin );
 			if (!node.data.params) return; // invalid
@@ -1232,7 +1384,7 @@ Page.Workflows = class Workflows extends Page.Events {
 		$('#fe_wfd_plugin').on('change', do_change_plugin);
 		do_change_plugin();
 		
-		if (do_create) $('#fe_wfd_title').focus();
+		// if (do_create) $('#fe_wfd_title').focus();
 	}
 	
 	doEditNode_action(node) {
@@ -1598,7 +1750,7 @@ Page.Workflows = class Workflows extends Page.Events {
 				break;
 				
 				case 'split':
-					node.data.split = $('#fe_wfd_split').val();
+					node.data.split = $('#fe_wfd_split').val().trim();
 					if (!node.data.split.length) return app.badField('#fe_wfd_split', "Please enter a path to the array data to split on.");
 					node.data.continue = parseInt( $('#fe_wfd_continue').val() ) || 0;
 				break;
@@ -1610,7 +1762,7 @@ Page.Workflows = class Workflows extends Page.Events {
 				case 'decision':
 					node.data.label = $('#fe_wfd_title').val();
 					node.data.icon = $('#fe_wfd_icon').val();
-					node.data.decision = $('#fe_wfd_if').val();
+					node.data.decision = $('#fe_wfd_if').val().trim();
 					if (!node.data.decision.length) return app.badField('#fe_wfd_if', "Please enter an expression to evaluate.");
 				break;
 			} // switch type
@@ -2007,7 +2159,7 @@ Page.Workflows = class Workflows extends Page.Events {
 			<div class="wf_title left" style="display:none"><i class="mdi mdi-clipboard-flow-outline">&nbsp;</i>Workflow Editor</div>
 			<div class="button secondary left mobile_collapse" id="d_btn_wf_edit" onClick="$P().doEditSelection()" style="display:none" title="Edit selected node"><i class="mdi mdi-note-edit-outline">&nbsp;</i><span>Edit...</span></div>
 			<div class="button secondary left mobile_collapse" id="d_btn_wf_test" onClick="$P().doTestSelection()" style="display:none" title="Test selected node"><i class="mdi mdi-test-tube">&nbsp;</i><span>Test...</span></div>
-			<div class="button icon left mobile_collapse" id="d_btn_wf_dup" onClick="$P().doDuplicateSelection()" style="display:none" title="Duplicate selection"><i class="mdi mdi-content-copy">&nbsp;</i><span>Duplicate</span></div>
+			<div class="button icon left mobile_collapse" id="d_btn_wf_dup" onClick="$P().doDuplicateSelection()" style="display:none" title="Duplicate selection"><i class="mdi mdi-content-duplicate">&nbsp;</i><span>Duplicate</span></div>
 			<div class="button danger left mobile_collapse" id="d_btn_wf_dis" onClick="$P().doDetachSelection()" style="display:none" title="Detach selection"><i class="mdi mdi-soldering-iron">&nbsp;</i><span>Detach</span></div>
 			<div class="button danger left mobile_collapse" id="d_btn_wf_del" onClick="$P().doDeleteSelection()" style="display:none" title="Delete selection"><i class="mdi mdi-trash-can-outline">&nbsp;</i><span>Delete</span></div>
 			<div class="wf_sel_msg left tablet_hide"></div>
