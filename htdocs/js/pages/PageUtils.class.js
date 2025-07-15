@@ -1400,18 +1400,27 @@ Page.PageUtils = class PageUtils extends Page.Base {
 		if (!trigger) return; // sanity
 		
 		var classes = ['wf_node', 'wf_entity'];
+		var inner_classes = ['wf_ent_trigger'];
 		if (!trigger.enabled) classes.push('disabled');
 		
-		var { nice_icon, nice_type, nice_desc, alt_icon, short_desc } = this.getTriggerDisplayArgs(trigger);
+		var { nice_icon, nice_type, alt_type, nice_desc, alt_icon, short_desc } = this.getTriggerDisplayArgs(trigger);
 		var nice_title = nice_type;
 		var icon = alt_icon;
+		var pole = `<div class="wf_pole wf_output_pole"><i class="mdi mdi-chevron-right"></i></div>`;
 		
 		if (!trigger.enabled) short_desc = '(Disabled)';
 		
+		if (trigger.type.match(/^(catchup|range|blackout|delay|precision)$/)) {
+			// option triggers are rendered as pure circles with no pole
+			nice_title = alt_type;
+			inner_classes.push('wf_option');
+			pole = '';
+		}
+		
 		html += `<div id="d_wfn_${node.id}" class="${classes.join(' ')}" style="left:${pos.x}px; top:${pos.y}px;">
-			<div class="wf_ent_trigger">
+			<div class="${inner_classes.join(' ')}">
 				<i class="mdi mdi-${icon}"></i>
-				<div class="wf_pole wf_output_pole"><i class="mdi mdi-chevron-right"></i></div>
+				${pole}
 			</div>
 			<span class="wf_ent_title">${nice_title}</span>
 			<span class="wf_ent_label">${short_desc}</span>
@@ -2067,6 +2076,7 @@ Page.PageUtils = class PageUtils extends Page.Base {
 		var nice_icon = '';
 		var alt_icon = '';
 		var nice_type = '';
+		var alt_type = '';
 		var nice_desc = '';
 		var short_desc = '';
 		
@@ -2119,7 +2129,7 @@ Page.PageUtils = class PageUtils extends Page.Base {
 			
 			case 'catchup':
 				nice_icon = '<i class="mdi mdi-cog-outline"></i>';
-				nice_type = 'Option';
+				nice_type = alt_type = 'Option';
 				nice_desc = '<i class="mdi mdi-calendar-refresh-outline">&nbsp;</i>Catch-Up';
 				short_desc = "Catch-Up";
 			break;
@@ -2127,20 +2137,23 @@ Page.PageUtils = class PageUtils extends Page.Base {
 			case 'range':
 				nice_icon = '<i class="mdi mdi-cog-outline"></i>';
 				nice_type = 'Option';
-				short_desc = this.summarizeTimingRange(item);
-				nice_desc = '<i class="mdi mdi-calendar-range-outline">&nbsp;</i><b>Range:</b> ' + short_desc;
+				alt_type = 'Range';
+				short_desc = (item.start && item.end) ? get_text_from_seconds( item.end - item.start, true, true ) : this.summarizeTimingRange(item);
+				nice_desc = '<i class="mdi mdi-calendar-range-outline">&nbsp;</i><b>Range:</b> ' + this.summarizeTimingRange(item);
 			break;
 			
 			case 'blackout':
 				nice_icon = '<i class="mdi mdi-cog-outline"></i>';
 				nice_type = 'Option';
-				short_desc = this.summarizeTimingRange(item);
-				nice_desc = '<i class="mdi mdi-circle">&nbsp;</i><b>Blackout:</b> ' + short_desc;
+				alt_type = 'Blackout';
+				short_desc = (item.start && item.end) ? get_text_from_seconds( item.end - item.start, true, true ) : this.summarizeTimingRange(item);
+				nice_desc = '<i class="mdi mdi-circle">&nbsp;</i><b>Blackout:</b> ' + this.summarizeTimingRange(item);
 			break;
 			
 			case 'delay':
 				nice_icon = '<i class="mdi mdi-cog-outline"></i>';
 				nice_type = 'Option';
+				alt_type = 'Delay';
 				short_desc = get_text_from_seconds(item.duration || 0, false, true);
 				nice_desc = '<i class="mdi mdi-chat-sleep-outline">&nbsp;</i><b>Delay:</b> ' + short_desc;
 			break;
@@ -2155,7 +2168,7 @@ Page.PageUtils = class PageUtils extends Page.Base {
 			break;
 		} // switch item.type
 		
-		return { nice_icon, nice_type, nice_desc, alt_icon, short_desc };
+		return { nice_icon, nice_type, alt_type, nice_desc, alt_icon, short_desc };
 	}
 	
 	summarizeTimingRange(trigger) {

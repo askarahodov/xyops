@@ -1527,9 +1527,6 @@ Page.Workflows = class Workflows extends Page.Events {
 		var do_delete = !!trigger.deleted;
 		var node = null;
 		
-		// early exit unless user created/edited a node we care about (schedule / manual / magic link / etc.)
-		if (!trigger.type.match(/^(schedule|continuous|single|manual|plugin)$/)) return; // TODO: add magic link to this list, once we figure it out
-		
 		if (do_create) {
 			// create new node and associate with trigger element
 			node = { 
@@ -1547,7 +1544,16 @@ Page.Workflows = class Workflows extends Page.Events {
 			// compute x/y for new node
 			if (this.wfPausedSolder) {
 				// resume paused solder
-				this.resumePausedSolder(node.id, node_width, node_height);
+				if (trigger.type.match(/^(catchup|range|blackout|delay|precision)$/)) {
+					// special trigger type has no solder poles, so abort the solder, but place the node in the correct location
+					var solder = this.wfPausedSolder;
+					delete this.wfPausedSolder;
+					node.x = solder.x - (width / 2);
+					node.y = solder.y - (height / 2);
+				}
+				else {
+					this.resumePausedSolder(node.id, node_width, node_height);
+				}
 			}
 			else {
 				// center node in viewport
@@ -1559,15 +1565,6 @@ Page.Workflows = class Workflows extends Page.Events {
 			// select new node
 			this.wfSelection = {};
 			this.wfSelection[node.id] = 2;
-			
-			// scroll WF editor into view
-			// if we're close enough, just jump the scroll -- if not, animate it in
-			if (window.innerHeight + window.scrollY < document.documentElement.scrollHeight - 200) {
-				$cont.closest('div.box')[0].scrollIntoView({ behavior: 'smooth' });
-			}
-			else {
-				app.scrollToBottom();
-			}
 		} // do_create
 		
 		else if (do_delete) {
@@ -1868,11 +1865,7 @@ Page.Workflows = class Workflows extends Page.Events {
 		
 		this.drawWorkflow(true);
 		this.afterDraw();
-		this.renderTriggerTable();
 		this.addState();
-		
-		// prevent scroll jump due to trigger table redraw
-		app.scrollToBottom();
 	}
 	
 	doDetachSelection() {
@@ -1931,7 +1924,6 @@ Page.Workflows = class Workflows extends Page.Events {
 		// redraw and add state
 		this.drawWorkflow(true);
 		this.afterDraw();
-		this.renderTriggerTable();
 		this.addState();
 	}
 	
@@ -1984,10 +1976,6 @@ Page.Workflows = class Workflows extends Page.Events {
 		
 		this.drawWorkflow(true);
 		this.afterDraw();
-		this.renderTriggerTable();
-		
-		// prevent scroll jump due to trigger table redraw
-		app.scrollToBottom();
 		
 		// update undo/redo button classes
 		$cont.find('#d_btn_wf_undo').toggleClass('disabled', (this.wfSnapIdx <= 0));
@@ -2104,13 +2092,6 @@ Page.Workflows = class Workflows extends Page.Events {
 			label: 'User Fields:',
 			content: '<div id="d_params_table"></div>',
 			caption: 'Optionally define custom parameters to be collected when a user runs your workflow manually.'
-		});
-		
-		// triggers
-		html += this.getFormRow({
-			label: 'Triggers:',
-			content: '<div id="d_ee_trigger_table">' + this.getTriggerTable() + '</div>',
-			caption: 'Select how and when your workflow should run, including manual executions and scheduling options.'
 		});
 		
 		// resource limits

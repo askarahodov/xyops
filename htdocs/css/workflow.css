@@ -285,7 +285,7 @@ body.dark .wf_event_title {
 	left: 0px;
 	width: 64px;
 	height: 64px;
-	line-height: 62px; /* for border */
+	line-height: 61px;
 	text-align: center;
 	font-size: 32px;
 	color: var(--label-color);
@@ -297,6 +297,10 @@ body.dark .wf_event_title {
 .wf_ent_trigger {
 	border-radius: 999em 0px 0px 999em;
 	color: var(--orange);
+}
+.wf_ent_trigger.wf_option {
+	border-radius: 999em;
+	color: var(--cyan);
 }
 .wf_ent_action {
 	border-radius: 0px 999em 999em 0px;
@@ -479,6 +483,9 @@ body.dark .wf_condition {
 }
 .wf_ent_trigger {
 	--active-color: var(--orange);
+}
+.wf_ent_trigger.wf_option {
+	--active-color: var(--cyan);
 }
 .wf_ent_limit {
 	--active-color: var(--cyan);
