@@ -375,6 +375,15 @@
 		{ "id": "queue", "title": "Max Queue Limit", "icon": "tray-full" }
 	],
 	
+	"workflow_node_types": [
+		{ "id": "event", "title": "Event", "icon": "calendar-clock" },
+		{ "id": "job", "title": "Plugin", "icon": "power-plug" },
+		{ "id": "limit", "title": "Limiter", "icon": "gauge" },
+		{ "id": "trigger", "title": "Trigger", "icon": "rocket-launch-outline" },
+		{ "id": "action", "title": "Action", "icon": "gesture-tap" },
+		{ "id": "controller", "title": "Controller", "icon": "gamepad-variant-outline" }
+	],
+	
 	"workflow_new_node_menu": [
 		{ "id": "event", "title": "New Event...", "icon": "calendar-clock" },
 		{ "id": "job", "title": "New Plugin...", "icon": "power-plug" },
