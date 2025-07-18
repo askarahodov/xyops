@@ -174,7 +174,7 @@
 				{ "name": "Content-Type", "value": "application/json" },
 				{ "name": "User-Agent", "value": "Orchestra/WebHook" }
 			],
-			"body": "{\n\t\"content\": \"[content]\",\n\t\"text\": \"[text]\"\n}",
+			"body": "{\n\t\"text\": \"[text]\",\n\t\"content\": \"[text]\"\n\t\"message\": \"[text]\"\n}",
 			"timeout": 30,
 			"retries": 0,
 			"follow": false,
