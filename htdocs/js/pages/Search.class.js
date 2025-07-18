@@ -552,7 +552,7 @@ Page.Search = class Search extends Page.Base {
 				'<span class="mono">' + pdata.preview.after + '</span>',
 			
 			commify( pdata.count ),
-			this.getRelativeDateTime( pdata.completed )
+			this.getRelativeDateTime( pdata.completed, true )
 		];
 		
 		var html = '';
@@ -651,7 +651,7 @@ Page.Search = class Search extends Page.Base {
 				self.getNiceCategory(job.category, true),
 				self.getNiceServer(job.server, true),
 				self.getNiceJobSource(job),
-				self.getRelativeDateTime( job.completed ),
+				self.getRelativeDateTime( job.completed, true ),
 				self.getNiceJobElapsedTime(job, true, false),
 				self.getNiceJobResult(job)
 			];
