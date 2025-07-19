@@ -572,7 +572,6 @@ Each trigger has a `type` property which describes its behavior.  The different 
 | Type ID | Description |
 |---------|-------------|
 | `schedule` | Set a repeating schedule to run the event (hourly, daily, etc.).  See [Schedule Rules](#schedule-rules) below. |
-| `continuous` | Run the event continuously, forever. |
 | `interval` | Run the event on a repeating interval, given a starting date/time. |
 | `single` | Set a single future exact date/time to run.  Requires an additional `epoch` property, set to the [Epoch timestamp](https://en.wikipedia.org/wiki/Unix_time) at which to run. |
 | `catchup` | Ensure that *every* scheduled job runs, even if it has to run late. |

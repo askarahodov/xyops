@@ -147,7 +147,7 @@ Page.Events = class Events extends Page.PageUtils {
 								{ id: 'schedule', title: 'Scheduled', icon: 'update' },
 								{ id: 'single', title: "Single Shot", icon: 'alarm-check' },
 								{ id: 'interval', title: "Interval", icon: 'timer-sand' },
-								{ id: 'continuous', title: "Continuous", icon: 'all-inclusive' },
+								// { id: 'continuous', title: "Continuous", icon: 'all-inclusive' },
 								{ id: 'catchup', title: "Catch-Up", icon: 'calendar-refresh-outline' },
 								{ id: 'range', title: "Range", icon: 'calendar-range-outline' },
 								{ id: 'blackout', title: "Blackout", icon: 'circle' },

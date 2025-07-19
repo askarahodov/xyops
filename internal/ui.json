@@ -327,7 +327,6 @@
 		{ "id": "manual", "title": "Manual Run", "icon": "run-fast" },
 		{ "id": "single", "title": "Single Shot", "icon": "alarm-check" },
 		{ "id": "interval", "title": "Interval", "icon": "timer-sand" },
-		{ "id": "continuous", "title": "Continuous", "icon": "all-inclusive" },
 		{ "id": "plugin", "title": "Plugin", "icon": "power-plug" },
 		{ "id": "catchup", "title": "Catch-Up", "icon": "calendar-refresh-outline", "group": "Options" },
 		{ "id": "range", "title": "Range", "icon": "calendar-range-outline" },
