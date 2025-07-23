@@ -2091,12 +2091,14 @@ Page.Job = class Job extends Page.PageUtils {
 		// get table of job files, with download links
 		var self = this;
 		var job = this.job;
-		var files = job.files;
 		var html = '';
-		var cols = ['Filename', 'Size', 'Job', 'Server', 'Actions'];
+		var cols = ['Filename', 'Size', 'Modified', 'Source', 'Job', 'Server', 'Actions'];
+		
+		var files = [];
+		if (job.input && job.input.files) files = files.concat( job.input.files.map( function(file) { return { ...file, source: 'input' }; } ) );
+		if (job.files) files = files.concat( job.files.map( function(file) { return { ...file, source: 'output' }; } ) );
 		
 		html += this.getBasicGrid( files, cols, 'file', function(file, idx) {
-			var filename = basename(file.path || '(Unknown)');
 			var url = '/' + file.path;
 			var classes = [];
 			var actions = [
@@ -2105,9 +2107,16 @@ Page.Job = class Job extends Page.PageUtils {
 				'<span class="link danger" onMouseUp="$P().do_delete_file(' + idx + ')"><b>Delete</b></span>'
 			];
 			
+			var nice_source = (file.source == 'input') ? 
+				'<i class="mdi mdi-download-circle-outline">&nbsp;</i>Input' : 
+				'<i class="mdi mdi-upload-circle-outline">&nbsp;</i>Output';
+			
 			var tds = [
-				'<b>' + self.getNiceFile(filename, url) + '</b>',
+				'<b>' + self.getNiceFile(file.filename, url) + '</b>',
+				// '<span class="monospace">' + file.id + '</span>',
 				get_text_from_bytes( file.size || 0 ),
+				self.getRelativeDateTime(file.date),
+				nice_source,
 				self.getNiceJob(file.job || job.id),
 				self.getNiceServer(file.server || job.server),
 				actions.join(' | ')
@@ -2125,7 +2134,7 @@ Page.Job = class Job extends Page.PageUtils {
 		var self = this;
 		var job = this.job;
 		var file = job.files[idx];
-		var filename = basename(file.path || '(Unknown)');
+		var filename = basename(file.filename || '(Unknown)');
 		
 		Dialog.confirmDanger( 'Delete File', "Are you sure you want to permanently delete the job file &ldquo;<b>" + filename + "</b>&rdquo;?  There is no way to undo this operation.", ['trash-can', 'Delete'], function(result) {
 			if (!result) return;
@@ -2134,7 +2143,7 @@ Page.Job = class Job extends Page.PageUtils {
 			
 			app.api.post( 'app/delete_job_file', { id: file.job || job.id, path: file.path }, function(resp) {
 				Dialog.hideProgress();
-				app.showMessage('success', "Job file &ldquo;<b>" + filename + "</b>&rdquo; was deleted successfully.");
+				app.showMessage('success', "Job file &ldquo;" + filename + "&rdquo; was deleted successfully.");
 				
 				if (!self.active) return; // sanity
 				
@@ -2157,7 +2166,7 @@ Page.Job = class Job extends Page.PageUtils {
 			
 			app.api.post( 'app/delete_job', { id: job.id }, function(resp) {
 				Dialog.hideProgress();
-				app.showMessage('success', "Job ID &ldquo;<b>" + job.id + "</b>&rdquo; was deleted successfully.");
+				app.showMessage('success', "Job ID &ldquo;" + job.id + "&rdquo; was deleted successfully.");
 				
 				if (!self.active) return; // sanity
 				
