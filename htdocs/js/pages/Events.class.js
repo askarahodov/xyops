@@ -170,17 +170,7 @@ Page.Events = class Events extends Page.PageUtils {
 						content: this.getFormMenuSingle({
 							id: 'fe_el_action',
 							title: 'Select Action',
-							options: [
-								['', 'Any Action'], 
-								{ id: 'email', title: "Send Email", icon: 'email-send-outline' },
-								{ id: 'web_hook', title: "Web Hook", icon: 'webhook' },
-								{ id: 'run_event', title: "Run Event", icon: 'calendar-clock' },
-								{ id: 'channel', title: "Notify Channel", icon: 'bullhorn-outline' },
-								{ id: 'snapshot', title: "Take Snapshot", icon: 'monitor-screenshot' },
-								{ id: 'disable', title: "Disable Event", icon: 'cancel' },
-								{ id: 'delete', title: "Delete Event", icon: 'trash-can-outline' },
-								{ id: 'plugin', title: "Action Plugin", icon: 'power-plug' }
-							].concat(
+							options: [ ['', 'Any Action'] ].concat( config.ui.action_type_menu ).concat(
 								this.buildOptGroup( action_plugins, "Action Plugins:", 'power-plug-outline', 'p_' )
 							),
 							value: args.action || '',
@@ -818,9 +808,9 @@ Page.Events = class Events extends Page.PageUtils {
 		
 		// event details
 		html += '<div class="box_grid">';
-			html += '<div class="box_unity" id="d_ve_trigger_summary">' + this.getTriggerDetails() + '</div>';
-			html += '<div class="box_unity">' + this.getActionDetails() + '</div>';
-			html += '<div class="box_unity">' + this.getLimitDetails() + '</div>';
+			html += '<div id="d_ve_trigger_summary">' + this.getTriggerDetails() + '</div>';
+			html += '<div>' + this.getActionDetails() + '</div>';
+			html += '<div>' + this.getLimitDetails() + '</div>';
 		html += '</div>';
 		
 		// workflow preview
