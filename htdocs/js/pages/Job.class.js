@@ -1,4 +1,8 @@
-// Job Details Pages
+// Job Details Page
+
+// Copyright (c) 2019 - 2025 PixlCore LLC
+// Released under the PixlCore Sustainable Use License.
+// See the LICENSE.md file in this repository.
 
 Page.Job = class Job extends Page.PageUtils {
 	

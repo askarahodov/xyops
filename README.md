@@ -63,7 +63,7 @@ Please note that OpsRocket currently only works on POSIX-compliant operating sys
 You'll need to have [Node.js](https://nodejs.org/en/download/) pre-installed on your server.  Then become root and type this:
 
 ```
-curl -s https://raw.githubusercontent.com/jhuckaby/opsrocket/master/bin/install.js | node
+curl -s https://raw.githubusercontent.com/pixlcore/opsrocket/master/bin/install.js | node
 ```
 
 This will install the latest stable release of OpsRocket and all of its dependencies under: `/opt/opsrocket/`
@@ -900,15 +900,3 @@ To start OpsRocket in debug mode, issue the following command:
 ```
 
 This will launch the service without forking a daemon process, and echo the entire debug log contents to the console.  This is great for debugging server-side issues.  Beware of file permissions if you run as a non-root user.  Hit Ctrl-C to shut down the service when in this mode.
-
-# License
-
-The MIT License (MIT)
-
-Copyright (c) 2021 Joseph Huckaby
-
-Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated documentation files (the "Software"), to deal in the Software without restriction, including without limitation the rights to use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies of the Software, and to permit persons to whom the Software is furnished to do so, subject to the following conditions:
-
-The above copyright notice and this permission notice shall be included in all copies or substantial portions of the Software.
-
-THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.

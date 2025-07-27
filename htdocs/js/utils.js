@@ -1,6 +1,7 @@
 // OpsRocket Web App - Utils
-// Author: Joseph Huckaby
-// Copyright (c) 2021 Joseph Huckaby
+// Copyright (c) 2019 - 2025 PixlCore LLC
+// Released under the PixlCore Sustainable Use License.
+// See the LICENSE.md file in this repository.
 
 function get_pretty_int_list(arr, ranges) {
 	// compose int array to string using commas + spaces, and
@@ -228,7 +229,7 @@ function detect_num_interval(arr, max) {
 };
 
 // Crontab Parsing Tools
-// by Joseph Huckaby, (c) 2015, MIT License
+// by Joseph Huckaby, (c) 2015, Sustainable Use License
 
 var cron_aliases = {
 	jan: 1,

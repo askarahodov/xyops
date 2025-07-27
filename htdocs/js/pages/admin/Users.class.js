@@ -1,5 +1,9 @@
 // Admin Page -- Users
 
+// Copyright (c) 2019 - 2025 PixlCore LLC
+// Released under the PixlCore Sustainable Use License.
+// See the LICENSE.md file in this repository.
+
 Page.Users = class Users extends Page.Base {
 	
 	onInit() {

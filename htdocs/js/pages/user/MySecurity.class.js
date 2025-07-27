@@ -1,5 +1,9 @@
 // User Page -- Security Log
 
+// Copyright (c) 2019 - 2025 PixlCore LLC
+// Released under the PixlCore Sustainable Use License.
+// See the LICENSE.md file in this repository.
+
 Page.MySecurity = class MySecurity extends Page.Base {
 	
 	onInit() {

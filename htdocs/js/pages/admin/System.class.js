@@ -1,5 +1,9 @@
 // Admin Page -- System Status and Maintenance
 
+// Copyright (c) 2019 - 2025 PixlCore LLC
+// Released under the PixlCore Sustainable Use License.
+// See the LICENSE.md file in this repository.
+
 Page.System = class System extends Page.Base {
 	
 	onInit() {

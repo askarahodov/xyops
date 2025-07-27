@@ -1,5 +1,9 @@
 // Admin Page -- Web Hooks Config
 
+// Copyright (c) 2019 - 2025 PixlCore LLC
+// Released under the PixlCore Sustainable Use License.
+// See the LICENSE.md file in this repository.
+
 Page.WebHooks = class WebHooks extends Page.PageUtils {
 	
 	onInit() {

@@ -1,5 +1,9 @@
 // Server List and Server Details
 
+// Copyright (c) 2019 - 2025 PixlCore LLC
+// Released under the PixlCore Sustainable Use License.
+// See the LICENSE.md file in this repository.
+
 Page.Servers = class Servers extends Page.ServerUtils {
 	
 	onInit() {

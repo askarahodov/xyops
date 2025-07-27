@@ -1,3 +1,9 @@
+// Dashboard Page
+
+// Copyright (c) 2019 - 2025 PixlCore LLC
+// Released under the PixlCore Sustainable Use License.
+// See the LICENSE.md file in this repository.
+
 Page.Dashboard = class Dashboard extends Page.PageUtils {
 	
 	onInit() {

@@ -1,8 +1,9 @@
 #!/usr/bin/env node
 
 // CLI for Storage System
-// Copyright (c) 2018 - 2021 Joseph Huckaby
-// Released under the MIT License
+// Copyright (c) 2019 - 2025 PixlCore LLC
+// Released under the PixlCore Sustainable Use License.
+// See the LICENSE.md file in this repository.
 
 var path = require('path');
 var cp = require('child_process');

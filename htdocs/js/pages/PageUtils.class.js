@@ -1,3 +1,9 @@
+// Page Utilities
+
+// Copyright (c) 2019 - 2025 PixlCore LLC
+// Released under the PixlCore Sustainable Use License.
+// See the LICENSE.md file in this repository.
+
 Page.PageUtils = class PageUtils extends Page.Base {
 
 	goRevisionHistory(opts) {

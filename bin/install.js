@@ -1,9 +1,10 @@
 // OpsRocket Auto Installer
-// Copyright (c) 2023 Joseph Huckaby, MIT License.
-// https://github.com/pixlcore/opsrocket
+// Copyright (c) 2019 - 2025 PixlCore LLC
+// Released under the PixlCore Sustainable Use License.
+// https://github.com/pixlcore/opsrocket/blob/main/LICENSE.md
 
 // To install, issue this command as root:
-// curl -s "https://raw.githubusercontent.com/jhuckaby/opsrocket/master/bin/install.js" | node
+// curl -s "https://raw.githubusercontent.com/pixlcore/opsrocket/master/bin/install.js" | node
 
 var path = require('path');
 var fs = require('fs');

@@ -2,6 +2,10 @@
 // Usage: node bin/gen-sample-data.js > conf/sample-data.json
 // Then: node bin/storage-cli.js run conf/sample-data.json
 
+// Copyright (c) 2019 - 2025 PixlCore LLC
+// Released under the PixlCore Sustainable Use License.
+// See the LICENSE.md file in this repository.
+
 var Tools = require('pixl-tools');
 var Request = require('pixl-request');
 var request = new Request();

@@ -1,5 +1,9 @@
 // Scheduler -- Workflow Config
 
+// Copyright (c) 2019 - 2025 PixlCore LLC
+// Released under the PixlCore Sustainable Use License.
+// See the LICENSE.md file in this repository.
+
 Page.Workflows = class Workflows extends Page.Events {
 	
 	onInit() {

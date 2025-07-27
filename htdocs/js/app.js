@@ -1,6 +1,7 @@
 // OpsRocket Web App
-// Author: Joseph Huckaby
-// Copyright (c) 2021 Joseph Huckaby
+// Copyright (c) 2019 - 2025 PixlCore LLC
+// Released under the PixlCore Sustainable Use License.
+// See the LICENSE.md file in this repository.
 
 if (!window.app) throw new Error("App Framework is not present.");
 
