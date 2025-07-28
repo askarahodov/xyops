@@ -1224,6 +1224,22 @@ Page.Base = class Base extends Page {
 		return html;
 	}
 	
+	updateProgressBar(amount, $cont) {
+		// update generic progress bar
+		if (typeof($cont) == 'string') $cont = this.div.find($cont);
+		
+		var counter = Math.min(1, Math.max(0, amount || 1));
+		var bar_width = this.bar_width || 100;
+		if ($cont.hasClass('wider')) bar_width = 150;
+		var cx = Math.floor( counter * bar_width );
+		var label = '' + Math.floor( (counter / 1.0) * 100 ) + '%';
+		var indeterminate = !!(counter == 1.0);
+		
+		$cont.toggleClass('indeterminate', indeterminate);
+		$cont.find('.progress_bar_inner').css('width', '' + cx + 'px');
+		$cont.find('.progress_bar_label').html( label );
+	}
+	
 	getNiceJobRemainingTime(job, abbrev) {
 		// get nice job remaining time, using elapsed and progress
 		var elapsed = Math.floor( Math.max( 0, app.epoch - job.started ) );
@@ -2345,6 +2361,7 @@ Page.Base = class Base extends Page {
 			var elem_id = 'fe_pp_' + plugin_id + '_' + param.id;
 			var elem_value = (param.id in params) ? params[param.id] : param.value;
 			var elem_dis = (param.locked && !app.isAdmin()) ? 'disabled' : undefined; 
+			var elem_icon = config.ui.control_type_icons[param.type];
 			if (param.type == 'hidden') return;
 			
 			if (param.type != 'checkbox') html += '<div class="info_label">' + param.title + '</div>';
@@ -2361,10 +2378,10 @@ Page.Base = class Base extends Page {
 					if (1 || (plugin.type == 'event')) {
 						html += self.getFormTextarea({ id: elem_id, value: elem_value, rows: 1, disabled: elem_dis, style: 'display:none' });
 						if (elem_dis) {
-							html += '<div class="button small secondary" onClick="$P().viewPluginParamCode(\'' + plugin_id + '\',\'' + param.id + '\')">View Code...</div>';
+							html += '<div class="button small secondary" onClick="$P().viewPluginParamCode(\'' + plugin_id + '\',\'' + param.id + '\')"><i class="mdi mdi-code-json">&nbsp;</i>View Code...</div>';
 						}
 						else {
-							html += '<div class="button small secondary" onClick="$P().editPluginParamCode(\'' + plugin_id + '\',\'' + param.id + '\')">Edit Code...</div>';
+							html += '<div class="button small secondary" onClick="$P().editPluginParamCode(\'' + plugin_id + '\',\'' + param.id + '\')"><i class="mdi mdi-text-box-edit-outline">&nbsp;</i>Edit Code...</div>';
 						}
 					}
 					else {
