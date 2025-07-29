@@ -338,26 +338,6 @@ Page.Job = class Job extends Page.PageUtils {
 			html += '</div>'; // box
 		} // workflow
 		
-		// event parameters (user fields)
-		html += '<div class="box toggle" id="d_event_params" style="display:none">';
-			html += '<div class="box_title">';
-				html += '<i></i><span>User Parameters</span>';
-			html += '</div>';
-			html += '<div class="box_content table">';
-				// html += '<div class="loading_container"><div class="loading"></div></div>';
-			html += '</div>'; // box_content
-		html += '</div>'; // box
-		
-		// plugin parameters
-		html += '<div class="box toggle" id="d_job_params" style="display:none">';
-			html += '<div class="box_title">';
-				html += '<i></i><span></span>';
-			html += '</div>';
-			html += '<div class="box_content table">';
-				// html += '<div class="loading_container"><div class="loading"></div></div>';
-			html += '</div>'; // box_content
-		html += '</div>'; // box
-		
 		// comments (hidden unless needed)
 		html += '<div class="box toggle" id="d_job_comments" style="display:none">';
 			html += '<div class="box_title">';
@@ -399,6 +379,26 @@ Page.Job = class Job extends Page.PageUtils {
 				html += '</div>'; // box_content
 			html += '</div>'; // box
 		}
+		
+		// event parameters (user fields)
+		html += '<div class="box toggle" id="d_event_params" style="display:none">';
+			html += '<div class="box_title">';
+				html += '<i></i><span>User Parameters</span>';
+			html += '</div>';
+			html += '<div class="box_content table">';
+				// html += '<div class="loading_container"><div class="loading"></div></div>';
+			html += '</div>'; // box_content
+		html += '</div>'; // box
+		
+		// plugin parameters
+		html += '<div class="box toggle" id="d_job_params" style="display:none">';
+			html += '<div class="box_title">';
+				html += '<i></i><span></span>';
+			html += '</div>';
+			html += '<div class="box_content table">';
+				// html += '<div class="loading_container"><div class="loading"></div></div>';
+			html += '</div>'; // box_content
+		html += '</div>'; // box
 		
 		// user content (table, html, perf)
 		html += '<div class="box toggle" id="d_job_user_table" style="display:none">';
@@ -651,9 +651,9 @@ Page.Job = class Job extends Page.PageUtils {
 		
 		var grid_args = {
 			rows: rows,
-			cols: ['Job ID', 'Event', 'Category', 'Server', 'State', 'Elapsed', 'Progress/Result', 'Actions'],
+			cols: ['Job ID', 'Event/Plugin', 'Category', 'Server', 'State', 'Elapsed', 'Progress/Result', 'Actions'],
 			data_type: 'job',
-			class: 'data_grid wf_active_grid', // TODO: css rules for this?
+			class: 'data_grid wf_active_grid',
 			empty_msg: 'No workflow jobs found.'
 		};
 		
@@ -1495,6 +1495,7 @@ Page.Job = class Job extends Page.PageUtils {
 			rows: activity,
 			cols: this.isWorkflow ? ['Date/Time', 'Server', 'Node ID', 'Type', 'Message'] : ['Date/Time', 'Server', 'Message'],
 			data_type: 'row',
+			class: this.isWorkflow ? 'data_grid wf_meta_grid' : 'data_grid job_meta_grid',
 			hide_pagination: true
 		};
 		
