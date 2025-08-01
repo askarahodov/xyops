@@ -187,7 +187,7 @@ Page.Job = class Job extends Page.PageUtils {
 					html += '<div class="button icon right secondary" title="Add Comment..." onClick="$P().do_edit_comment(-1)"><i class="mdi mdi-comment-processing-outline"></i></div>';
 					html += '<div class="button icon right secondary" title="Update Tags..." onMouseDown="$P().do_update_tags(this)"><i class="mdi mdi-tag-plus-outline"></i></div>';
 					
-					// html += '<div class="button icon right secondary" title="View JSON..." onClick="$P().do_view_job_data()"><i class="mdi mdi-code-json"></i></div>';
+					html += '<div class="button icon right secondary" title="View JSON..." onClick="$P().do_view_job_data()"><i class="mdi mdi-code-json"></i></div>';
 					html += '<div class="button icon right" title="Run Again..." onClick="$P().do_confirm_run_again()"><i class="mdi mdi-run-fast"></i></div>';
 					
 					html += '<div class="clear"></div>';
@@ -497,20 +497,6 @@ Page.Job = class Job extends Page.PageUtils {
 			html += '</div>'; // box_content
 		html += '</div>'; // box
 		
-		// job json
-		html += '<div class="box" id="d_job_data" style="display:none">';
-			html += '<div class="box_title">';
-				html += 'Job Data JSON';
-				html += '<div class="button right" onMouseUp="$P().do_copy_job_data()"><i class="mdi mdi-clipboard-text-outline">&nbsp;</i>Copy to Clipboard</div>';
-				// html += '<div class="button right" onMouseUp="$P().do_view_job_data()"><i class="mdi mdi-open-in-new">&nbsp;</i>View Raw...</div>';
-				html += '<div class="button right" onMouseUp="$P().do_download_job_data()"><i class="mdi mdi-cloud-download-outline">&nbsp;</i>Download...</div>';
-				html += '<div class="clear"></div>';
-			html += '</div>';
-			html += '<div class="box_content table">';
-				html += '<pre></pre>';
-			html += '</div>'; // box_content
-		html += '</div>'; // box
-		
 		this.div.html(html);
 		
 		SingleSelect.init( this.div.find('select.sel_chart_size') );
@@ -524,7 +510,6 @@ Page.Job = class Job extends Page.PageUtils {
 			// completed
 			this.getCompletedJobLog();
 			this.getAdditionalJobs();
-			// this.showJobData();
 			this.renderPluginParams('#d_job_params');
 			this.renderEventParams();
 			this.renderJobActions();
@@ -2381,36 +2366,14 @@ Page.Job = class Job extends Page.PageUtils {
 		
 		delete job.activity;
 		delete job.timelines;
-		delete job.table;
-		delete job.html;
+		// delete job.table;
+		// delete job.html;
 		
 		(job.actions || []).forEach( function(action) {
 			delete action.details;
 		} );
 		
 		return JSON.stringify(job, null, "\t");
-	}
-	
-	showJobData() {
-		// show job json and syntax-highlight it
-		var info = CodeMirror.findModeByExtension( 'json' );
-		if (!info) return; // unsupported language
-		
-		var $cont = this.div.find('#d_job_data');
-		$cont.show();
-		
-		var code = this.getJobJSON();
-		var $pre = $cont.find('pre');
-		$pre.empty().addClass( (app.getPref('theme') == 'light') ? "cm-s-default" : "cm-s-shadowfox" );
-		
-		CodeMirror.runMode(code, info.mime, $pre.get(0));
-	}
-	
-	onThemeChange(theme) {
-		// theme change, so we have to update codemirror
-		var old_class = (theme == 'light') ? "cm-s-shadowfox" : "cm-s-default";
-		var new_class = (theme == 'light') ? "cm-s-default" : "cm-s-shadowfox";
-		this.div.find('#d_job_data pre.' + old_class).removeClass(old_class).addClass(new_class);
 	}
 	
 	onStatusUpdate(data) {
