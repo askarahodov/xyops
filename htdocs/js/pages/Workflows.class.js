@@ -131,8 +131,8 @@ Page.Workflows = class Workflows extends Page.Events {
 		
 		// render workflow editor
 		html += this.get_wf_editor_html(`
-			<div class="button primary right mobile_collapse" onClick="$P().do_new_workflow()"><i class="mdi mdi-floppy">&nbsp;</i><span>${config.ui.buttons.wf_new_save}<span></div>
-			<div class="button secondary right mobile_collapse" onClick="$P().do_export()"><i class="mdi mdi-cloud-download-outline">&nbsp;</i><span>${config.ui.buttons.export}</span></div>
+			<div class="button primary right tablet_collapse" onClick="$P().do_new_workflow()"><i class="mdi mdi-floppy">&nbsp;</i><span>${config.ui.buttons.wf_new_save}<span></div>
+			<div class="button secondary right mobile_collapse sm_hide" onClick="$P().do_export()"><i class="mdi mdi-cloud-download-outline">&nbsp;</i><span>${config.ui.buttons.export}</span></div>
 			<div class="button right mobile_collapse" onClick="$P().cancel_workflow_edit()"><i class="mdi mdi-close-circle-outline">&nbsp;</i><span>${config.ui.buttons.cancel}</span></div>
 		`);
 		
@@ -247,11 +247,11 @@ Page.Workflows = class Workflows extends Page.Events {
 		
 		// render workflow editor
 		html += this.get_wf_editor_html(`
-			<div class="button primary right mobile_collapse" onClick="$P().do_save_workflow()"><i class="mdi mdi-floppy">&nbsp;</i>${config.ui.buttons.save_changes}</div>
-			<div class="button secondary right mobile_collapse" onClick="$P().go_edit_history()"><i class="mdi mdi-history">&nbsp;</i><span>${config.ui.buttons.history}</span></div>
-			<div class="button secondary right mobile_collapse" onClick="$P().do_export()"><i class="mdi mdi-cloud-download-outline">&nbsp;</i><span>${config.ui.buttons.export}</span></div>
+			<div class="button primary right tablet_collapse" onClick="$P().do_save_workflow()"><i class="mdi mdi-floppy">&nbsp;</i><span>${config.ui.buttons.save_changes}</span></div>
+			<div class="button secondary right mobile_collapse sm_hide" onClick="$P().go_edit_history()"><i class="mdi mdi-history">&nbsp;</i><span>${config.ui.buttons.history}</span></div>
+			<div class="button secondary right mobile_collapse sm_hide" onClick="$P().do_export()"><i class="mdi mdi-cloud-download-outline">&nbsp;</i><span>${config.ui.buttons.export}</span></div>
 			<div class="button danger right mobile_collapse" onClick="$P().show_delete_event_dialog()"><i class="mdi mdi-trash-can-outline">&nbsp;</i><span>${config.ui.buttons.delete}</span></div>
-			<div class="button right mobile_collapse" onClick="$P().cancel_workflow_edit()"><i class="mdi mdi-close-circle-outline">&nbsp;</i><span>${config.ui.buttons.cancel}</span></div>
+			<div class="button right mobile_collapse sm_hide" onClick="$P().cancel_workflow_edit()"><i class="mdi mdi-close-circle-outline">&nbsp;</i><span>${config.ui.buttons.cancel}</span></div>
 		`);
 		
 		this.div.html( html );
@@ -328,8 +328,10 @@ Page.Workflows = class Workflows extends Page.Events {
 		var self = this;
 		var $cont = this.wfGetContainer();
 		
-		$cont.find('div.wf_node').on( 'mousedown', function(event) {
-			if (event.which !== 1) return; // only capture left-clicks
+		$cont.find('div.wf_node').on( 'pointerdown', function(event) {
+			var native = event.originalEvent;
+			if (native.button !== 0) return; // only capture left-clicks
+			
 			var $this = $(this);
 			var id = this.id.replace(/^d_wfn_/, '');
 			
@@ -358,24 +360,31 @@ Page.Workflows = class Workflows extends Page.Events {
 			}
 			
 			// prepare for dragging entire selection
-			self.prepareForDrag(event);
-		} ); // mousedown (nodes)
+			self.prepareForDrag(this, event);
+		} ); // pointerdown (nodes)
 		
 		$cont.find('div.wf_node').on( 'dblclick', function(event) {
 			// check for double-click
 			self.doEditSelection();
-		}); // mouseup (nodes)
+		}); // dblclick (nodes)
 		
 		// add mouse handler for condition entities
-		$cont.find('div.wf_condition').on( 'mousedown', function(event) {
-			if (event.which !== 1) return; // only capture left-clicks
+		$cont.find('div.wf_condition').on( 'pointerdown', function(event) {
+			var native = event.originalEvent;
+			if (native.button !== 0) return; // only capture left-clicks
+			
+			this.setPointerCapture(native.pointerId);
 			var conn_id = this.id.replace(/^d_wft_/, '');
+			var $elem = $(this);
 			
 			event.stopPropagation();
 			event.preventDefault();
 			
-			self.quickEditCondition( $(this), conn_id );
-		}); // mousedown (conditions)
+			$elem.on( 'pointerup.quick', function() {
+				$elem.on( 'pointerup.quick' );
+				self.quickEditCondition( $elem, conn_id );
+			} );
+		}); // pointerdown (conditions)
 		
 		// update selection after all full draws
 		this.updateSelection();
@@ -409,9 +418,10 @@ Page.Workflows = class Workflows extends Page.Events {
 		}); // popupQuickMenu
 	}
 	
-	prepareForDrag(event) {
+	prepareForDrag(elem, event) {
 		// prepare for single- or multi-node drag operation
 		var self = this;
+		var native = event.originalEvent;
 		var workflow = this.workflow;
 		var $cont = this.wfGetContainer();
 		var selection = this.wfSelection;
@@ -419,8 +429,9 @@ Page.Workflows = class Workflows extends Page.Events {
 		var start_wf = deep_copy_object(workflow);
 		
 		this.wfDragging = false;
+		elem.setPointerCapture(native.pointerId);
 		
-		$(document).on('mousemove.drag', function(event) {
+		$(elem).on('pointermove.drag', function(event) {
 			// update all selected positions
 			for (var id in selection) {
 				var node = find_object( workflow.nodes, { id: id } );
@@ -445,21 +456,21 @@ Page.Workflows = class Workflows extends Page.Events {
 				self.wfDragging = true;
 				$cont.addClass('dragging');
 			}
-		}); // mousemove
+		}); // pointermove
 		
-		$(document).on('mouseup.drag', function(event) {
+		$(elem).on('pointerup.drag', function(event) {
 			for (var id in selection) {
 				var $elem = $cont.find('#d_wfn_' + id);
 				$elem.css('cursor', '');
 			}
-			$(document).off('.drag');
+			$(elem).off('.drag');
 			
 			// add snapshot to undo buffer, but only if dragging happened
 			if (self.wfDragging) {
 				self.addState();
 				$cont.removeClass('dragging');
 			}
-		}); // mouseup
+		}); // pointerup
 	}
 	
 	deselectAll() {
@@ -503,7 +514,7 @@ Page.Workflows = class Workflows extends Page.Events {
 			
 			$elem.find('.wf_pole').each( function() {
 				var $pole = $(this);
-				var $btn = $pole.clone().removeClass('wf_pole').addClass('wf_pole_button').on('mousedown', function(event) {
+				var $btn = $pole.clone().removeClass('wf_pole').addClass('wf_pole_button').on('pointerdown', function(event) {
 					event.stopPropagation();
 					event.preventDefault();
 					
@@ -632,8 +643,8 @@ Page.Workflows = class Workflows extends Page.Events {
 			...dir_map[start_pole]
 		};
 		
-		// remove all pole buttons (except $btn, but kill mousedown on it)
-		$btn.off('mousedown').addClass('soldering').data('keep', 1);
+		// remove all pole buttons (except $btn, but kill pointerdown on it)
+		$btn.off('pointerdown').addClass('soldering').data('keep', 1);
 		
 		$cont.find('.wf_pole_button').each( function() {
 			var $this = $(this);
@@ -647,7 +658,7 @@ Page.Workflows = class Workflows extends Page.Events {
 			
 			$elem.find('.wf_pole.' + end_pole).each( function() {
 				var $pole = $(this);
-				var $btn = $pole.clone().removeClass('wf_pole').addClass('wf_pole_button').html('<i class="mdi mdi-plus"></i>').on('mousedown', function(event) {
+				var $btn = $pole.clone().removeClass('wf_pole').addClass('wf_pole_button').html('<i class="mdi mdi-plus"></i>').on('pointerdown', function(event) {
 					event.stopPropagation();
 					event.preventDefault();
 					self.completeSolder($btn, node.id);
@@ -663,8 +674,8 @@ Page.Workflows = class Workflows extends Page.Events {
 		// pre-compute theme color for use in canvas
 		var color = app.getCSSVar('--theme-color');
 		
-		// add mousemove handler to track solder operation
-		$cont.on('mousemove.solder', function(event) {
+		// add pointermove handler to track solder operation
+		$cont.on('pointermove.solder', function(event) {
 			// update mouse tracker position
 			var el = event.target, x = event.offsetX / self.wfZoom, y = event.offsetY / self.wfZoom;
 			
@@ -708,7 +719,7 @@ Page.Workflows = class Workflows extends Page.Events {
 			
 			self.renderWFConnection(opts);
 			ctx.restore();
-		}); // mousemove
+		}); // pointermove
 		
 		// add `dragging` class to disable floating buttons, and customize cursor
 		$cont.addClass('dragging');
@@ -752,7 +763,7 @@ Page.Workflows = class Workflows extends Page.Events {
 		}); // popupQuickMenu
 	}
 	
-	solderNewNode() {
+	solderNewNode(event) {
 		// pause solder and pop menu to create new node in place
 		var self = this;
 		var workflow = this.workflow;
@@ -762,8 +773,20 @@ Page.Workflows = class Workflows extends Page.Events {
 		var solder = this.wfPausedSolder = this.wfSoldering;
 		delete this.wfSoldering;
 		
-		// add mouse tracker position to solder state
+		// update tracker position
 		var $tracker = $cont.find('#d_wf_mouse_tracker');
+		var el = event.target, x = event.offsetX / self.wfZoom, y = event.offsetY / self.wfZoom;
+		
+		while (el.id != 'd_wf_container') {
+			x += el.offsetLeft;
+			y += el.offsetTop;
+			el = el.offsetParent;
+			if (!el) break; // sanity
+		}
+		
+		$tracker.css({ left: x, top: y });
+		
+		// add mouse tracker position to solder state
 		solder.x = scroll.x + $tracker[0].offsetLeft;
 		solder.y = scroll.y + $tracker[0].offsetTop;
 		
@@ -800,34 +823,40 @@ Page.Workflows = class Workflows extends Page.Events {
 			if (start_node.type == 'action') { allowed_types.trigger = 1; allowed_types.controller = 1; }
 		}
 		
-		SingleSelect.popupQuickMenu({
-			elem: '#d_wf_mouse_tracker',
-			title: config.ui.menu_bits.wf_add_new_node,
-			items: [ 
-				...config.ui.workflow_new_node_menu.filter( function(item) { return allowed_types[item.id]; } )
-			],
-			value: '',
-			nocheck: true,
+		// wait for next pointerup
+		$cont.find('#d_wf_editor').on('pointerup.solder', function() {
+			// go popup
+			$(this).off('pointerup.solder');
 			
-			callback: function(value) {
-				// new type selected
-				$tracker.remove();
-				self.drawWorkflow(true);
-				self.afterDraw();
+			SingleSelect.popupQuickMenu({
+				elem: '#d_wf_mouse_tracker',
+				title: config.ui.menu_bits.wf_add_new_node,
+				items: [ 
+					...config.ui.workflow_new_node_menu.filter( function(item) { return allowed_types[item.id]; } )
+				],
+				value: '',
+				nocheck: true,
 				
-				// pop dialog to configure and apply new node
-				var func = 'doEditNode_' + value;
-				self[func]();
-			}, // callback
-			
-			onCancel: function() {
-				// cleanup
-				delete self.wfPausedSolder;
-				$tracker.remove();
-				self.drawWorkflow(true);
-				self.afterDraw();
-			}
-		}); // popupQuickMenu
+				callback: function(value) {
+					// new type selected
+					$tracker.remove();
+					self.drawWorkflow(true);
+					self.afterDraw();
+					
+					// pop dialog to configure and apply new node
+					var func = 'doEditNode_' + value;
+					self[func]();
+				}, // callback
+				
+				onCancel: function() {
+					// cleanup
+					delete self.wfPausedSolder;
+					$tracker.remove();
+					self.drawWorkflow(true);
+					self.afterDraw();
+				}
+			}); // popupQuickMenu
+		});
 	}
 	
 	resumePausedSolder(id, width, height) {
@@ -2268,7 +2297,7 @@ Page.Workflows = class Workflows extends Page.Events {
 			<div class="button danger left mobile_collapse" id="d_btn_wf_del" onClick="$P().doDeleteSelection()" style="display:none" title="${config.ui.tooltips.wf_delete_sel}"><i class="mdi mdi-trash-can-outline">&nbsp;</i><span>${config.ui.buttons.wf_delete_sel}</span></div>
 			<div class="wf_sel_msg left tablet_hide"></div>
 			
-			<div class="button default right mobile_collapse" id="d_btn_wf_new" onClick="$P().doAddNode()"><i class="mdi mdi-plus-circle">&nbsp;</i>${config.ui.buttons.wf_add_node}</div>
+			<div class="button default right tablet_collapse" id="d_btn_wf_new" onClick="$P().doAddNode()"><i class="mdi mdi-plus-circle">&nbsp;</i><span>${config.ui.buttons.wf_add_node}</span></div>
 			<div class="clear"></div>
 		</div>`;
 		
@@ -2317,8 +2346,7 @@ Page.Workflows = class Workflows extends Page.Events {
 	
 	onResize() {
 		// called when page is resized
-		if (!this.wfEdit) return; // sanity
-		this.renderWFConnections();
+		if (this.wfZoom) this.renderWFConnections();
 	}
 	
 	onDeactivate() {
