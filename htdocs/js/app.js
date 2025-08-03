@@ -1074,19 +1074,30 @@ app.extend({
 	},
 	
 	initAudio() {
-		// workaround for browser security and playing audio (sigh)
-		var silence = new Audio('silence.mp3');
-		var allowed = false;
+		// initialize audio and unlock ability to play background sounds
+		const AudioContext = window.AudioContext || window.webkitAudioContext;
+		const context = new AudioContext();
+		let allowed = false;
 		
-		var unlockAudioContext = function() {
+		const unlockAudioContext = () => {
 			if (allowed) return;
-			var pstart = performance.now();
 			
-			silence.play().then(() => {
+			// create a short silent sound
+			const buffer = context.createBuffer(1, 1, 22050);
+			const source = context.createBufferSource();
+			source.buffer = buffer;
+			source.connect(context.destination);
+			source.start(0);
+			
+			if (context.state === 'suspended') {
+				context.resume().then(() => {
+					allowed = true;
+					Debug.trace('Audio context unlocked (via Web Audio API)');
+				});
+			} else {
 				allowed = true;
-				var elapsed = Math.floor( performance.now() - pstart );
-				Debug.trace(`Audio context unlocked (${elapsed} ms)`);
-			}).catch(console.error);
+				Debug.trace('Audio context unlocked (via Web Audio API)');
+			}
 		};
 		
 		['mousedown', 'keydown', 'keyup', 'touchstart'].forEach(eventType => {
