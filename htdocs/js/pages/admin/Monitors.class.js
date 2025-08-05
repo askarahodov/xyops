@@ -439,15 +439,15 @@ Page.Monitors = class Monitors extends Page.PageUtils {
 		
 		// data source
 		html += this.getFormRow({
-			label: 'Data Source:',
+			label: 'Data Expression:',
 			content: this.getFormText({
 				id: 'fe_em_source',
 				class: 'monospace',
 				spellcheck: 'false',
 				value: monitor.source
-			}),
-			suffix: '<div class="form_suffix_icon mdi mdi-magnify" title="Open Server Data Explorer" onClick="$P().showHostDataExplorer(\'#fe_em_source\')"></div>',
-			caption: 'Enter an expression for evaluating the data source, e.g. <code>[stats/network/conns]</code>.  If you need help, you can use the <span class="link" onClick="$P().showHostDataExplorer(\'#fe_em_source\')">Server Data Explorer</span>, or view the <a href="https://github.com/pixlcore/opsrocket/blob/main/docs/Monitoring.md#data-sources" target="_blank">documentation</a>.'
+			}), // + '<div class="text_field_icon mdi mdi-database-search-outline" title="' + config.ui.tooltips.server_data_explorer + '" onClick="$P().openServerDataExplorer(this)"></div>',
+			suffix: `<div class="form_suffix_icon mdi mdi-database-search-outline" title="${config.ui.tooltips.server_data_explorer}" onClick="$P().openServerDataExplorer(this)"></div>`,
+			caption: 'Enter an expression for evaluating the data source using dot path notation (e.g. `stats.network.conns`).  For help, click the search icon above to open the Server Data Explorer, or [view the documentation](#Docs/monitoring/expressions).'
 		});
 		
 		// data match
@@ -459,7 +459,7 @@ Page.Monitors = class Monitors extends Page.PageUtils {
 				spellcheck: 'false',
 				value: monitor.data_match
 			}),
-			caption: 'Optionally enter a regular expression to grab the desired data value out of a string.  Surround the match with parenthesis to isolate it.  This is mainly for custom commands.'
+			caption: 'Optionally enter a regular expression to grab the desired data value out of a string.  Surround the match with parenthesis to isolate it.  This is mainly for custom commands.  [Learn More](#Docs/monitoring/data-match)'
 		});
 		
 		// data type

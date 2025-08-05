@@ -386,6 +386,7 @@ Page.AlertSetup = class AlertSetup extends Page.PageUtils {
 			content: this.getFormText({
 				id: 'fe_ea_title',
 				spellcheck: 'false',
+				autocomplete: 'off',
 				value: alert.title
 			}),
 			caption: 'Enter the title of the alert, for display purposes.'
@@ -435,13 +436,28 @@ Page.AlertSetup = class AlertSetup extends Page.PageUtils {
 		// expression
 		html += this.getFormRow({
 			label: 'Expression:',
-			content: this.getFormTextarea({
+			content: this.getFormText({
 				id: 'fe_ea_expression',
-				rows: 5,
+				spellcheck: 'false',
+				autocomplete: 'off',
 				class: 'monospace',
 				value: alert.expression
-			}),
-			caption: 'Enter the expression to evaluate the alert condition, e.g. <code>[monitors/load_avg] >= 5.0</code>.  If you need help, you can use the <span class="link" onClick="$P().showHostDataExplorer(\'#fe_ea_expression\')">Server Data Explorer</span>, or view the <a href="https://github.com/pixlcore/opsrocket/blob/main/docs/Monitoring.md#alert-expressions" target="_blank">documentation</a>.' // TODO: doc link AND ALSO showHostDataExplorer!!!
+			}), // + '<div class="text_field_icon mdi mdi-database-search-outline" title="' + config.ui.tooltips.server_data_explorer + '" onClick="$P().openServerDataExplorer(this)"></div>',
+			suffix: `<div class="form_suffix_icon mdi mdi-database-search-outline" title="${config.ui.tooltips.server_data_explorer}" onClick="$P().openServerDataExplorer(this)"></div>`,
+			caption: 'Enter an expression to evaluate the alert condition, e.g. `monitors.load_avg >= 5.0`.  For help, click the search icon to the right to open the Server Data Explorer, or [view the documentation](#Docs/monitoring/alert-expressions).'			
+		});
+		
+		// message
+		html += this.getFormRow({
+			label: 'Message:',
+			content: this.getFormTextarea({
+				id: 'fe_ea_message',
+				rows: 5,
+				class: 'monospace',
+				value: alert.message
+			}), // + '<div class="text_field_icon mdi mdi-database-search-outline" title="' + config.ui.tooltips.server_data_explorer + '" onClick="$P().openServerDataExplorer(this)"></div>',
+			suffix: `<div class="form_suffix_icon mdi mdi-database-search-outline" title="${config.ui.tooltips.server_data_explorer}" onClick="$P().openServerDataExplorer(this,true)"></div>`,
+			caption: 'Enter the message text to be delivered with the alert notifications.  You can use `{{mustache.syntax}}` to insert dynamic content from the server data.  Click the search icon to the right to open the Server Data Explorer.  [Learn More](#Docs/monitoring/alert-messages).'
 		});
 		
 		// samples
@@ -456,18 +472,6 @@ Page.AlertSetup = class AlertSetup extends Page.PageUtils {
 				value: alert.samples,
 			}),
 			caption: 'Enter the number of consecutive samples (minutes) the expression must evaluate to true for the alert to actually trigger.  A value of <code>1</code> triggers immediately, which is the detault.  This also applies to the alert cooldown (number of false evaluations before the alert clears).'
-		});
-		
-		// message
-		html += this.getFormRow({
-			label: 'Message:',
-			content: this.getFormTextarea({
-				id: 'fe_ea_message',
-				rows: 5,
-				class: 'monospace',
-				value: alert.message
-			}),
-			caption: 'Enter the message text to be delivered with the alert notifications.  You can use <a href="https://github.com/pixlcore/opsrocket/blob/main/docs/Monitoring.md#alert-expressions" target="_blank">alert expressions</a> here.' // TODO: doc link
 		});
 		
 		// monitor overlay
