@@ -2159,19 +2159,32 @@ Page.PageUtils = class PageUtils extends Page.Base {
 		
 		$('#btn_ex_apply').on('click', function() {
 			// apply changes and exit dialog
-			var value = $input.val();
-			if (value.length) value += ' ';
+			if (wrap) {
+				// codemirror mode
+				self.editor.focus();
+				self.editor.replaceSelection( ' {{' + $('#fe_ex_exp').val() + '}}' );
+				
+				// apply flash effect
+				var $wrapper = self.editor.getWrapperElement();
+				$wrapper.classList.add('iflash');
+				setTimeout( function() { $wrapper.classList.remove('iflash'); }, 1500 );
+			}
+			else {
+				var value = $input.val();
+				if (value.length) value += ' ';
+				
+				if (wrap) value += '{{';
+				value += $('#fe_ex_exp').val();
+				if (wrap) value += '}}';
+				
+				$input.val( value.trim() );
+				
+				// apply flash effect
+				$input.addClass('iflash').focus();
+				setTimeout( function() { $input.removeClass('iflash'); }, 1500 );
+			}
 			
-			if (wrap) value += '{{';
-			value += $('#fe_ex_exp').val();
-			if (wrap) value += '}}';
-			
-			$input.val( value.trim() );
 			CodeEditor.hide();
-			
-			// apply flash effect
-			$input.addClass('iflash').focus();
-			setTimeout( function() { $input.removeClass('iflash'); }, 1500 );
 		});
 		
 		// trigger change to load first server
