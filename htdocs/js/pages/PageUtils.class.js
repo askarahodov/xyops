@@ -2077,16 +2077,7 @@ Page.PageUtils = class PageUtils extends Page.Base {
 		var title = config.ui.titles.server_data_explorer;
 		var html = '';
 		
-		var servers = Object.values(app.servers);
-		
-		// merge in recently offline servers
-		for (var server_id in app.serverCache) {
-			if (!app.servers[server_id]) {
-				var server = app.serverCache[server_id];
-				servers.push( merge_objects(server, { offline: true, icon: server.icon || 'close-network-outline' }) );
-			}
-		}
-		
+		var servers = this.getCategorizedServers(true);
 		if (!servers.length) return app.doError(config.ui.errors.sde_no_servers);
 		
 		html += `<div class="dialog_intro">${config.ui.intros.server_data_explorer}</div>`;
@@ -2151,8 +2142,10 @@ Page.PageUtils = class PageUtils extends Page.Base {
 					$('#fe_ex_exp').val( path );
 					
 					// apply flash effect
-					$('#fe_ex_exp').addClass('iflash').focus();
-					setTimeout( function() { $('#fe_ex_exp').removeClass('iflash'); }, 1500 );
+					if (!$('#fe_ex_exp').hasClass('iflash')) {
+						$('#fe_ex_exp').addClass('iflash').focus();
+						setTimeout( function() { $('#fe_ex_exp').removeClass('iflash'); }, 1500 );
+					}
 				});
 			} ); // api.get
 		}); // on change
