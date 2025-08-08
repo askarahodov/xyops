@@ -139,7 +139,7 @@ Page.MySecurity = class MySecurity extends Page.Base {
 		var html = '';
 		
 		html += '<form action="post">';
-		html += '<div class="dialog_help" style="margin-bottom:0">This will <b>logout all sessions</b> associated with your account.  You should only need to do this if you suspect that your account has been compromised.  Your current session will not be affected.  It is highly recommended that you change your password after completing this step.</div>';
+		html += '<div class="dialog_intro" style="margin-bottom:0">This will <b>logout all sessions</b> associated with your account.  You should only need to do this if you suspect that your account has been compromised.  Your current session will not be affected.  It is highly recommended that you change your password after completing this step.</div>';
 		html += '<div class="box_content" style="padding-bottom:15px;">';
 		
 		html += this.getFormRow({

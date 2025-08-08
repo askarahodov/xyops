@@ -45,7 +45,7 @@ Page.Login = class Login extends Page.Base {
 		
 		html += '<div class="dialog inline">';
 			html += '<div class="dialog_title">User Login</div>';
-			html += '<div class="dialog_help">Enter the username and password associated with your OpsRocket account.</div>';
+			html += '<div class="dialog_intro">Enter the username and password associated with your OpsRocket account.</div>';
 			html += '<div class="box_content">';
 				
 				// username
@@ -153,7 +153,7 @@ Page.Login = class Login extends Page.Base {
 		
 		html += '<div class="dialog inline wider">';
 			html += '<div class="dialog_title">Create Account</div>';
-			html += '<div class="dialog_help">Fill out this form to sign up for OpsRocket.</div>';
+			html += '<div class="dialog_intro">Fill out this form to sign up for OpsRocket.</div>';
 			html += '<div class="box_content">';
 				
 				// username
@@ -308,7 +308,7 @@ Page.Login = class Login extends Page.Base {
 		html += '<div class="dialog inline">';
 			html += '<div class="dialog_title">Forgot Password</div>';
 			
-			html += '<div class="dialog_help">Please enter the username and e-mail address associated with your account, and we will send you instructions for resetting your password.</div>';
+			html += '<div class="dialog_intro">Please enter the username and e-mail address associated with your account, and we will send you instructions for resetting your password.</div>';
 			
 			html += '<div class="box_content">';
 				
@@ -400,7 +400,7 @@ Page.Login = class Login extends Page.Base {
 		
 		html += '<div class="dialog inline">';
 			html += '<div class="dialog_title">Reset Password</div>';
-			html += '<div class="dialog_help">Please enter a new password for your account.</div>';
+			html += '<div class="dialog_intro">Please enter a new password for your account.</div>';
 			html += '<div class="box_content">';
 				
 				// username
