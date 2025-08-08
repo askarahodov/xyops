@@ -745,14 +745,9 @@ Page.Workflows = class Workflows extends Page.Events {
 		// add pointermove handler to track solder operation
 		$cont.on('pointermove.solder', function(event) {
 			// update mouse tracker position
-			var el = event.target, x = event.offsetX / self.wfZoom, y = event.offsetY / self.wfZoom;
-			
-			while (el.id != 'd_wf_container') {
-				x += el.offsetLeft;
-				y += el.offsetTop;
-				el = el.offsetParent;
-				if (!el) break; // sanity
-			}
+			const rect = this.getBoundingClientRect();
+			const x = (event.clientX - rect.left) / self.wfZoom;
+			const y = (event.clientY - rect.top) / self.wfZoom;
 			
 			$tracker.css({ left: x, top: y });
 			
