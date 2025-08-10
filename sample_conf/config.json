@@ -155,6 +155,13 @@
 		}
 	},
 	
+	"home_response_headers": {
+		"Content-Security-Policy": "default-src 'none'; script-src 'self'; script-src-elem 'self'; script-src-attr 'unsafe-inline'; style-src 'self' 'unsafe-inline'; style-src-attr 'unsafe-inline'; manifest-src 'self';img-src 'self' data: blob:; font-src 'self'; connect-src 'self' ws: wss:; media-src 'self' blob:; worker-src 'self' blob:; object-src 'none'; base-uri 'self'; form-action 'self'; frame-ancestors 'none';",
+		"X-Content-Type-Options": "nosniff",
+		"Referrer-Policy": "strict-origin-when-cross-origin",
+		"Permissions-Policy": "camera=(), microphone=(), geolocation=(), fullscreen=()"
+	},
+	
 	"client": {
 		"name": "xyOps",
 		"debug": 1,
@@ -338,9 +345,7 @@
 		"http_regex_json": "(text|javascript|js|json)",
 		"http_clean_headers": true,
 		"http_log_socket_errors": true,
-		"http_response_headers": {
-			"Access-Control-Allow-Origin": "*"
-		},
+		"http_response_headers": {},
 		"http_max_connections": 2048,
 		"http_max_concurrent_requests": 256,
 		"http_log_requests": false,
