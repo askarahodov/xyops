@@ -1175,8 +1175,8 @@ Page.Base = class Base extends Page {
 	
 	getNiceJobElapsedTime(job, abbrev, no_secondary) {
 		// render nice elapsed time display
-		var now = job.completed || app.epoch;
-		var elapsed = job.elapsed || Math.floor( Math.max( 0, now - job.started ) );
+		var now = Math.floor( job.completed || app.epoch );
+		var elapsed = job.elapsed || Math.max( 0, now - Math.floor(job.started) );
 		var icon = job.completed ? 'clock-check-outline' : 'progress-clock';
 		return '<i class="mdi mdi-' + icon + '">&nbsp;</i>' + get_text_from_seconds( elapsed, abbrev, no_secondary );
 	}
