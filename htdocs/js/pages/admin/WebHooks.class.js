@@ -642,6 +642,7 @@ Page.WebHooks = class WebHooks extends Page.PageUtils {
 			content: this.getFormText({
 				id: 'fe_eh_name',
 				spellcheck: 'false',
+				autocomplete: 'off',
 				maxlength: 8192,
 				placeholder: '',
 				value: header.name || ''
