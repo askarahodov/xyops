@@ -4,7 +4,7 @@
 // https://github.com/pixlcore/xyops/blob/main/LICENSE.md
 
 // To install, issue this command as root:
-// curl -s "https://raw.githubusercontent.com/pixlcore/xyops/master/bin/install.js" | node
+// curl -s "https://raw.githubusercontent.com/pixlcore/xyops/main/bin/install.js" | node
 
 var path = require('path');
 var fs = require('fs');
@@ -17,12 +17,8 @@ var base_dir = '/opt/xyops';
 var log_dir = base_dir + '/logs';
 var log_file = '';
 var gh_repo_url = 'http://github.com/pixlcore/xyops';
-var gh_releases_url = 'https://api.github.com/repos/jhuckaby/xyops/releases';
+var gh_releases_url = 'https://api.github.com/repos/pixlcore/xyops/releases';
 var gh_head_tarball_url = 'https://github.com/pixlcore/xyops/archive/master.tar.gz';
-
-// don't allow npm to delete these (ugh)
-var packages_to_check = ['couchbase', 'redis', 'ioredis', 'ioredis-timeout', 'sqlite3'];
-var packages_to_rescue = {};
 
 // Check if Node.js version is old
 if (process.version.match(/^v?(\d+)/) && (parseInt(RegExp.$1) < 16) && !process.env['XYOPS_OLD']) {
@@ -42,22 +38,6 @@ catch (err) {
 	console.error("\nERROR: NPM cannot be found.  xyOps requires both Node.js and NPM to be preinstalled.  Instructions: https://nodejs.org/en/download/\n");
 	process.exit(1);
 }
-
-var restore_packages = function() {
-	// restore packages that npm killed during upgrade
-	var cmd = "npm install";
-	var num_found = 0;
-	for (var pkg in packages_to_rescue) {
-		cmd += ' ' + pkg + '@' + packages_to_rescue[pkg];
-		num_found++;
-	}
-	if (!num_found) return; // nothing to restore
-	if (log_file) {
-		fs.appendFileSync(log_file, "\nExecuting npm command to restore lost packages: " + cmd + "\n");
-		cmd += ' >>' + log_file + ' 2>&1';
-	}
-	cp.execSync(cmd);
-};
 
 var print = function(msg) { 
 	process.stdout.write(msg); 
@@ -92,7 +72,7 @@ logonly( "\nStarting install run: " + (new Date()).toString() + "\n" );
 
 print( 
 	"\n" + "xyOps Installer v" + installer_version + "\n" + 
-	"Copyright (c) 2023 PixlCore.com. MIT Licensed.\n" + 
+	"Copyright (c) 2025 PixlCore.com. MIT Licensed.\n" + 
 	"Log File: " + log_file + "\n\n" 
 );
 
@@ -213,19 +193,11 @@ cp.exec('curl -s ' + gh_releases_url, function (err, stdout, stderr) {
 		var npm_cmd = is_preinstalled ? "npm update --unsafe-perm" : "npm install --unsafe-perm";
 		logonly( "Executing command: " + npm_cmd + "\n" );
 		
-		// temporarily stash add-on modules that were installed separately (thanks npm)
-		if (is_preinstalled) packages_to_check.forEach( function(pkg) {
-			if (fs.existsSync('node_modules/' + pkg)) {
-				packages_to_rescue[pkg] = JSON.parse( fs.readFileSync('node_modules/' + pkg + '/package.json', 'utf8') ).version;
-			}
-		});
-		
 		// install dependencies via npm
 		cp.exec(npm_cmd, function (err, stdout, stderr) {
 			if (err) {
 				print( stdout.toString() );
 				warn( stderr.toString() );
-				if (is_preinstalled) restore_packages();
 				die("Failed to install dependencies: " + err);
 			}
 			else {
@@ -242,11 +214,9 @@ cp.exec('curl -s ' + gh_releases_url, function (err, stdout, stderr) {
 					if (err) {
 						print( stdout.toString() );
 						warn( stderr.toString() );
-						if (is_preinstalled) restore_packages();
 						die("Failed to run post-install: " + err);
 					}
 					else {
-						if (is_preinstalled) restore_packages();
 						print("Upgrade complete.\n\n");
 						
 						if (is_running) {
