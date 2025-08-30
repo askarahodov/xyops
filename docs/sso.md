@@ -196,10 +196,10 @@ These complications are why it's important to first follow the initial [Setup](#
 
 ## Default User Privileges
 
-When users are first created via SSO, a default set of privileges is applied.  This is configured in the main `/opt/xyops/conf/config.json` file in the `client.default_privileges` property.  The default set is:
+When users are first created via SSO, a default set of privileges is applied.  This is configured in the main `/opt/xyops/conf/config.json` file in the [default_user_privileges](configuration.md#default_user_privileges) property.  The default set is:
 
 ```json
-"default_privileges": {
+"default_user_privileges": {
 	"create_events": true,
 	"edit_events": true,
 	"run_jobs": true,

@@ -122,7 +122,15 @@
 		{ "id": "_qm_net_out_sec", "title": "Network Out (Bytes)", "source": "net.tx", "type": "bytes", "suffix": "/sec", "min_vert_scale": 1024, "delta": true, "delta_min_value": 0, "divide_by_delta": true }
 	],
 	
-	"default_user": {
+	"default_user_privileges": {
+		"create_events": true,
+		"edit_events": true,
+		"run_jobs": true,
+		"tag_jobs": true,
+		"comment_jobs": true
+	},
+	
+	"default_user_prefs": {
 		"language": "",
 		"region": "",
 		"num_format": "",
@@ -204,14 +212,6 @@
 			],
 			"actions": [],
 			"notes": ""
-		},
-		
-		"default_privileges": {
-			"create_events": true,
-			"edit_events": true,
-			"run_jobs": true,
-			"tag_jobs": true,
-			"comment_jobs": true
 		},
 		
 		"chart_defaults": {

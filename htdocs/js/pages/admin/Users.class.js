@@ -161,7 +161,7 @@ Page.Users = class Users extends Page.Base {
 		
 		this.user = { 
 			active: 1,
-			privileges: copy_object( config.default_privileges )
+			privileges: copy_object( config.default_user_privileges )
 		};
 		
 		html += this.get_user_edit_html();

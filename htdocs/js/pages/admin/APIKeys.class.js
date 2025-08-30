@@ -125,7 +125,7 @@ Page.APIKeys = class APIKeys extends Page.PageUtils {
 		this.api_key = { 
 			key: get_unique_id(24),
 			active: 1,
-			privileges: copy_object( config.default_privileges ),
+			privileges: copy_object( config.default_user_privileges ),
 			roles: []
 		};
 		
