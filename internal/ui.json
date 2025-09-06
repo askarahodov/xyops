@@ -165,10 +165,10 @@
 		"server_update": "Server information was updated: [hostname]",
 		"server_watch": "A watch for [duration] was set on the server: [hostname]",
 		
-		"master_primary": "Conductor server is now primary: [host]",
-		"peer_add": "Conductor server added to the network: [host]",
-		"peer_disconnect": "Conductor serfer disconnected from the network: [host]",
-		"peer_command": "Control command [commands] sent to conductor server: [host]",
+		"master_primary": "Master server is now primary: [host]",
+		"peer_add": "Master server added to the network: [host]",
+		"peer_disconnect": "Master serfer disconnected from the network: [host]",
+		"peer_command": "Control command [commands] sent to master server: [host]",
 		
 		"state_update": "Internal state updated: [description]",
 		"internal_job": "Internal job completed: [job.title]"
@@ -254,12 +254,12 @@
 	"plugin_type_descriptions": {
 		"event": "**Event Plugins** contain the code that runs your actual jobs.  They run on the target server for the event, and are expected to consume JSON on STDIN and output JSON on STDOUT, to communicate with xyOps regarding the job, and to denote the completion and status.  For more information see [Event Plugins](#Docs/plugins/event-plugins).",
 		"monitor": "**Monitor Plugins** run the specified code every minute on every targeted server to graph custom data.  For example, you can use this to monitor your own application status, and produce output that feeds multiple graphs.  For more information see [Monitor Plugins](#Docs/plugins/monitor-plugins).",
-		"action": "**Action Plugins** can run custom code in response to job conditions such as completion, success, error, and other cases.  The action code runs on the current conductor server, and is designed to call your own notification system.  For more information see [Action Plugins](#Docs/plugins/action-plugins).",
+		"action": "**Action Plugins** can run custom code in response to job conditions such as completion, success, error, and other cases.  The action code runs on the current master server, and is designed to call your own notification system.  For more information see [Action Plugins](#Docs/plugins/action-plugins).",
 		"scheduler": "**Trigger Plugins** allow you to define your own event scheduling systems.  Every minute, your plugin code will execute and be passed a JSON document containing all the events currently assigned, plus the date/time in the event's timezone, and you can decide which events run at which times.  For more information see [Trigger Plugins](#Docs/plugins/trigger-plugins)."
 	},
 	
 	"error_type_descriptions": {
-		"master": "Unfortunately, you have landed on a non-primary conductor server.  Meaning, this server is part of a cluster of conductor servers, but it is not the current primary server.  The current primary server is \"[masterHost]\", but you may not be able to access it directly.  Multi-conductor setups typically have a load balancer in front, so you don't ever have to address any conductor server directly.  However, since you are here reading this, something has clearly gone wrong.  Please contact your system administrator for help."
+		"master": "Unfortunately, you have landed on a non-primary master server.  Meaning, this server is part of a cluster of master servers, but it is not the current primary server.  The current primary server is \"[masterHost]\", but you may not be able to access it directly.  Multi-master setups typically have a load balancer in front, so you don't ever have to address any master server directly.  However, since you are here reading this, something has clearly gone wrong.  Please contact your system administrator for help."
 	},
 	
 	"workflow_controller_descriptions": {

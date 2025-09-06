@@ -49,7 +49,7 @@ if [ -z "$CURL" ]; then
 	exit 1;
 fi
 
-# See if we can even reach the conductor server
+# See if we can even reach the master server
 TEST_URL="${BASE_URL}/api/app/ping"
 RC=0
 TEST_OUT=$($CURL "$TEST_URL" 2>&1) || RC=$?

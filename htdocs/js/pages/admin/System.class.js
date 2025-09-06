@@ -107,13 +107,13 @@ Page.System = class System extends Page.Base {
 		// shutdown server
 		html += '<div class="maint_unit">';
 			html += '<div class="button danger" onClick="$P().shutdown_master()"><i class="mdi mdi-power">&nbsp;</i>Shutdown Server...</div>';
-			html += '<div class="caption">Shutdown the current conductor server (secondary will take over).  <a href="#">Learn More</a></div>';
+			html += '<div class="caption">Shutdown the current master server (secondary will take over).  <a href="#">Learn More</a></div>';
 		html += '</div>';
 		
 		// restart server
 		// html += '<div class="maint_unit">';
 		// 	html += '<div class="button danger" onClick="$P().restart_master()"><i class="mdi mdi-restart">&nbsp;</i>Restart Server...</div>';
-		// 	html += '<div class="caption">Restart the current conductor server (secondary will take over).  <a href="#">Learn More</a></div>';
+		// 	html += '<div class="caption">Restart the current master server (secondary will take over).  <a href="#">Learn More</a></div>';
 		// html += '</div>';
 		
 		// upgrade satellite
@@ -717,7 +717,7 @@ Page.System = class System extends Page.Base {
 			commands: cmds
 		};
 		
-		Dialog.confirmDanger( '<span style="">' + ucfirst(cmds[0]) + ' Conductor</span>', "Are you sure you want to " + cmds[0] + " the conductor server &ldquo;" + item.id + "&rdquo;?", ['alert-decagram', 'Confirm'], function(result) {
+		Dialog.confirmDanger( '<span style="">' + ucfirst(cmds[0]) + ' Master</span>', "Are you sure you want to " + cmds[0] + " the master server &ldquo;" + item.id + "&rdquo;?", ['alert-decagram', 'Confirm'], function(result) {
 			if (result) {
 				Dialog.hide();
 				app.api.post( 'app/master_command', params, function(resp) {

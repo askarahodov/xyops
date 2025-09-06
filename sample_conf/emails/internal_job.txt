@@ -6,7 +6,7 @@ Job ID: [job/id]
 Job Title: [job/title]
 Job Type: [job/type]
 Requested By: [job/username]
-Conductor: [hostname]
+Master: [hostname]
 
 Started: [display/started]
 Completed: [display/completed]

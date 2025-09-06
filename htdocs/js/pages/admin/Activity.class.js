@@ -37,7 +37,7 @@ Page.ActivityLog = class ActivityLog extends Page.PageUtils {
 		var action_items = [].concat( config.ui.list_list ).concat([
 			{ "id": "jobs", "title": "Jobs", "icon": "timer-outline" },
 			{ "id": "servers", "title": "Servers", "icon": "router-network" },
-			{ "id": "peers", "title": "Conductors", "icon": "database" },
+			{ "id": "peers", "title": "Masters", "icon": "database" },
 			{ "id": "system", "title": "System", "icon": "desktop-classic" }
 		]);
 		sort_by( action_items, 'title' );
