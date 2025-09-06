@@ -830,8 +830,8 @@ Page.Servers = class Servers extends Page.ServerUtils {
 					html += '</div>';
 					
 					html += '<div>';
-						html += '<div class="info_label">Server Label</div>';
-						html += '<div class="info_value" id="d_vs_stat_label">' + (server.title || 'n/a') + '</div>';
+						html += '<div class="info_label">xySat Version</div>';
+						html += '<div class="info_value">v' + (server.info.satellite || '0.0.0') + '</div>';
 					html += '</div>';
 					
 					// row 2
@@ -1044,7 +1044,6 @@ Page.Servers = class Servers extends Page.ServerUtils {
 			this.getLiveAlerts();
 			this.renderActiveJobs();
 			this.setupQuickMonitors();
-			if (!app.reducedMotion()) this.animate();
 		}
 		else {
 			// offline only
@@ -1202,7 +1201,7 @@ Page.Servers = class Servers extends Page.ServerUtils {
 				merge_hash_into(server, updates);
 				
 				self.updateHeaderNav();
-				self.div.find('#d_vs_stat_label').html( server.title || 'n/a' );
+				// self.div.find('#d_vs_stat_label').html( server.title || 'n/a' );
 				self.div.find('#d_vs_stat_groups').html( self.getNiceGroupList(server.groups) );
 			} ); // api.post
 		}); // Dialog.confirm
@@ -1394,6 +1393,10 @@ Page.Servers = class Servers extends Page.ServerUtils {
 		var self = this;
 		var server = this.server;
 		var html = '';
+		
+		// check for quickmon support on server
+		if (!server.info.quickmon) return;
+		
 		html += '<div class="chart_grid_horiz ' + (app.getPref('chart_size_quick') || 'medium') + '">';
 		
 		config.quick_monitors.forEach( function(def) {
@@ -1450,6 +1453,8 @@ Page.Servers = class Servers extends Page.ServerUtils {
 			$elem.val( this.quickMonitorFilter );
 			this.applyQuickMonitorFilter( $elem.get(0) );
 		}
+		
+		if (!app.reducedMotion()) this.animate();
 	}
 	
 	animate() {
@@ -1743,9 +1748,17 @@ Page.Servers = class Servers extends Page.ServerUtils {
 		
 		this.renderMonitorGrid();
 		
-		// These now happen every sec as part of quickmon
-		// this.renderMemDetails();
-		// this.renderCPUDetails();
+		// These now happen every sec as part of quickmon -- but quickmon may be disabled
+		if (!this.server.info.quickmon) {
+			// this.renderMemDetails();
+			// this.renderCPUDetails();
+			if (snapshot.data && this.donutDashUnits) {
+				this.resetDetailAnimation();
+				this.updateMemDetails(snapshot);
+				this.updateCPUDetails(snapshot);
+				this.startDetailAnimation();
+			}
+		}
 		
 		this.div.find('#d_vs_procs > div.box_content').html( this.getProcessTable(snapshot) );
 		this.div.find('#d_vs_conns > div.box_content').html( this.getConnectionTable(snapshot) );
