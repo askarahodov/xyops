@@ -646,17 +646,25 @@ Page.ServerUtils = class ServerUtils extends Page.PageUtils {
 	getSortedTableRows(id) {
 		// get sorted (and filtered!) table rows
 		var opts = this.tables[id];
-		var filter_re = new RegExp( escape_regexp(opts.filter) || '.*', 'i' );
 		var sort_by = opts.sort_by;
 		var sort_dir = opts.sort_dir;
 		var sort_type = 'number';
 		if (opts.rows.length && (typeof(opts.rows[0][sort_by]) == 'string')) sort_type = 'string';
 		
 		// apply filter
-		var rows = opts.rows.filter( function(row) {
-			var blob = hash_values_to_array(row).join(' ');
-			return !!blob.match( filter_re );
-		} );
+		var rows = [];
+		if (typeof(opts.filter) == 'function') {
+			// custom filter function
+			rows = opts.rows.filter( opts.filter );
+		}
+		else {
+			// default string regex match
+			var filter_re = new RegExp( escape_regexp(opts.filter) || '.*', 'i' );
+			rows = opts.rows.filter( function(row) {
+				var blob = hash_values_to_array(row).join(' ');
+				return !!blob.match( filter_re );
+			} );
+		}
 		
 		// apply custom sort
 		rows.sort( function(a, b) {
@@ -674,7 +682,7 @@ Page.ServerUtils = class ServerUtils extends Page.PageUtils {
 	updateTableRows(id, rows) {
 		// replace sorted table rows, redraw
 		var opts = this.tables[id];
-		opts.rows = rows;
+		if (rows) opts.rows = rows;
 		
 		var disp_rows = this.getSortedTableRows( opts.id );
 		
@@ -769,7 +777,7 @@ Page.ServerUtils = class ServerUtils extends Page.PageUtils {
 		for (var idx = 0; idx < len; idx++) {
 			var row = disp_rows[idx];
 			var tds = opts.callback(row, idx);
-			html += '<ul class="grid_row">';
+			html += '<ul class="grid_row ' + (tds.className || '') + '">';
 			for (var idy = 0, ley = tds.length; idy < ley; idy++) {
 				html += '<div' + ((bold_idx == idy) ? ' style="font-weight:bold"' : '') + '>' + tds[idy] + '</div>';
 			}
@@ -821,13 +829,16 @@ Page.ServerUtils = class ServerUtils extends Page.PageUtils {
 	
 	getSortableTable(rows, opts, callback) {
 		// get HTML for sortable and filterable table
+		// opts: { id, item_name, sort_by, sort_dir, filter, column_ids, column_labels }
 		var self = this;
 		var html = '';
 		if (!this.tables) this.tables = {};
 		
-		// retrieve previous filter if applicable
-		if (this.tables[ opts.id ] && this.tables[ opts.id ].filter) {
-			opts.filter = this.tables[ opts.id ].filter;
+		// retrieve previous settings if applicable
+		if (this.tables[ opts.id ]) {
+			if (this.tables[ opts.id ].filter) opts.filter = this.tables[ opts.id ].filter;
+			if (this.tables[ opts.id ].sort_by) opts.sort_by = this.tables[ opts.id ].sort_by;
+			if (this.tables[ opts.id ].sort_dir) opts.sort_dir = this.tables[ opts.id ].sort_dir;
 		}
 		
 		// save in page for resort / filtering

@@ -1696,6 +1696,7 @@ Page.Groups = class Groups extends Page.ServerUtils {
 		delete this.upcomingOffset;
 		delete this.quickReady;
 		delete this.quickmonEnabled;
+		delete this.tables;
 		
 		// destroy charts if applicable (view page)
 		if (this.charts) {

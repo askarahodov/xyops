@@ -57,7 +57,7 @@ Page.Servers = class Servers extends Page.ServerUtils {
 		// receive all servers, render them sorted
 		var self = this;
 		var args = this.args;
-		var now = time_now();
+		var now = app.epoch;
 		var html = '';
 		
 		// build opt groups for server props like OS, CPU, etc.
@@ -102,17 +102,52 @@ Page.Servers = class Servers extends Page.ServerUtils {
 			this.buildOptGroup( opt_groups.cpu_virt, "Virtualization:", '', 'virt_' )
 		);
 		
-		// sort servers by label/hostname ascending
-		this.servers = resp.rows.sort( function(a, b) {
-			return (a.title || a.hostname).toLowerCase().localeCompare( (b.title || b.hostname).toLowerCase() );
+		// create our own copy with the sortable bits we need for the table
+		this.servers = resp.rows.map( function(item) {
+			if (!item.info) item.info = {};
+			if (!item.info.os) item.info.os = { distro: 'Unknown', release: '' };
+			if (!item.info.cpu) item.info.cpu = {};
+			if (!item.info.memory) item.info.memory = {};
+			
+			var grp_labels = item.groups.map( function(group_id) {
+				var group = find_object( app.groups, { id: group_id } );
+				return group ? group.title : '';
+			} ).join(' ').toLowerCase();
+			
+			return {
+				id: item.id,
+				hostname: item.hostname,
+				title: item.title || '',
+				info: item.info,
+				offline: item.offline,
+				label: (item.title || item.hostname).toLowerCase(), // for sorting
+				ip: item.ip,
+				groups: item.groups,
+				grp_labels: grp_labels, // for sorting
+				cpu_cores: item.info.cpu.cores || 0,
+				mem_total: item.info.memory.total || 0,
+				os: item.info.os,
+				os_label: item.info.os.distro + ' ' + item.info.os.release, // for sorting
+				sat_ver: get_int_version( item.info.satellite || '0.0.0' ),
+				uptime: item.info.booted ? (now - item.info.booted) : 0,
+				num_jobs: find_objects( app.activeJobs, { server: item.id } ).length,
+				num_alerts: find_objects( app.activeAlerts, { server: item.id } ).length
+			};
 		} );
 		
 		// NOTE: Don't change these columns without also changing the responsive css column collapse rules in style.css
-		var cols = ['Server', 'IP Address', 'Groups', '# CPUs', 'RAM', 'OS', 'Uptime', '# Jobs', '# Alerts'];
+		var table_opts = {
+			id: 't_servers',
+			item_name: 'server',
+			sort_by: 'label',
+			sort_dir: 1,
+			filter: this.isRowVisible.bind(this),
+			column_ids: ['label', 'ip', 'grp_labels', 'cpu_cores', 'mem_total', 'os_label', 'sat_ver', 'uptime', 'num_jobs', 'num_alerts' ],
+			column_labels: ['Server', 'IP Address', 'Groups', '# CPUs', 'RAM', 'OS', 'xySat', 'Uptime', '# Jobs', '# Alerts']
+		};
 		
 		html += '<div class="box">';
 		html += '<div class="box_title">';
-			// html += '<div class="header_search_widget"><i class="mdi mdi-magnify">&nbsp;</i><input type="text" size="15" placeholder="Search"/></div>';
 			
 			html += '<div class="box_title_widget" style="overflow:visible; margin-left:0;"><i class="mdi mdi-magnify" onMouseUp="$(\'#fe_es_search\').focus()">&nbsp;</i><input type="text" id="fe_es_search" placeholder="Filter" value="' + encode_attrib_entities(args.search ?? '') + '" onInput="$P().applyTableFilters()"/></div>';
 			
@@ -129,26 +164,15 @@ Page.Servers = class Servers extends Page.ServerUtils {
 		html += '</div>';
 		html += '<div class="box_content table">';
 		
-		var grid_opts = {
-			rows: this.servers,
-			cols: cols,
-			data_type: 'server',
-			below: '<ul class="grid_row_empty" id="ul_es_none_found" style="display:none"><div style="grid-column-start: span ' + cols.length + ';">No servers found matching your filters.</div></ul>'
-		};
-		
-		html += this.getBasicGrid( grid_opts, function(item, idx) {
+		html += this.getSortableTable( this.servers, table_opts, function(item, idx) {
 			var classes = [];
-			if (!item.info) item.info = {};
-			if (!item.info.os) item.info.os = { distro: 'Unknown', release: '' };
-			if (!item.info.cpu) item.info.cpu = {};
-			if (!item.info.memory) item.info.memory = {};
 			
 			var nice_jobs = 'Idle';
-			var num_jobs = find_objects( app.activeJobs, { server: item.id } ).length;
+			var num_jobs = item.num_jobs;
 			if (num_jobs > 0) nice_jobs = '<i class="mdi mdi-autorenew mdi-spin">&nbsp;</i><b>' + num_jobs + '</b>';
 			
 			var nice_alerts = 'None';
-			var num_alerts = find_objects( app.activeAlerts, { server: item.id } ).length;
+			var num_alerts = item.num_alerts;
 			if (num_alerts > 0) nice_alerts = '<i class="mdi mdi-bell-outline">&nbsp;</i><b>' + num_alerts + '</b>';
 			
 			var tds = [
@@ -158,6 +182,7 @@ Page.Servers = class Servers extends Page.ServerUtils {
 				'<i class="mdi mdi-chip">&nbsp;</i>' + (item.info.cpu.cores || 0),
 				'<i class="mdi mdi-memory">&nbsp;</i>' + get_text_from_bytes(item.info.memory.total || 0),
 				self.getNiceShortOS(item.info.os),
+				'<i class="mdi mdi-tag-text-outline">&nbsp;</i>v' + (item.info.satellite || '0.0.0'),
 				item.info.booted ? self.getNiceUptime( now - item.info.booted ) : 'n/a',
 				'<div id="d_es_server_jobs_' + item.id + '">' + nice_jobs + '</div>',
 				nice_alerts // no need for div here: alert change redraws entire table
@@ -167,7 +192,7 @@ Page.Servers = class Servers extends Page.ServerUtils {
 			if (num_alerts > 0) classes.push( 'clr_red' );
 			if (classes.length) tds.className = classes.join(' ');
 			return tds;
-		} ); // getBasicGrid
+		} ); // getSortableTable
 		
 		html += '</div>'; // box_content
 		
@@ -191,37 +216,13 @@ Page.Servers = class Servers extends Page.ServerUtils {
 		// filters and/or search query changed -- re-filter table
 		var self = this;
 		var args = this.args;
-		var num_visible = 0;
 		
 		args.search = $('#fe_es_search').val();
 		args.filter = $('#fe_es_filter').val();
 		if (!args.search.length) delete args.search;
 		if (!args.filter.length) delete args.filter;
-		var is_filtered = (('search' in args) || ('filter' in args));
 		
-		this.div.find('.box_content.table ul.grid_row').each( function(idx) {
-			var $this = $(this);
-			var row = self.servers[idx];
-			
-			if (self.isRowVisible(row)) { $this.show(); num_visible++; }
-			else $this.hide();
-		} );
-		
-		// if ALL items are hidden due to search/filter, show some kind of message
-		if (!num_visible && is_filtered && this.servers.length) this.div.find('#ul_es_none_found').show();
-		else this.div.find('#ul_es_none_found').hide();
-		
-		// do history.replaceState jazz here
-		// don't mess up initial visit href
-		// var query = deep_copy_object(args);
-		// delete query.sub;
-		
-		// var url = '#Servers' + (num_keys(query) ? compose_query_string(query) : '');
-		// history.replaceState( null, '', url );
-		// Nav.loc = url.replace(/^\#/, '');
-		
-		// magic trick: replace link in sidebar for Events
-		// $('#tab_Servers').attr( 'href', url );
+		this.updateTableRows('t_servers');
 	}
 	
 	isRowVisible(item) {
@@ -1867,6 +1868,7 @@ Page.Servers = class Servers extends Page.ServerUtils {
 		delete this.chartZoom;
 		delete this.upcomingJobs;
 		delete this.upcomingOffset;
+		delete this.tables;
 		
 		// destroy charts if applicable (view page)
 		if (this.charts) {
