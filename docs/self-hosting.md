@@ -198,7 +198,7 @@ For overriding configuration properties by environment variable, you can specify
 | `XYOPS_base_app_url` | `http://xyops.yourcompany.com` | Override the [base_app_url](configuration.md#base_app_url) configuration property. |
 | `XYOPS_email_from` | `xyops@yourcompany.com` | Override the [email_from](configuration.md#email_from) configuration property. |
 | `XYOPS_secret_key` | `CorrectHorseBatteryStaple` | Override the [secret_key](configuration.md#secret_key) configuration property. |
-| `XYOPS_WebServer__http_port` | `80` | Override the `http_port` property *inside* the [WebServer](configuration.md#webserver) object. |
+| `XYOPS_WebServer__port` | `80` | Override the `port` property *inside* the [WebServer](configuration.md#webserver) object. |
 | `XYOPS_WebServer__https_port` | `443` | Override the `https_port` property *inside* the [WebServer](configuration.md#webserver) object. |
 | `XYOPS_Storage__Filesystem__base_dir` | `/data/xyops` | Override the `base_dir` property *inside* the [Filesystem](configuration.md#filesystem) object *inside* the [Storage](configuration.md#storage) object. |
 
