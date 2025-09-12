@@ -544,6 +544,18 @@ Page.Plugins = class Plugins extends Page.PageUtils {
 			caption: "Optionally set the Group ID (GID) for the Plugin to run as.  The GID may be either numerical or a string ('wheel', 'admin', etc.)."
 		});
 		
+		// kill all
+		html += this.getFormRow({
+			id: 'd_ep_kill',
+			label: 'Abort Policy:',
+			content: this.getFormCheckbox({
+				id: 'fe_ep_kill',
+				label: 'Kill All Processes',
+				checked: plugin.kill || false
+			}),
+			caption: 'Check this box to have xySat kill **all** the job processes on abort, as opposed to only the top-level parent process.'
+		});
+		
 		// notes
 		html += this.getFormRow({
 			label: 'Notes:',
@@ -578,6 +590,9 @@ Page.Plugins = class Plugins extends Page.PageUtils {
 				this.div.find('#d_ep_format').hide();
 			break;
 		} // switch plugin_type
+		
+		// only show kill checkbox for event type
+		$('#d_ep_kill').toggle( plugin_type == 'event' );
 	}
 	
 	get_plugin_form_json() {
@@ -593,6 +608,9 @@ Page.Plugins = class Plugins extends Page.PageUtils {
 		plugin.uid = $('#fe_ep_uid').val();
 		plugin.gid = $('#fe_ep_gid').val();
 		plugin.notes = $('#fe_ep_notes').val();
+		
+		if (plugin.type == 'event') plugin.kill = $('#fe_ep_kill').is(':checked') ? true : false;
+		else delete plugin.kill;
 		
 		if (!plugin.title.length) {
 			return app.badField('#fe_ep_title', "Please enter a title for the plugin.");
