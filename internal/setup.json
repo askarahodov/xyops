@@ -83,7 +83,7 @@
 			"modified": 1434125333,
 			"created": 1434125333,
 			"params": [
-				{ "id":"duration", "type":"text", "title":"Test Duration (seconds)", "value": "60" },
+				{ "id":"duration", "type":"text", "title":"Test Duration (seconds)", "value": "60", "required": true },
 				{ "id":"action", "type":"select", "title":"Simulate Result", "value": "Success, Error, Warning, Critical, Crash" },
 				{ "id":"burn", "type":"checkbox", "title":"Burn Memory/CPU", "value": false },
 				{ "id":"network", "type":"checkbox", "title":"Generate Network Traffic", "value": false },
@@ -97,10 +97,11 @@
 			"command": "[shell-plugin]",
 			"username": "admin",
 			"type": "event",
+			"kill": true,
 			"modified": 1434125333,
 			"created": 1434125333,
 			"params": [
-				{ "id":"script", "type":"code", "title":"Script Source", "value": "#!/bin/sh\n\n# Enter your shell script code here", "locked": true },
+				{ "id":"script", "type":"code", "title":"Script Source", "value": "#!/bin/sh\n\n# Enter your shell script code here", "locked": true, "required": true },
 				{ "id":"annotate", "type":"checkbox", "title":"Add Date/Time Stamps to Log", "value": false },
 				{ "id":"json", "type":"checkbox", "title":"Interpret JSON in Output", "value": false }
 			]
@@ -116,7 +117,7 @@
 			"created": 1434125333,
 			"params": [
 				{ "type":"select", "id":"method", "title":"Method", "value":"GET, HEAD, POST, PUT, DELETE" }, 
-				{ "type":"text", "id":"url", "title":"URL", "value":"http://" }, 
+				{ "type":"text", "id":"url", "title":"URL", "value":"http://", "required": true }, 
 				{ "type":"textarea", "id":"headers", "title":"Request Headers", "value":"User-Agent: xyOps/HTTP-Plugin" }, 
 				{ "type":"textarea", "id":"data", "title":"POST Data", "value":"" }, 
 				{ "type":"text", "id":"timeout", "title":"Timeout (Seconds)", "value":"30" }, 
