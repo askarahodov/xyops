@@ -1030,18 +1030,21 @@ Page.Events = class Events extends Page.PageUtils {
 	do_flush_queue() {
 		// flush job queue after confirmation
 		var self = this;
-		var msg = 'Are you sure you want to flush the entire job queue?';
+		var msg = 'Are you sure you want to flush the job queue for the current event?  All pending jobs will be silently deleted without triggering completion actions.';
 		
 		Dialog.confirmDanger( 'Flush Job Queue', msg, ['trash-can', 'Flush'], function(result) {
 			if (!result) return;
 			app.clearError();
 			Dialog.showProgress( 1.0, "Flushing Queue..." );
 			
+			// reset pagination -- WS broadcast will trigger a table redraw
+			self.queueOffset = 0;
+			
 			app.api.post( 'app/flush_event_queue', { id: self.event.id }, function(resp) {
+				app.cacheBust = hires_time_now();
 				Dialog.hideProgress();
 				app.showMessage('success', "The job queue was successfully flushed.");
 				if (!self.active) return; // sanity
-				self.jobQueueNav(0);
 			} ); // api.post
 		} ); // confirm
 	}
