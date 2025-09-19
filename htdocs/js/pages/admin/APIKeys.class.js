@@ -499,7 +499,7 @@ Page.APIKeys = class APIKeys extends Page.PageUtils {
 		api_key.active = parseInt( $('#fe_ak_status').val() );
 		api_key.title = $('#fe_ak_title').val().trim();
 		api_key.description = $('#fe_ak_desc').val();
-		api_key.privileges = array_to_hash_keys( $('#fe_ak_privs').val(), 1 );
+		api_key.privileges = array_to_hash_keys( $('#fe_ak_privs').val(), true );
 		api_key.roles = $('#fe_ak_roles').val();
 		
 		api_key.expires = $('#fe_ak_expires').val();

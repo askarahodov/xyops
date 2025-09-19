@@ -31,7 +31,7 @@
 				"grayscale": 0
 			},
 			"privileges": {
-				"admin": 1
+				"admin": true
 			},
 			"roles": [],
 			"searches": []
@@ -190,7 +190,7 @@
 				{ "name": "Content-Type", "value": "application/json" },
 				{ "name": "User-Agent", "value": "xyOps/WebHook" }
 			],
-			"body": "{\n\t\"text\": \"{{text}}\",\n\t\"content\": \"{{text}},\"\n\t\"message\": \"{{text}}\"\n}",
+			"body": "{\n\t\"text\": \"{{text}}\",\n\t\"content\": \"{{text}}\",\n\t\"message\": \"{{text}}\"\n}",
 			"timeout": 30,
 			"retries": 0,
 			"follow": false,

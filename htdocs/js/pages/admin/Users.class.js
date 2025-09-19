@@ -711,7 +711,7 @@ Page.Users = class Users extends Page.Base {
 			email: trim($('#fe_eu_email').val()),
 			password: $('#fe_eu_password').val(),
 			roles: $('#fe_eu_roles').val(),
-			privileges: array_to_hash_keys( $('#fe_eu_privs').val(), 1 ),
+			privileges: array_to_hash_keys( $('#fe_eu_privs').val(), true ),
 			categories: $('#fe_eu_cats').val(),
 			groups: $('#fe_eu_groups').val()
 		};
