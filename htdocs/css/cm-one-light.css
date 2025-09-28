@@ -66,3 +66,7 @@
 .cm-s-one-light span.cm-em { font-style: italic; }
 
 .cm-s-one-light span.cm-link:visited { color: #4078f2; }
+
+.cm-s-one-light span.cm-variable-2 {
+  color: #05a;
+}
