@@ -36,6 +36,7 @@ Page.ActivityLog = class ActivityLog extends Page.PageUtils {
 		
 		var action_items = [].concat( config.ui.list_list ).concat([
 			{ "id": "jobs", "title": "Jobs", "icon": "timer-outline" },
+			{ "id": "tickets", "title": "Tickets", "icon": "text-box-outline" },
 			{ "id": "servers", "title": "Servers", "icon": "router-network" },
 			{ "id": "peers", "title": "Masters", "icon": "database" },
 			{ "id": "system", "title": "System", "icon": "desktop-classic" }
@@ -417,6 +418,14 @@ Page.ActivityLog = class ActivityLog extends Page.PageUtils {
 				case 'secrets':
 					if (item.secret) {
 						click = `$P().showActionReport(${idx},'secret')`;
+						actions.push(`<span class="link" onClick="${click}"><b>Details...</b></span>`);
+					}
+				break;
+				
+				case 'tickets':
+					if (item.ticket) {
+						if (item.change) click = `$P().showActionReport(${idx},'change')`;
+						else click = `$P().showActionReport(${idx},'ticket')`;
 						actions.push(`<span class="link" onClick="${click}"><b>Details...</b></span>`);
 					}
 				break;
