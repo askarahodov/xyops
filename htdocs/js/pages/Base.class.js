@@ -952,6 +952,21 @@ Page.Base = class Base extends Page {
 		return false;
 	}
 	
+	formatDateTZ(epoch, template, tz) {
+		// format date according to template and tz
+		if (!epoch || !template) return false;
+		var dargs = this.getDateArgsTZ(epoch, tz);
+		
+		dargs.yyyy = '' + dargs.year;
+		dargs.mm = zeroPad(dargs.month, 2);
+		dargs.dd = zeroPad(dargs.day, 2);
+		dargs.hh = zeroPad(dargs.hour, 2);
+		dargs.mi = zeroPad(dargs.minute, 2);
+		dargs.ss = zeroPad(dargs.second, 2);
+		
+		return substitute( template, dargs );
+	}
+	
 	getDateArgsTZ(epoch, tz) {
 		// get date args in custom timezone
 		// returns: { year, month, day, weekday, hour, minute, second, epoch, tz }
@@ -2428,6 +2443,7 @@ Page.Base = class Base extends Page {
 		};
 		
 		this.highlightCodeBlocks('#dialog .markdown-body');
+		this.expandInlineImages('#dialog .markdown-body');
 	}
 	
 	copyCodeToClipboard() {
