@@ -2228,6 +2228,7 @@ Page.Job = class Job extends Page.PageUtils {
 			if (file.source == 'input') {
 				if (file.bucket) nice_source = self.getNiceBucket(file.bucket, true);
 				else if (file.plugin) nice_source = self.getNicePlugin(file.plugin, true);
+				else if (file.ticket) nice_source = `<span class="nowrap"><a href="#Tickets?id=${file.ticket}"><i class="mdi mdi-text-box-outline"></i>Ticket</a></span>`;
 				else nice_source = '<i class="mdi mdi-file-download-outline">&nbsp;</i>Input';
 			}
 			else nice_source = '<i class="mdi mdi-file-upload-outline">&nbsp;</i>Output';
