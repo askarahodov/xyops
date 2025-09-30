@@ -17,6 +17,7 @@ Page.Tickets = class Tickets extends Page.PageUtils {
 		if (!this.requireLogin(args)) return true;
 		
 		if (!args) args = {};
+		if (!args.sub && (args.id || args.num)) args.sub = 'view';
 		if (!args.sub) args.sub = this.default_sub;
 		this.args = args;
 		
@@ -389,7 +390,7 @@ Page.Tickets = class Tickets extends Page.PageUtils {
 		
 		var grid_args = {
 			resp: resp,
-			cols: ['Ticket #', 'Subject', 'Type', 'Status', 'Assignee', 'Created', 'Actions'], // TODO: css
+			cols: ['#', 'Subject', 'Type', 'Status', 'Assignee', 'Tags', 'Created', 'Actions'],
 			data_type: 'ticket',
 			offset: this.args.offset || 0,
 			limit: this.args.limit,
@@ -416,7 +417,8 @@ Page.Tickets = class Tickets extends Page.PageUtils {
 				'<span class="nowrap"><a href="#' + ticket.num + '"><i class="mdi mdi-text-box-outline"></i><b>' + strip_html(ticket.subject) + '</b></a></span>',
 				self.getNiceTicketType(ticket.type),
 				self.getNiceTicketStatus(ticket.status),
-				self.getNiceUser(ticket.assignee, app.isAdmin()),
+				ticket.assignee ? self.getNiceUser(ticket.assignee, app.isAdmin()) : '(None)',
+				self.getNiceTagList( ticket.tags, false ),
 				self.getRelativeDateTime( ticket.created, true ),
 				'<span class="nowrap">' + actions.join(' | ') + '</span>'
 			];
@@ -591,6 +593,7 @@ Page.Tickets = class Tickets extends Page.PageUtils {
 		var html = '';
 		app.setWindowTitle( "New Ticket" );
 		app.setHeaderNav([ 'ticket_search', 'new_ticket' ]);
+		app.highlightTab( 'NewTicket' );
 		
 		// app.selectSidebarTab('NewTicket');
 		
@@ -827,7 +830,7 @@ Page.Tickets = class Tickets extends Page.PageUtils {
 			content: this.getFormText({
 				id: 'fe_et_due',
 				type: 'date',
-				value: ticket.due ? format_date(ticket.due, '[yyyy]-[mm]-[dd]') : ''
+				value: ticket.due ? this.formatDateTZ(ticket.due, '[yyyy]-[mm]-[dd]', config.tz) : '' // system timezone
 			}),
 			caption: 'Optionally select the ticket due date (reminders are sent out after this).'
 		});
@@ -882,7 +885,14 @@ Page.Tickets = class Tickets extends Page.PageUtils {
 		ticket.cc = this.div.find('#fe_et_cc').val();
 		ticket.notify = this.div.find('#fe_et_notify').val();
 		ticket.category = this.div.find('#fe_et_category').val();
-		ticket.due = parse_date( this.div.find('#fe_et_due').val() + ' 00:00:00' );
+		
+		if (this.div.find('#fe_et_due').val()) {
+			ticket.due = this.parseDateTZ( this.div.find('#fe_et_due').val() + ' 00:00:00', config.tz ); // use server's timezone for this
+		}
+		else {
+			ticket.due = 0;
+		}
+		
 		ticket.type = this.div.find('#fe_et_type').val();
 		ticket.tags = this.div.find('#fe_et_tags').val();
 		
@@ -912,11 +922,17 @@ Page.Tickets = class Tickets extends Page.PageUtils {
 		// render header icon, text and ticket status
 		var ticket = this.ticket;
 		var status_def = find_object(config.ui.ticket_statuses, { id: ticket.status }) || { color: 'gray', title: ucfirst(ticket.status) };
+		var is_overdue = false;
+		
+		if ((ticket.status == 'open') && ticket.due && (ticket.due < app.epoch)) {
+			is_overdue = true;
+		}
 		
 		app.setHeaderNav([
 			'ticket_search',
-			{ icon: '', title: 'Ticket #' + ticket.num },
-			{ type: 'badge', ...status_def }
+			{ icon: 'text-box-outline', title: 'Ticket #' + ticket.num },
+			{ type: 'badge', ...status_def },
+			is_overdue ? { type: 'badge', color: 'yellow', icon: 'calendar-alert', title: 'Overdue' } : null
 		]);
 	}
 	
@@ -937,7 +953,7 @@ Page.Tickets = class Tickets extends Page.PageUtils {
 		history.replaceState( null, '', '#' + ticket.num );
 		this.render_header();
 		
-		var body = '<div class="markdown-body">' + marked.parse(ticket.body, config.marked) + '</div>';
+		var body = '<div class="markdown-body">' + marked.parse(ticket.body, config.ui.marked_config) + '</div>';
 		
 		html += '<div class="box">';
 			html += '<div id="d_ticket_main_body">';
@@ -1014,7 +1030,7 @@ Page.Tickets = class Tickets extends Page.PageUtils {
 			content: this.getFormText({
 				id: 'fe_et_due',
 				type: 'date',
-				value: ticket.due ? format_date(ticket.due, '[yyyy]-[mm]-[dd]') : ''
+				value: ticket.due ? this.formatDateTZ(ticket.due, '[yyyy]-[mm]-[dd]', config.tz) : '' // system timezone
 			}),
 			caption: 'Optionally set a due date for the ticket.'
 		});
@@ -1124,7 +1140,7 @@ Page.Tickets = class Tickets extends Page.PageUtils {
 		html += '<div class="box" id="d_ticket_jobs">';
 			html += '<div class="box_title">';
 				html += '<span>Ticket Jobs</span>';
-				html += '<div class="button secondary right" onClick="$P().addTicketJob()"><i class="mdi mdi-timer-plus-outline">&nbsp;</i><span>Add Job...</span></div>';
+				// html += '<div class="button secondary right" onClick="$P().addTicketJob()"><i class="mdi mdi-timer-plus-outline">&nbsp;</i><span>Add Job...</span></div>';
 				html += '<div class="clear"></div>';
 			html += '</div>';
 			html += '<div class="box_content table">';
@@ -1160,11 +1176,12 @@ Page.Tickets = class Tickets extends Page.PageUtils {
 				// html += '<div class="button secondary mobile_collapse" onClick="$P().do_export()"><i class="mdi mdi-cloud-download-outline">&nbsp;</i><span>Export...</span></div>';
 				// html += '<div class="button secondary mobile_collapse" onClick="$P().go_edit_history()"><i class="mdi mdi-history">&nbsp;</i><span>History...</span></div>';
 				
-				html += '<div id="btn_et_add_event" class="button secondary mobile_collapse" onClick="$P().do_edit_event(-1)"><i class="mdi mdi-calendar-edit-outline">&nbsp;</i>Add Event...</div>';
-				html += '<div id="btn_et_assign" class="button mobile_collapse" onClick="$P().do_assign_to_me()"><i class="mdi mdi-account">&nbsp;</i>Assign to Me</div>';
+				html += '<div id="btn_et_add_event" class="button secondary mobile_collapse" onClick="$P().do_edit_event(-1)"><i class="mdi mdi-calendar-edit-outline">&nbsp;</i><span>Add Event...</span></div>';
+				html += '<div id="btn_et_add_event" class="button secondary mobile_collapse" onClick="$P().do_attach_files()"><i class="mdi mdi-cloud-upload-outline">&nbsp;</i><span>Attach Files...</span></div>';
+				html += '<div id="btn_et_assign" class="button mobile_collapse" onClick="$P().do_assign_to_me()"><i class="mdi mdi-account">&nbsp;</i><span>Assign to Me</span></div>';
 				
 				var is_fav = !!(ticket.cc && ticket.cc.includes(app.username));
-				html += '<div id="btn_et_fav" class="button mobile_collapse ' + (is_fav ? 'favorite' : '') + '" onClick="$P().do_toggle_follow()"><i class="mdi mdi-'+(is_fav ? 'heart' : 'heart-plus-outline')+'">&nbsp;</i>Follow</div>';
+				html += '<div id="btn_et_fav" class="button mobile_collapse ' + (is_fav ? 'favorite' : '') + '" onClick="$P().do_toggle_follow()"><i class="mdi mdi-'+(is_fav ? 'heart' : 'heart-plus-outline')+'">&nbsp;</i><span>Follow</span></div>';
 				
 				html += '<div id="btn_et_close" class="button danger" onClick="$P().do_close_ticket()"><i class="mdi mdi-power">&nbsp;</i>Close Ticket</div>';
 			html += '</div>'; // box_buttons
@@ -1196,7 +1213,8 @@ Page.Tickets = class Tickets extends Page.PageUtils {
 			
 			// special handling for due (must be int, and normalized)
 			if (field_id == 'due') {
-				data.due = parse_date( $this.val() + ' 00:00:00' );
+				if ($this.val()) data.due = self.parseDateTZ( $this.val() + ' 00:00:00', config.tz ); // use server's tz
+				else data.due = 0;
 			}
 			
 			// do we really need a server update?
@@ -1215,6 +1233,16 @@ Page.Tickets = class Tickets extends Page.PageUtils {
 				
 			} ); // api.post
 		}); // change
+	}
+	
+	do_attach_files() {
+		// attach files to ticket
+		if (this.editor) return app.doError("Please close the current text editor before attaching files.");
+		
+		ZeroUpload.chooseFiles({}, {
+			ticket: this.ticket.id,
+			save: true
+		});
 	}
 	
 	do_edit_event(idx) {
@@ -1365,7 +1393,7 @@ Page.Tickets = class Tickets extends Page.PageUtils {
 		
 		var grid_args = {
 			rows: events,
-			cols: ['Event Title', 'Category', 'Plugin', 'Target', 'Trigger', 'Actions'], // TODO: css
+			cols: ['Event Title', 'Category', 'Plugin', 'Target', 'Trigger', 'Actions'],
 			data_type: 'event',
 			class: 'data_grid ticket_event_grid',
 			empty_msg: 'No ticket events found.'
@@ -1409,6 +1437,18 @@ Page.Tickets = class Tickets extends Page.PageUtils {
 			var job = { ...event, tickets: [ticket.id] };
 			if (!job.targets.length) job.targets = event_def.targets;
 			if (!job.algo) job.algo = event_def.algo;
+			
+			if (ticket.files && ticket.files.length) {
+				if (!job.input) job.input = {};
+				if (!job.input.files) job.input.files = [];
+				job.input.files = job.input.files.concat( ticket.files );
+			}
+			(self.jobs || []).forEach( function(prev_job) {
+				if (!prev_job.files || !prev_job.files.length) return;
+				if (!job.input) job.input = {};
+				if (!job.input.files) job.input.files = [];
+				job.input.files = job.input.files.concat( prev_job.files );
+			} );
 			
 			Dialog.showProgress( 1.0, "Launching Job..." );
 			
@@ -1486,6 +1526,7 @@ Page.Tickets = class Tickets extends Page.PageUtils {
 		
 		if (!rows.length) {
 			this.div.find('#d_ticket_jobs').hide();
+			this.renderTicketFiles();
 			return;
 		}
 		
@@ -1520,7 +1561,10 @@ Page.Tickets = class Tickets extends Page.PageUtils {
 				self.getNiceJobState(job),
 				self.getNiceJobElapsedTime(job, false),
 				self.getNiceJobResult(job),
-				'<span class="link danger" onClick="$P().doRemoveJob(\'' + idx + '\')"><b>Remove Job</b></a>'
+				[ 
+					'<a href="#Job?id=' + job.id + '"><b>View</b></a>',
+					'<span class="link danger" onClick="$P().doRemoveJob(\'' + idx + '\')"><b>Remove</b></a>' 
+				].join(' | ')
 				// `<a href="#Job?id=${job.id}"><b>View Details...</b></a>`
 			];
 		} );
@@ -1593,12 +1637,13 @@ Page.Tickets = class Tickets extends Page.PageUtils {
 	renderTicketFiles() {
 		// render table of all job files, with download links
 		var self = this;
+		var ticket = this.ticket;
 		var html = '';
 		var cols = ['Filename', 'Size', 'Modified', 'Source', 'Job', 'Server', 'Actions'];
 		
-		var files = [];
+		var files = (ticket.files || []).map( function(file) { return { ...file, source: 'ticket' }; } );
 		this.jobs.forEach( function(job) {
-			if (job.input && job.input.files) files = files.concat( job.input.files.map( function(file) { return { ...file, source: 'input' }; } ) );
+			// if (job.input && job.input.files) files = files.concat( job.input.files.map( function(file) { return { ...file, source: 'input' }; } ) );
 			if (job.files) files = files.concat( job.files.map( function(file) { return { ...file, source: 'output' }; } ) );
 		});
 		this.files = files;
@@ -1618,12 +1663,14 @@ Page.Tickets = class Tickets extends Page.PageUtils {
 			];
 			
 			var nice_source = '';
-			if (file.source == 'input') {
-				if (file.bucket) nice_source = self.getNiceBucket(file.bucket, true);
-				else if (file.plugin) nice_source = self.getNicePlugin(file.plugin, true);
-				else nice_source = '<i class="mdi mdi-file-download-outline">&nbsp;</i>Input';
+			switch (file.source) {
+				case 'ticket': 
+					nice_source = '<i class="mdi mdi-text-box-outline">&nbsp;</i>Ticket'; 
+					actions.push( '<span class="link danger" onClick="$P().do_delete_file(' + idx + ')"><b>Delete</b></span>' );
+				break;
+				case 'input': nice_source = '<i class="mdi mdi-file-download-outline">&nbsp;</i>Job Input'; break;
+				case 'output': nice_source = '<i class="mdi mdi-file-upload-outline">&nbsp;</i>Job Output'; break;
 			}
-			else nice_source = '<i class="mdi mdi-file-upload-outline">&nbsp;</i>Output';
 			
 			var tds = [
 				'<b>' + self.getNiceFile(file.filename, url) + '</b>',
@@ -1631,8 +1678,8 @@ Page.Tickets = class Tickets extends Page.PageUtils {
 				'<i class="mdi mdi-floppy">&nbsp;</i>' + get_text_from_bytes( file.size || 0 ),
 				self.getRelativeDateTime(file.date),
 				nice_source,
-				self.getNiceJob(file.job || job.id, self.isWorkflow),
-				self.getNiceServer(file.server || job.server, true),
+				self.getNiceJob(file.job),
+				self.getNiceServer(file.server),
 				actions.join(' | ')
 			];
 			
@@ -1642,6 +1689,30 @@ Page.Tickets = class Tickets extends Page.PageUtils {
 		
 		this.div.find('#d_ticket_files > .box_content').html(html);
 		this.div.find('#d_ticket_files').show();
+	}
+	
+	do_delete_file(idx) {
+		// delete file from ticket
+		var self = this;
+		var ticket = this.ticket;
+		var file = ticket.files[idx];
+		var filename = basename(file.filename || '(Unknown)');
+		
+		Dialog.confirmDanger( 'Delete File', "Are you sure you want to permanently delete the ticket file &ldquo;<b>" + filename + "</b>&rdquo;?  There is no way to undo this operation.", ['trash-can', 'Delete'], function(result) {
+			if (!result) return;
+			app.clearError();
+			Dialog.showProgress( 1.0, "Deleting File..." );
+			
+			app.api.post( 'app/delete_ticket_file', { id: ticket.id, path: file.path }, function(resp) {
+				Dialog.hideProgress();
+				app.showMessage('success', "Ticket file &ldquo;" + filename + "&rdquo; was deleted successfully.");
+				
+				if (!self.active) return; // sanity
+				
+				ticket.files.splice( idx, 1 );
+				self.renderTicketFiles();
+			} ); // api.post
+		} ); // confirm
 	}
 	
 	getTicketAlerts() {
@@ -1751,6 +1822,7 @@ Page.Tickets = class Tickets extends Page.PageUtils {
 		// could be editing main body, editing comment, or adding new comment
 		if (!this.editor) return;
 		this.killEditor();
+		app.hideMessage();
 		
 		switch (this.current_editor_type) {
 			case 'main':
@@ -1863,7 +1935,7 @@ Page.Tickets = class Tickets extends Page.PageUtils {
 			
 			// rerender subject and markdown
 			self.div.find('#d_ticket_main_body div.btg_title').html( ticket.subject );
-			self.div.find('#d_ticket_main_body div.markdown-body').html( marked.parse(ticket.body, config.marked) );
+			self.div.find('#d_ticket_main_body div.markdown-body').html( marked.parse(ticket.body, config.ui.marked_config) );
 			
 			self.expandInlineImages('#d_ticket_main_body');
 			self.highlightCodeBlocks('#d_ticket_main_body');
@@ -1953,7 +2025,7 @@ Page.Tickets = class Tickets extends Page.PageUtils {
 					
 					html += '</div>';
 					
-					html += '<div class="message_body">' + '<div class="markdown-body">' + marked.parse(change.body, config.marked) + '</div>' + '</div>';
+					html += '<div class="message_body">' + '<div class="markdown-body">' + marked.parse(change.body, config.ui.marked_config) + '</div>' + '</div>';
 					// html += '<div class="message_footer">' + record.disp.foot_widgets.join('') + '<div class="clear"></div>' + '</div>';
 				html += '</div>'; // box
 				if (yes_hide) html += '</div>';
@@ -2014,7 +2086,7 @@ Page.Tickets = class Tickets extends Page.PageUtils {
 					break;
 				} // switch change.key
 				
-				// html += marked.parse(md, config.marked);
+				// html += marked.parse(md, config.ui.marked_config);
 				html += `<p>${md}</p>`;
 			}); // foreach item
 			
@@ -2291,14 +2363,18 @@ Page.Tickets = class Tickets extends Page.PageUtils {
 	
 	onDragDrop(files) {
 		// intercept drag-drop event and upload files to ticket
-		if ((this.args.sub == 'view') && this.editor) {
+		if (this.args.sub == 'view') {
 			ZeroUpload.upload( files, {}, {
-				ticket: this.ticket.id
+				ticket: this.ticket.id,
+				save: this.editor ? false : true
 			} );
 		}
 	}
 	
 	editUploadFiles() {
+		// upload files from editor toolbar button
+		if (!this.editor) return; // sanity
+		
 		ZeroUpload.chooseFiles({}, {
 			ticket: this.ticket.id
 		});
@@ -2331,18 +2407,28 @@ Page.Tickets = class Tickets extends Page.PageUtils {
 			return app.doError("Upload Failed: " + data.description);
 		}
 		
-		var text = '';
-		data.files.forEach( function(file) {
-			var url = config.base_app_url + '/' + file.path;
-			if (url.match()) text += '![' + basename(url) + '](' + url + ')' + "\n\n";
-			else text += '[' + basename(url) + '](' + url + ')' + "\n\n";
-		} );
-		this.editorInsertBlockElem( text );
-		
-		app.showMessage('success', (data.files.length > 1) ?
-			"Your files were uploaded successfully, and links were placed into the body text." : 
-			"Your file was uploaded successfully, and a link was placed into the body text."
-		);
+		if (this.editor) {
+			// uploaded as inline editor file
+			var text = '';
+			data.files.forEach( function(file) {
+				var url = config.base_app_url + '/' + file.path;
+				if (url.match(/\.(jpg|jpeg|gif|png|webp)$/i)) text += '![' + basename(url) + '](' + url + ')' + "\n\n";
+				else text += '[' + basename(url) + '](' + url + ')' + "\n\n";
+			} );
+			this.editorInsertBlockElem( text );
+			
+			app.showMessage('success', (data.files.length > 1) ?
+				"Your files were uploaded successfully, and links were placed into the body text." : 
+				"Your file was uploaded successfully, and a link was placed into the body text."
+			);
+		}
+		else {
+			// attached as ticket files
+			this.ticket.files = data.files;
+			this.renderTicketFiles();
+			
+			app.showMessage('success', "Your file upload completed successfully.");
+		}
 	}
 	
 	editorUploadError(type, message, userData) {
@@ -2384,7 +2470,7 @@ Page.Tickets = class Tickets extends Page.PageUtils {
 			
 			// html += '<div class="editor_toolbar_divider"></div>';
 			
-			// html += '<div class="editor_toolbar_button" id="btn_show_preview" title="Show Preview" onClick="$P().editShowPreview()"><i class="mdi mdi-file-find-outline"></i></div>';
+			html += '<div class="editor_toolbar_button" id="btn_show_preview" title="Show Preview" onClick="$P().editShowPreview()"><i class="mdi mdi-file-find-outline"></i></div>';
 			
 			// html += '<div class="editor_toolbar_help"><a href="#Document?id=markdown" target="_blank">What\'s this?</a></div>';
 			
@@ -2392,6 +2478,11 @@ Page.Tickets = class Tickets extends Page.PageUtils {
 		html += '</div>';
 		
 		return html;
+	}
+	
+	editShowPreview() {
+		// show popup preview of markdown
+		this.viewMarkdownAuto( "Markdown Preview", this.ticket.body, " " );
 	}
 	
 	toggleScrollLock() {
