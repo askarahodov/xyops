@@ -69,6 +69,7 @@
 		"email_enabled": true,
 		"email_debounce_sec": 30,
 		"overdue_schedule": "04:30",
+		"overdue_query": "status:open due:<today",
 		"due_date_format": "[dddd], [mmmm] [mday], [yyyy]",
 		"date_time_format": "[dddd], [mmmm] [mday], [yyyy] [hour12]:[mi] [ampm]"
 	},
@@ -202,7 +203,7 @@
 			},
 			{
 				"name": "Overdue Tickets",
-				"uri": "Tickets?status=open&due=over",
+				"uri": "Tickets?status=open&query=due%3A%3Ctoday",
 				"icon": "calendar-alert"
 			},
 			{
