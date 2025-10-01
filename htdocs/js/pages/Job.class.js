@@ -185,10 +185,15 @@ Page.Job = class Job extends Page.PageUtils {
 					
 					html += '<div class="button icon right danger" title="Delete Job..." onClick="$P().do_delete_job()"><i class="mdi mdi-trash-can-outline"></i></div>';
 					
-					html += '<div class="button icon right secondary sm_hide" title="Add Comment..." onClick="$P().do_edit_comment(-1)"><i class="mdi mdi-comment-processing-outline"></i></div>';
+					// html += '<div class="button icon right secondary sm_hide" title="Add Comment..." onClick="$P().do_edit_comment(-1)"><i class="mdi mdi-comment-processing-outline"></i></div>';
 					html += '<div class="button icon right secondary" title="Update Tags..." onMouseDown="$P().do_update_tags(this)"><i class="mdi mdi-tag-plus-outline"></i></div>';
 					
-					html += '<div class="button icon right secondary sm_hide" title="View JSON..." onClick="$P().do_view_job_data()"><i class="mdi mdi-code-json"></i></div>';
+					if (app.hasPrivilege('ticket_jobs')) {
+						html += '<div class="button icon right secondary sm_hide" title="Add to Ticket..." onClick="$P().doAddToTicket()"><i class="mdi mdi-text-box-search-outline"></i></div>';
+						html += '<div class="button icon right secondary sm_hide" title="Create Ticket..." onClick="$P().doCreateTicket()"><i class="mdi mdi-text-box-plus-outline"></i></div>';
+					}
+					
+					// html += '<div class="button icon right secondary sm_hide" title="View JSON..." onClick="$P().do_view_job_data()"><i class="mdi mdi-code-json"></i></div>';
 					html += '<div class="button icon right" title="Run Again..." onClick="$P().do_confirm_run_again()"><i class="mdi mdi-run-fast"></i></div>';
 					
 					html += '<div class="clear"></div>';
@@ -538,6 +543,262 @@ Page.Job = class Job extends Page.PageUtils {
 			this.setupActiveWorkflow();
 			this.renderWorkflowJobs();
 		}
+	}
+	
+	doCreateTicket() {
+		// create new ticket and attach to job
+		var self = this;
+		var job = this.job;
+		var title = "Create New Ticket";
+		var btn = ['text-box-plus-outline', "Create Ticket"];
+		var html = '';
+		
+		var event = job.event ? find_object(app.events, { id: job.event }) : { title: "n/a" };
+		if (!event) event = { title: "n/a" };
+		
+		var category = find_object(app.categories, { id: job.category } ) || { title: "n/a" };
+		
+		var plugin = find_object(app.plugins, { id: job.plugin }) || { title: "n/a" };
+		if (!job.plugin || (job.plugin == '_workflow')) plugin = { title: "(Workflow)" };
+		
+		var server = app.servers[ job.server ];
+		var nice_server = server ? (server.title || app.formatHostname(server.hostname)) : "n/a";
+		
+		var nice_elapsed = get_text_from_seconds_round( job.elapsed );
+		
+		var new_details = 
+			`- **Job ID:** \`${job.id}\`\n` + 
+			`- **Event:** ${event.title}\n` + 
+			`- **Category:** ${category.title}\n` + 
+			`- **Plugin:** ${plugin.title}\n` + 
+			`- **Server:** ${nice_server}\n` + 
+			`- **Elapsed:** ${nice_elapsed}\n`;
+		
+		var new_subject = '';
+		var new_body = '';
+		
+		if (job.code) {
+			// failed
+			new_subject = `Job #${job.id} failed with code: ${job.code} (${event.title})`;
+			new_body = `This ticket was created to discuss job \`#${job.id}\` from event "**${event.title}**", which failed with code: \`${job.code}\`.  Here are the job details:\n\n` + 
+				new_details + `\n### Error Description:\n\n\`\`\`\n${job.description || '(None)'}\n\`\`\`\n`;
+		}
+		else {
+			// success
+			new_subject = `Job #${job.id} succeeded (${event.title})`;
+			new_body = `This ticket was created to discuss job \`#${job.id}\` from event "**${event.title}**".  Here are the job details:\n\n` + new_details;
+		}
+		
+		html += `<div class="dialog_intro">${config.ui.intros.job_create_ticket}</div>`;
+		html += '<div class="dialog_box_content scroll maximize">';
+		
+		// subject
+		html += this.getFormRow({
+			id: 'd_nt_subject',
+			content: this.getFormText({
+				id: 'fe_nt_subject',
+				// spellcheck: 'false',
+				value: new_subject
+			})
+		});
+		
+		// type
+		html += this.getFormRow({
+			id: 'd_nt_type',
+			content: this.getFormMenuSingle({
+				id: 'fe_nt_type',
+				options: config.ui.ticket_types,
+				value: 'issue',
+				// 'data-shrinkwrap': 1
+			})
+		});
+		
+		// assigned to
+		html += this.getFormRow({
+			id: 'd_nt_assignee',
+			content: this.getFormMenuSingle({
+				id: 'fe_nt_assignee',
+				options: [['', '(None)']].concat( app.users.map( function(user) { return { id: user.username, title: user.full_name, icon: user.icon || 'account' }; } ) ),
+				value: app.username,
+				auto_add: true,
+				// 'data-shrinkwrap': 1
+			})
+		});
+		
+		// tags
+		html += this.getFormRow({
+			id: 'd_nt_tags',
+			content: this.getFormMenuMulti({
+				id: 'fe_nt_tags',
+				options: app.tags,
+				values: job.tags || [],
+				// 'data-shrinkwrap': 1
+			})
+		});
+		
+		html += '</div>';
+		Dialog.confirm( title, html, btn, function(result) {
+			if (!result) return;
+			app.clearError();
+			
+			var ticket = {
+				subject: $('#fe_nt_subject').val().trim(),
+				body: new_body,
+				type: $('#fe_nt_type').val(),
+				status: 'open',
+				category: job.category || '',
+				assignee: $('#fe_nt_assignee').val(),
+				cc: [],
+				notify: [],
+				events: [],
+				tags: $('#fe_nt_tags').val(),
+				due: ''
+			};
+			if (!ticket.subject.length) return app.badField('#fe_nt_subject', "Please enter a subject line for the ticket.");
+			
+			Dialog.showProgress( 1.0, "Creating Ticket..." );
+			
+			app.api.post( 'app/create_ticket', ticket, function(resp) {
+				// now add new ticket id to job
+				ticket = resp.ticket;
+				
+				if (!job.tickets) job.tickets = [];
+				job.tickets.push( ticket.id );
+				
+				app.api.post( 'app/manage_job_tickets', { id: job.id, tickets: job.tickets }, function(resp) {
+					Dialog.hideProgress();
+					app.cacheBust = hires_time_now();
+					app.showMessage('success', "Ticket successfully created.");
+					
+					// Note: We MUST nav to the ticket id here, as the rest is being indexed in the background
+					Nav.go('Tickets?sub=view&id=' + ticket.id);
+				} ); // api.post (mjt)
+			} ); // api.post (ct)
+		}); // Dialog.confirm
+		
+		MultiSelect.init( $('#fe_nt_tags') );
+		SingleSelect.init( $('#fe_nt_type, #fe_nt_assignee') );
+		Dialog.autoResize();
+		$('#fe_nt_subject').focus();
+	}
+	
+	doAddToTicket() {
+		// attach job to existing ticket
+		var self = this;
+		var job = this.job;
+		var title = "Add to Ticket";
+		var btn = ['text-box-plus-outline', "Add to Ticket"];
+		var html = '';
+		var tickets = [];
+		
+		html += `<div class="dialog_intro">${config.ui.intros.job_add_to_ticket}</div>`;
+		html += '<div class="dialog_box_content scroll maximize">';
+		
+		// ticket picker
+		html += this.getFormRow({
+			id: 'd_jd_ticket',
+			label: "Select Ticket:",
+			content: this.getFormMenuSingle({
+				id: 'fe_jd_ticket',
+				title: "Select Ticket",
+				options: [ { id: '', title: config.ui.menu_bits.generic_loading } ],
+				default_icon: 'text-box-outline',
+				value: ''
+			}),
+			caption: "Select a ticket to attach the job to."
+		});
+		
+		// assign to me
+		html += this.getFormRow({
+			id: 'd_jd_assign',
+			label: 'Assignee:',
+			content: this.getFormCheckbox({
+				id: 'fe_jd_assign',
+				label: 'Assign to Me',
+				checked: false
+			}),
+			caption: 'Optionally assign the ticket to yourself.'
+		});
+		
+		// add to cc list
+		html += this.getFormRow({
+			id: 'd_jd_cc',
+			label: 'Follow:',
+			content: this.getFormCheckbox({
+				id: 'fe_jd_cc',
+				label: 'Add to Cc List',
+				checked: false
+			}),
+			caption: 'Optionally add yourself to the ticket Cc list.'
+		});
+		
+		html += '</div>';
+		Dialog.confirm( title, html, btn, function(result) {
+			if (!result) return;
+			app.clearError();
+			
+			var ticket_id = $('#fe_jd_ticket').val();
+			if (!ticket_id) return app.badField('#fe_jd_ticket', "Please select a ticket to attach the job to.");
+			
+			if (!job.tickets) job.tickets = [];
+			if (job.tickets.includes(ticket_id)) return app.badField('#fe_jd_ticket', "The job is already attached to that ticket.");
+			
+			job.tickets.push( ticket_id );
+			
+			var assign_to_me = $('#fe_jd_assign').is(':checked');
+			var add_to_cc = $('#fe_jd_cc').is(':checked');
+			
+			Dialog.showProgress( 1.0, "Updating Ticket..." );
+			
+			var finish = function() {
+				// all done
+				Dialog.hideProgress();
+				app.cacheBust = hires_time_now();
+				app.showMessage('success', "Job successfully added to ticket.");
+				
+				// Note: We MUST nav to the ticket id here, as the rest is being indexed in the background
+				Nav.go('Tickets?sub=view&id=' + ticket_id);
+			}; // finish
+			
+			app.api.post( 'app/manage_job_tickets', { id: job.id, tickets: job.tickets }, function(resp) {
+				if (!assign_to_me && !add_to_cc) return finish();
+				
+				// also update ticket attribs
+				var updates = { id: ticket_id };
+				var ticket = find_object(tickets, { id: ticket_id });
+				if (!ticket.cc) ticket.cc = [];
+				
+				if (add_to_cc && !ticket.cc.includes(app.username)) {
+					ticket.cc.push(app.username);
+					updates.cc = ticket.cc;
+				}
+				if (assign_to_me && (ticket.assignee != app.username)) {
+					ticket.assignee = updates.assignee = app.username;
+				}
+				
+				app.api.post( 'app/update_ticket', updates, finish);
+			} ); // api.post (mjt)
+		}); // Dialog.confirm
+		
+		SingleSelect.init('#fe_jd_ticket');
+		Dialog.autoResize();
+		
+		// ticket search
+		app.api.get( 'app/search_tickets', { query: 'status:open', limit: config.alt_items_per_page }, function(resp) {
+			tickets = resp.rows || [];
+			
+			var items = (resp.rows || []).map( function(ticket) {
+				return { id: ticket.id, title: `#${ticket.num}: ${ticket.subject}` };
+			} );
+			
+			if (!items.length) {
+				$('#fe_jd_ticket').html( render_menu_options( [{ id: '', title: "(No tickets found)" }], '' ) ).trigger('change');
+				return;
+			}
+			
+			// change menu items and fire onChange event for redraw
+			$('#fe_jd_ticket').html( render_menu_options( items, items[0].id ) ).trigger('change');
+		} ); // api.get
 	}
 	
 	confettiParty() {
