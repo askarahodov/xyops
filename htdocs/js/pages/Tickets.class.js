@@ -832,6 +832,23 @@ Page.Tickets = class Tickets extends Page.PageUtils {
 		
 		// setup codemirror
 		this.setupEditor();
+		
+		// setup uploader
+		this.setupUploader();
+	}
+	
+	setupUploader() {
+		// setup upload system
+		var settings = config.ticket_upload_settings;
+		ZeroUpload.setURL( '/api/app/upload_user_ticket_files' );
+		ZeroUpload.setMaxFiles( settings.max_files_per_ticket );
+		ZeroUpload.setMaxBytes( settings.max_file_size );
+		ZeroUpload.setFileTypes( settings.accepted_file_types );
+		ZeroUpload.on('start', this.editorUploadStart.bind(this) );
+		ZeroUpload.on('progress', this.editorUploadProgress.bind(this) );
+		ZeroUpload.on('complete', this.editorUploadComplete.bind(this) );
+		ZeroUpload.on('error', this.editorUploadError.bind(this) );
+		ZeroUpload.init();
 	}
 	
 	get_ticket_form_json() {
@@ -1159,6 +1176,7 @@ Page.Tickets = class Tickets extends Page.PageUtils {
 		
 		this.update_buttons();
 		this.render_ticket_changes();
+		this.setupUploader();
 		
 		SingleSelect.init( this.div.find('#fe_et_assignee, #fe_et_type, #fe_et_status, #fe_et_category') );
 		MultiSelect.init( this.div.find('#fe_et_tags, #fe_et_cc') );
@@ -2301,18 +2319,6 @@ Page.Tickets = class Tickets extends Page.PageUtils {
 			}
 		}));
 		
-		// setup upload system
-		var settings = config.ticket_upload_settings;
-		ZeroUpload.setURL( '/api/app/upload_user_ticket_files' );
-		ZeroUpload.setMaxFiles( settings.max_files_per_ticket );
-		ZeroUpload.setMaxBytes( settings.max_file_size );
-		ZeroUpload.setFileTypes( settings.accepted_file_types );
-		ZeroUpload.on('start', this.editorUploadStart.bind(this) );
-		ZeroUpload.on('progress', this.editorUploadProgress.bind(this) );
-		ZeroUpload.on('complete', this.editorUploadComplete.bind(this) );
-		ZeroUpload.on('error', this.editorUploadError.bind(this) );
-		ZeroUpload.init();
-		
 		// required for auto-sizing to fit width
 		setTimeout( function() { self.onResize(); }, 100 );
 		setTimeout( function() { self.onResize(); }, 200 );
@@ -2325,7 +2331,7 @@ Page.Tickets = class Tickets extends Page.PageUtils {
 		// intercept drag-drop event and upload files to ticket
 		if (this.args.sub == 'view') {
 			ZeroUpload.upload( files, {}, {
-				ticket: this.ticket.id,
+				ticket: this.ticket.id || 'new',
 				save: this.editor ? false : true
 			} );
 		}
@@ -2336,7 +2342,7 @@ Page.Tickets = class Tickets extends Page.PageUtils {
 		if (!this.editor) return; // sanity
 		
 		ZeroUpload.chooseFiles({}, {
-			ticket: this.ticket.id
+			ticket: this.ticket.id || 'new'
 		});
 	}
 	
