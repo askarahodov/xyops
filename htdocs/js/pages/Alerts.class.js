@@ -337,14 +337,19 @@ Page.Alerts = class Alerts extends Page.Base {
 		app.setWindowTitle( "Viewing Alert \"" + (this.def.title) + "\"" );
 		
 		html += '<div class="box">';
-			html += '<div class="box_title">';
-				
-				html += `<div style="display: grid; grid-template-columns: 1fr auto; gap: 15px;">`;
-					html += `<div style="text-align:left; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">${encode_entities(alert.message)}</div>`;
-					html += `<div style="text-align:right"><div class="button danger phone_collapse" onClick="$P().showDeleteAlertDialog()"><i class="mdi mdi-trash-can-outline">&nbsp;</i><span>Delete...</span></div></div>`;
-				html += `</div>`;
-				
-			html += '</div>'; // title
+			
+			html += '<div class="box_title grid">';
+				html += `<div class="btg_title">${encode_entities(alert.message)}</div>`;
+				html += '<div class="btg_buttons">';
+					if (app.hasPrivilege('create_tickets') && app.hasPrivilege('edit_tickets')) {
+						html += '<div class="button icon secondary mobile_hide" title="Create Ticket..." onClick="$P().doCreateTicket()"><i class="mdi mdi-text-box-plus-outline"></i></div>';
+					}
+					if (app.hasPrivilege('edit_tickets')) {
+						html += '<div class="button icon secondary mobile_hide" title="Add to Ticket..." onClick="$P().doAddToTicket()"><i class="mdi mdi-text-box-search-outline"></i></div>';
+					}
+					html += '<div class="button icon danger" title="Delete Alert..." onClick="$P().showDeleteAlertDialog()"><i class="mdi mdi-trash-can-outline"></i></div>';
+				html += '</div>';
+			html += '</div>'; // box_title
 			
 			html += '<div class="box_content table">';
 				html += '<div class="summary_grid">';
@@ -441,6 +446,187 @@ Page.Alerts = class Alerts extends Page.Base {
 		this.getAlertTickets();
 		this.getAlertJobs();
 		this.getAlertHistory();
+	}
+	
+	doCreateTicket() {
+		// create new ticket and attach to alert
+		var self = this;
+		var alert = this.alert;
+		var def = this.def;
+		var title = "Create New Ticket";
+		var btn = ['text-box-plus-outline', "Create Ticket"];
+		var html = '';
+		
+		var nice_server = this.getNiceServerText(alert.server);
+		var new_subject = `Alert: ${def.title} on ${nice_server}`;
+		
+		html += `<div class="dialog_intro">${config.ui.intros.alert_create_ticket}</div>`;
+		html += '<div class="dialog_box_content scroll maximize">';
+		
+		// subject
+		html += this.getFormRow({
+			id: 'd_nt_subject',
+			content: this.getFormText({
+				id: 'fe_nt_subject',
+				// spellcheck: 'false',
+				value: new_subject
+			})
+		});
+		
+		// type
+		html += this.getFormRow({
+			id: 'd_nt_type',
+			content: this.getFormMenuSingle({
+				id: 'fe_nt_type',
+				options: config.ui.ticket_types,
+				value: 'issue',
+				// 'data-shrinkwrap': 1
+			})
+		});
+		
+		// assigned to
+		html += this.getFormRow({
+			id: 'd_nt_assignee',
+			content: this.getFormMenuSingle({
+				id: 'fe_nt_assignee',
+				options: [['', '(None)']].concat( app.users.map( function(user) { return { id: user.username, title: user.full_name, icon: user.icon || 'account' }; } ) ),
+				value: app.username,
+				auto_add: true,
+				// 'data-shrinkwrap': 1
+			})
+		});
+		
+		// tags
+		html += this.getFormRow({
+			id: 'd_nt_tags',
+			content: this.getFormMenuMulti({
+				id: 'fe_nt_tags',
+				options: app.tags,
+				values: [],
+				// 'data-shrinkwrap': 1
+			})
+		});
+		
+		html += '</div>';
+		Dialog.confirm( title, html, btn, function(result) {
+			if (!result) return;
+			app.clearError();
+			
+			var ticket = {
+				subject: $('#fe_nt_subject').val().trim(),
+				template: 'alert', // generate ticket body from template
+				alert: alert.id,
+				type: $('#fe_nt_type').val(),
+				status: 'open',
+				category: '',
+				assignee: $('#fe_nt_assignee').val(),
+				cc: [],
+				notify: [],
+				events: [],
+				tags: $('#fe_nt_tags').val(),
+				due: '',
+				server: alert.server || ''
+			};
+			if (!ticket.subject.length) return app.badField('#fe_nt_subject', "Please enter a subject line for the ticket.");
+			
+			Dialog.showProgress( 1.0, "Creating Ticket..." );
+			
+			app.api.post( 'app/create_ticket', ticket, function(resp) {
+				// now add new ticket id to alert
+				ticket = resp.ticket;
+				
+				if (!alert.tickets) alert.tickets = [];
+				alert.tickets.push( ticket.id );
+				
+				app.api.post( 'app/manage_alert_invocation_tickets', { id: alert.id, tickets: alert.tickets }, function(resp) {
+					Dialog.hideProgress();
+					app.cacheBust = hires_time_now();
+					app.showMessage('success', "Ticket successfully created.");
+					
+					// Note: We MUST nav to the ticket id here, as the rest is being indexed in the background
+					Nav.go('Tickets?sub=view&id=' + ticket.id);
+				} ); // api.post (mjt)
+			} ); // api.post (ct)
+		}); // Dialog.confirm
+		
+		MultiSelect.init( $('#fe_nt_tags') );
+		SingleSelect.init( $('#fe_nt_type, #fe_nt_assignee') );
+		Dialog.autoResize();
+		
+		$('#fe_nt_subject').focus().get(0).setSelectionRange( new_subject.length, new_subject.length );
+	}
+	
+	doAddToTicket() {
+		// attach alert to existing ticket
+		var self = this;
+		var alert = this.alert;
+		var title = "Add to Ticket";
+		var btn = ['text-box-plus-outline', "Add to Ticket"];
+		var html = '';
+		var tickets = [];
+		
+		html += `<div class="dialog_intro">${config.ui.intros.alert_add_to_ticket}</div>`;
+		html += '<div class="dialog_box_content scroll maximize">';
+		
+		// ticket picker
+		html += this.getFormRow({
+			id: 'd_ad_ticket',
+			label: "Select Ticket:",
+			content: this.getFormMenuSingle({
+				id: 'fe_ad_ticket',
+				title: "Select Ticket",
+				options: [ { id: '', title: config.ui.menu_bits.generic_loading } ],
+				default_icon: 'text-box-outline',
+				value: ''
+			}),
+			caption: "Select a ticket to attach the alert to."
+		});
+		
+		html += '</div>';
+		Dialog.confirm( title, html, btn, function(result) {
+			if (!result) return;
+			app.clearError();
+			
+			var ticket_id = $('#fe_ad_ticket').val();
+			if (!ticket_id) return app.badField('#fe_ad_ticket', "Please select a ticket to attach the alert to.");
+			
+			if (!alert.tickets) alert.tickets = [];
+			if (alert.tickets.includes(ticket_id)) return app.badField('#fe_ad_ticket', "The alert is already attached to that ticket.");
+			
+			alert.tickets.push( ticket_id );
+			
+			Dialog.showProgress( 1.0, "Updating Ticket..." );
+			
+			app.api.post( 'app/manage_alert_invocation_tickets', { id: alert.id, tickets: alert.tickets }, function(resp) {
+				// all done
+				Dialog.hideProgress();
+				app.cacheBust = hires_time_now();
+				app.showMessage('success', "Alert successfully added to ticket.");
+				
+				// Note: We MUST nav to the ticket id here, as the rest is being indexed in the background
+				Nav.go('Tickets?sub=view&id=' + ticket_id);
+			} ); // api.post
+		}); // Dialog.confirm
+		
+		SingleSelect.init('#fe_ad_ticket');
+		Dialog.autoResize();
+		
+		// ticket search
+		app.api.get( 'app/search_tickets', { query: 'status:open', limit: config.alt_items_per_page }, function(resp) {
+			tickets = resp.rows || [];
+			
+			var items = (resp.rows || []).map( function(ticket) {
+				return { id: ticket.id, title: `#${ticket.num}: ${ticket.subject}` };
+			} );
+			
+			if (!items.length) {
+				$('#fe_ad_ticket').html( render_menu_options( [{ id: '', title: "(No tickets found)" }], '' ) ).trigger('change');
+				return;
+			}
+			
+			// change menu items and fire onChange event for redraw
+			$('#fe_ad_ticket').html( render_menu_options( items, items[0].id ) ).trigger('change');
+		} ); // api.get
 	}
 	
 	getAlertSnapshots() {
@@ -573,7 +759,7 @@ Page.Alerts = class Alerts extends Page.Base {
 	}
 	
 	doRemoveTicket(idx) {
-		// remove ticket from job
+		// remove ticket from alert
 		var self = this;
 		var alert = this.alert;
 		var ticket = this.tickets[idx];
@@ -586,7 +772,7 @@ Page.Alerts = class Alerts extends Page.Base {
 			// remove our ticket id from the alert ticket list
 			var new_tickets = alert.tickets.filter( function(ticket_id) { return ticket_id != ticket.id } );
 			
-			app.api.post( 'app/update_alert', { id: alert.id, tickets: new_tickets }, function(resp) {
+			app.api.post( 'app/manage_alert_invocation_tickets', { id: alert.id, tickets: new_tickets }, function(resp) {
 				Dialog.hideProgress();
 				app.cacheBust = hires_time_now();
 				alert.tickets = new_tickets;
@@ -697,7 +883,7 @@ Page.Alerts = class Alerts extends Page.Base {
 	}
 	
 	alertHistoryNav(offset) {
-		// intercept click on job history table pagination nav
+		// intercept click on history table pagination nav
 		this.alertHistoryOffset = offset;
 		this.div.find('#d_va_history > .box_content').addClass('loading');
 		this.getAlertHistory();
