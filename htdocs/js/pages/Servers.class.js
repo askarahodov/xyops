@@ -829,12 +829,12 @@ Page.Servers = class Servers extends Page.ServerUtils {
 					
 					html += '<div>';
 						html += '<div class="info_label">Server Hostname</div>';
-						html += '<div class="info_value">' + server.hostname + '</div>';
+						html += '<div class="info_value"><i class="mdi mdi-' + (server.icon || 'router-network') + '">&nbsp;</i>' + server.hostname + '</div>';
 					html += '</div>';
 					
 					html += '<div>';
 						html += '<div class="info_label">xySat Version</div>';
-						html += '<div class="info_value">v' + (server.info.satellite || '0.0.0') + '</div>';
+						html += '<div class="info_value"><i class="mdi mdi-tag-text-outline">&nbsp;</i>v' + (server.info.satellite || '0.0.0') + '</div>';
 					html += '</div>';
 					
 					// row 2
