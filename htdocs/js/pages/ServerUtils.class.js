@@ -26,7 +26,7 @@ Page.ServerUtils = class ServerUtils extends Page.PageUtils {
 		html += '<div class="summary_grid single" style="margin-top:10px; margin-bottom:20px;">';
 			html += '<div>';
 				html += '<div class="info_label">Command</div>';
-				html += '<div class="info_value overflow" style="word-break:break-word;">' + cmd + '</div>';
+				html += '<div class="info_value overflow" style="word-break:break-word;">' + encode_entities(cmd) + '</div>';
 			html += '</div>';
 		html += '</div>';
 		
