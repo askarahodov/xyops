@@ -59,13 +59,9 @@ The message to include in the alert notification. This can include mustache plac
 
 The server groups where the alert is active.  Leave blank to apply to all groups.
 
-## Alert.email
+## Alert.actions
 
-An optional list of email addresses to notify when the alert fires.  This can be a single address, or a comma-separated list of multiple addresses.
-	
-## Alert.web_hook
-
-Optionally fire a web hook for the alert.  Specify the [WebHook.id](#webhook-id) here.
+A set of [Actions](#action) to perform when the alert fires and/or clears.  This list may be augmented by the server group as well.
 
 ## Alert.monitor_id
 
@@ -548,17 +544,9 @@ An optional icon ID for the group, displayed in the UI.  Icons are sourced from 
 
 A hostname pattern used to match servers to the group.  This should be a [regular expression](https://en.wikipedia.org/wiki/Regular_expression) wrapped in a string.
 
-## Group.alert_email
+## Group.alert_actions
 
-An email address to send alerts for the group.  While alerts themselves can define a set of email addresses, this allows you to set a "group notification" email as well.
-
-## Group.alert_web_hook
-
-A [WebHook.id](#webhook-id) to fire for alerts in the group.  While alerts themselves can define a web hook, this allows you to set a "group notification" web hook as well.
-
-## Group.mute_alerts
-
-A boolean flag indicating whether alerts are muted for the group.
+A set of [Actions](#action) to perform when **any** alert fires and/or clears on a server in the group.
 
 ## Group.notes
 
