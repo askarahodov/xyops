@@ -127,8 +127,8 @@ div.box_title.comment {
 	padding-bottom: 10px;
 	color: var(--theme-color);
 }
-div.box_title.comment i.mdi:before {
-	transform: scale(1.2);
+div.box_title.comment div.btg_title i.mdi:before {
+	transform: scale(1.1);
 }
 
 /* div.box_admin_container {
