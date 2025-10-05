@@ -19,7 +19,7 @@ The following {{config.client.name}} job has completed successfully:
 
 ### Links:
 - [Job Details]({{links.job_details}})
-- [Download Log]({{links.job_log}}) ({{display/log_size}})
+- [Download Log]({{links.job_log}}) ({{display.log_size}})
 
 ### Job Files:
 {{links.job_files}}

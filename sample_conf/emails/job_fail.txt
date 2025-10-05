@@ -23,7 +23,7 @@ The following {{config.client.name}} job has failed with code: *{{job.code}}**
 
 ### Links:
 - [Job Details]({{links.job_details}})
-- [Download Log]({{links.job_log}}) ({{display/log_size}})
+- [Download Log]({{links.job_log}}) ({{display.log_size}})
 
 ### Job Output:
 ```text
