@@ -2119,7 +2119,7 @@ Page.Tickets = class Tickets extends Page.PageUtils {
 					break;
 					
 					case 'notify':
-						md += substitute( text, { disp: change.value.map( function(email) { return `**${email}**`; } ).join(', ') || '(None)' } );
+						md += substitute( text, { disp: change.value.map( function(email) { return `${email}`; } ).join(', ') || '(None)' } );
 					break;
 					
 					case 'tags':
