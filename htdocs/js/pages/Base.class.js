@@ -2420,8 +2420,8 @@ Page.Base = class Base extends Page {
 		var text = $data_value.text();
 		var formats = null;
 		
-		// if text is single line, prevent auto-detect on format
-		if (!text.trim().match(/\n/)) formats = ['text'];
+		// if text is single line, and is not obviously json, prevent auto-detect on format
+		if (!text.trim().match(/\n/) && !text.match(/^\s*\{[\S\s]+\}\s*$/)) formats = ['text'];
 		
 		this.viewCodeAuto( $data_value.data('title'), text, formats );
 	}
@@ -2585,8 +2585,11 @@ Page.Base = class Base extends Page {
 			// also, do not auto-detect beyond 1K of text, for same reason
 			var value = self.editor.getValue();
 			if (value.length < 4096) {
+				var old_mode = self.editor.getOption('mode');
+				if (old_mode.backdrop) old_mode = old_mode.backdrop;
 				var mode = self.defaultEditorMode || app.detectCodemirrorMode(value) || null;
-				if (mode != self.editor.getOption('mode')) {
+				
+				if (mode != old_mode) {
 					Debug.trace('debug', "Detected language: " + mode);
 					self.editor.setOption('mode', { name: 'mustache', backdrop: mode });
 					self.editor.refresh();
@@ -2598,8 +2601,11 @@ Page.Base = class Base extends Page {
 			// delay 1ms so we can get the full editor content
 			setTimeout( function() { 
 				var value = self.editor.getValue();
+				var old_mode = self.editor.getOption('mode');
+				if (old_mode.backdrop) old_mode = old_mode.backdrop;
 				var mode = self.defaultEditorMode || app.detectCodemirrorMode(value) || null;
-				if (mode != self.editor.getOption('mode')) {
+				
+				if (mode != old_mode) {
 					Debug.trace('debug', "Detected language: " + mode);
 					self.editor.setOption('mode', { name: 'mustache', backdrop: mode });
 					self.editor.refresh();
@@ -2676,6 +2682,16 @@ Page.Base = class Base extends Page {
 			reader.onload = function(e) {
 				self.editor.setValue( e.target.result );
 				self.editor.focus();
+				
+				var old_mode = self.editor.getOption('mode');
+				if (old_mode.backdrop) old_mode = old_mode.backdrop;
+				var mode = app.detectCodemirrorMode(e.target.result) || null;
+				
+				if (mode != old_mode) {
+					Debug.trace('debug', "Detected language: " + mode);
+					self.editor.setOption('mode', { name: 'mustache', backdrop: mode });
+					self.editor.refresh();
+				}
 			};
 			
 			reader.readAsText(file);
