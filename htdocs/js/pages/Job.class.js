@@ -2616,6 +2616,10 @@ Page.Job = class Job extends Page.PageUtils {
 		var self = this;
 		if (!app.requirePrivilege('run_jobs')) return;
 		
+		if (this.job.workflow && (this.job.type == 'adhoc')) {
+			return app.doError("Sorry, this adhoc workflow job cannot run independently.  Please rerun the parent workflow job instead.");
+		}
+		
 		var text = "Are you sure you want to run the current job again?";
 		if (this.job.workflow && this.job.workflow.job) text += "  Please note that this job originally ran as part of a workflow.  If you run it manually like this, it will execute in isolation, outside of the workflow context.";
 		
