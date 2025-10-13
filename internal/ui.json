@@ -869,7 +869,8 @@
 		"code": "Code Editor",
 		"checkbox": "Checkbox",
 		"select": "Menu",
-		"hidden": "Hidden"
+		"hidden": "Hidden",
+		"toolset": "Toolset"
 	},
 	
 	"control_type_icons": {
@@ -878,7 +879,8 @@
 		"code": "code-json",
 		"checkbox": "checkbox-marked-outline",
 		"select": "form-dropdown",
-		"hidden": "eye-off-outline"
+		"hidden": "eye-off-outline",
+		"toolset": "tools"
 	},
 	
 	"text_field_variants": [

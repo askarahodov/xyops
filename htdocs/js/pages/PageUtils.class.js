@@ -1875,6 +1875,34 @@ Page.PageUtils = class PageUtils extends Page.Base {
 					elem_value = (param.id in params) ? params[param.id] : param.value.replace(/\,.*$/, '');
 					html += self.getFormMenu({ id: elem_id, value: elem_value, options: param.value.split(/\,\s*/), disabled: elem_dis });
 				break;
+				
+				case 'toolset':
+					var data = param.data || { tools: [] };
+					if (!data.tools) data.tools = [];
+					var tools = data.tools;
+					if (!tools.length) {
+						tools.push( { id: '', title: 'No Tools', description: 'No tools defined in toolset.', fields: [] } );
+						elem_dis = true;
+					}
+					
+					var default_tool_id = data.default || tools[0].id;
+					elem_value = (param.id in params) ? params[param.id] : default_tool_id;
+					
+					// make sure tool exists (plugin may have changed), default to first tool
+					var tool = find_object( tools, { id: elem_value } );
+					if (!tool) {
+						tool = tools[0];
+						elem_value = tool.id;
+					}
+					
+					html += self.getFormMenu({ id: elem_id, value: elem_value, options: tools, disabled: elem_dis, onChange: `$P().changePluginParamTool('${plugin_id}','${param.id}')` });
+					
+					html += `<fieldset id="fs_toolset_${plugin_id}_${param.id}" class="info_fieldset">`;
+					html += `<legend>${strip_html(tool.title)}</legend>`;
+					html += `<div class="tool_desc">${strip_html(tool.description)}</div>`;
+					if (tool.fields && tool.fields.length) html += self.getParamEditor(tool.fields, params);
+					html += `</fieldset>`;
+				break;
 			} // switch type
 			
 			if (param.caption) html += '<div class="info_caption">' + strip_html(param.caption) + '</div>';
@@ -1883,6 +1911,33 @@ Page.PageUtils = class PageUtils extends Page.Base {
 		} ); // foreach param
 		
 		return html;
+	}
+	
+	changePluginParamTool(plugin_id, param_id) {
+		// change tool in toolset, redraw fields
+		var elem_id = 'fe_pp_' + plugin_id + '_' + param_id;
+		var elem_value = $('#' + elem_id).val();
+		
+		var plugin = find_object( app.plugins, { id: plugin_id } );
+		if (!plugin) return; // sanity
+		
+		var param = find_object( plugin.params, { id: param_id } );
+		if (!param) return; // sanity
+		
+		var data = param.data || { tools: [] };
+		if (!data.tools) data.tools = [];
+		var tools = data.tools;
+		var tool = find_object( tools, { id: elem_value } );
+		if (!tool) return; // sanity
+		
+		var $fieldset = $(`#fs_toolset_${plugin_id}_${param_id}`);
+		var html = '';
+		
+		html += `<legend>${strip_html(tool.title)}</legend>`;
+		html += `<div class="tool_desc">${strip_html(tool.description)}</div>`;
+		if (tool.fields && tool.fields.length) html += this.getParamEditor(tool.fields, {});
+		
+		$fieldset.html(html);
 	}
 	
 	viewPluginParamCode(plugin_id, param_id) {
@@ -1917,21 +1972,43 @@ Page.PageUtils = class PageUtils extends Page.Base {
 	
 	getPluginParamValues(plugin_id, force) {
 		// get all values for params hash
+		var self = this;
 		var params = {};
 		var plugin = find_object( app.plugins, { id: plugin_id } );
 		if (!plugin) return {}; // should never happen
 		var is_valid = true;
 		
 		plugin.params.forEach( function(param) {
-			if (param.type == 'hidden') params[ param.id ] = param.value;
-			else if (param.type == 'checkbox') params[ param.id ] = !!$('#fe_pp_' + plugin_id + '_' + param.id).is(':checked');
-			else {
-				params[ param.id ] = $('#fe_pp_' + plugin_id + '_' + param.id).val();
-				if (param.required && !params[ param.id ].length && !force) {
-					app.badField('#fe_pp_' + plugin_id + '_' + param.id, "The &ldquo;" + param.title + "&rdquo; field is required.");
-					is_valid = false;
-				}
-			}
+			switch (param.type) {
+				case 'hidden':
+					params[ param.id ] = param.value;
+				break;
+				
+				case 'checkbox':
+					params[ param.id ] = !!$('#fe_pp_' + plugin_id + '_' + param.id).is(':checked');
+				break;
+				
+				case 'toolset':
+					var tool_id = params[ param.id ] = $('#fe_pp_' + plugin_id + '_' + param.id).val();
+					
+					if (!param.data || !param.data.tools) return; // sanity
+					var tool = find_object( param.data.tools, { id: tool_id } );
+					if (!tool) return; // sanity
+					
+					var tool_values = self.getParamValues(tool.fields || []);
+					if (!tool_values) { is_valid = false; return; } // invalid
+					
+					merge_hash_into( params, tool_values );
+				break;
+				
+				default:
+					params[ param.id ] = $('#fe_pp_' + plugin_id + '_' + param.id).val();
+					if (param.required && !params[ param.id ].length && !force) {
+						app.badField('#fe_pp_' + plugin_id + '_' + param.id, "The &ldquo;" + param.title + "&rdquo; field is required.");
+						is_valid = false;
+					}
+				break;
+			} // switch param.type
 		}); // foreach param
 		
 		return is_valid ? params : false;
@@ -3282,6 +3359,11 @@ Page.PageUtils = class PageUtils extends Page.Base {
 				case 'select':
 					pairs.push([ 'Items', '(' + strip_html(param.value) + ')' ]);
 				break;
+				
+				case 'toolset':
+					if (param.data && param.data.tools && param.data.tools.length) pairs.push([ commify(param.data.tools.length) + " tools in set" ]);
+					else pairs.push([ "(No tools in set)" ]);
+				break;
 			}
 			for (var idy = 0, ley = pairs.length; idy < ley; idy++) {
 				if (pairs[idy].length == 2) pairs[idy] = '<b>' + pairs[idy][0] + ':</b> ' + pairs[idy][1];
@@ -3328,7 +3410,7 @@ Page.PageUtils = class PageUtils extends Page.Base {
 		var btn = (idx > -1) ? ['check-circle', "Accept"] : ['plus-circle', "Add Param"];
 		
 		// prepare control type menu
-		var ctypes = (this.controlTypes || Object.keys(config.ui.control_type_labels)).map (function(key) { 
+		var ctypes = (this.controlTypes || ['checkbox', 'code', 'hidden', 'select', 'text', 'textarea']).map (function(key) { 
 			return { 
 				id: key, 
 				title: config.ui.control_type_labels[key],
@@ -3454,6 +3536,17 @@ Page.PageUtils = class PageUtils extends Page.Base {
 			}),
 			caption: 'Enter the default value for the hidden field.'
 		});
+		html += this.getFormRow({
+			id: 'd_epa_value_toolset',
+			label: 'Edit Toolset:',
+			content: self.getFormTextarea({ 
+				id: 'fe_epa_value_toolset', 
+				value: JSON.stringify( param.data || { tools: [ { id: 'sample', title: "Sample Tool", fields: [ { id: 'field1', title: "Field 1", type: 'text', value: "" } ] } ] }, null, "\t" ), 
+				rows: 1, 
+				style: 'display:none'
+			}) + `<div class="button small secondary" onClick="$P().editParamToolset()"><i class="mdi mdi-code-json">&nbsp;</i><span>Edit JSON...</span></div>`,
+			caption: 'Enter JSON data describing the toolset.  [Learn More](#Docs/plugins/toolset)'
+		});
 		
 		// caption
 		html += this.getFormRow({
@@ -3496,8 +3589,20 @@ Page.PageUtils = class PageUtils extends Page.Base {
 			if (!result) return;
 			app.clearError();
 			
+			// start a fresh param object so we don't taint the original on errors
+			var old_param = param;
+			param = {};
+			
 			param.id = $('#fe_epa_id').val().trim().replace(/\W+/g, '').toLowerCase();
 			if (!param.id.length) return app.badField('#fe_epa_id', "The ID field is required.");
+			
+			// check for ID collisions!  must consider NEW and EDIT modes
+			if (idx == -1) {
+				if (find_object(self.params, { id: param.id })) return app.badField('#fe_epa_id', "That ID is already in use.");
+			}
+			else {
+				if ((param.id != old_param.id) && find_object(self.params, { id: param.id })) return app.badField('#fe_epa_id', "That ID is already in use.");
+			}
 			
 			param.title = strip_html( $('#fe_epa_title').val().trim() );
 			if (!param.title.length) return app.badField('#fe_epa_title', "The Title field is required.");
@@ -3537,13 +3642,28 @@ Page.PageUtils = class PageUtils extends Page.Base {
 					param.value = $('#fe_epa_value_hidden').val();
 					delete param.required;
 				break;
+				
+				case 'toolset':
+					try { param.data = JSON.parse( $('#fe_epa_value_toolset').val() ); }
+					catch (err) { return app.doError("Failed to parse toolset JSON: " + err); }
+					
+					// validate tools (control types, etc.)
+					if (!self.validateToolsetData(param)) return false;
+					
+					delete param.required;
+					delete param.value;
+				break;
 			} // switch action.type
 			
 			if (param.type != 'text') delete param.variant;
+			if (param.type != 'toolset') delete param.data;
 			
 			// see if we need to add or replace
 			if (idx == -1) {
 				self.params.push(param);
+			}
+			else {
+				self.params[idx] = param;
 			}
 			
 			// self.dirty = true;
@@ -3552,7 +3672,7 @@ Page.PageUtils = class PageUtils extends Page.Base {
 		} ); // Dialog.confirm
 		
 		var change_param_type = function(new_type) {
-			$('#d_epa_value_text, #d_epa_value_textarea, #d_epa_value_code, #d_epa_value_checkbox, #d_epa_value_select, #d_epa_value_hidden').hide();
+			$('#d_epa_value_text, #d_epa_value_textarea, #d_epa_value_code, #d_epa_value_checkbox, #d_epa_value_select, #d_epa_value_hidden, #d_epa_value_toolset').hide();
 			$('#d_epa_value_' + new_type).show();
 			$('#d_epa_required').toggle( !!new_type.match(/^(text|textarea|code)$/) );
 			$('#d_epa_text_variant').toggle( !!new_type.match(/^(text)$/) );
@@ -3575,6 +3695,109 @@ Page.PageUtils = class PageUtils extends Page.Base {
 		// delete selected param
 		this.params.splice( idx, 1 );
 		this.renderParamEditor();
+	}
+	
+	validateToolsetData(param) {
+		// ensure toolset data is properly formatted
+		var data = param.data;
+		var err_prefix = "Toolset Data Error: ";
+		
+		if (!data) return app.doError(err_prefix + "Toolset has no data property.");
+		if (!data.tools) return app.doError(err_prefix + "Top-level tools data property is missing.");
+		if (!data.tools.length) return app.doError(err_prefix + "No tools specified in toolset (at least one is required).");
+		
+		var is_valid = true;
+		var err_msg = "";
+		var ids = {};
+		
+		data.tools.forEach( function(tool, idx) {
+			if (!is_valid) return;
+			
+			// id
+			if (!tool.id) { err_msg = `Tool #${idx+1} is missing an ID.`; is_valid = false; return; }
+			if (typeof(tool.id) != 'string') { err_msg = `Tool #${idx+1} ID is not a string.`; is_valid = false; return; }
+			if (!tool.id.match(/^[\w\-\.]+$/)) { err_msg = `Tool #${idx+1} ID must contain only alphanumerics, underscore, dash and period.`; is_valid = false; return; }
+			if (tool.id.match(app.MATCH_BAD_KEY)) { err_msg = `Tool '${tool.id}' ID is invalid (reserved word).`; is_valid = false; return; }
+			
+			if (ids[tool.id]) { err_msg = `Tool ID '${tool.id}' is duplicated (each must be unique).`; is_valid = false; return; }
+			ids[tool.id] = 1;
+			
+			// title
+			if (!tool.title || !tool.title.length) { err_msg = `Tool '${tool.id}' is missing a title.`; is_valid = false; return; }
+			if (typeof(tool.title) != 'string') { err_msg = `Tool '${tool.id}' title is not a string.`; is_valid = false; return; }
+			if (tool.title.match(/[<>]/)) { err_msg = `Tool '${tool.id}' title contains invalid characters.`; is_valid = false; return; }
+			
+			// description
+			if ('description' in tool) {
+				if (typeof(tool.description) != 'string') { err_msg = `Tool '${tool.id}' description is not a string.`; is_valid = false; return; }
+				if (tool.description.match(/[<>]/)) { err_msg = `Tool '${tool.id}' description contains invalid characters.`; is_valid = false; return; }
+			}
+			
+			// fields
+			if (!tool.fields) tool.fields = [];
+			if (!Array.isArray(tool.fields)) { err_msg = `Tool '${tool.id}' fields is not an array.`; is_valid = false; return; }
+			
+			var fids = {};
+			
+			tool.fields.forEach( function(field, idx) {
+				if (!is_valid) return;
+				
+				// id
+				if (!field.id) { err_msg = `Tool '${tool.id}' field #${idx+1} is missing an ID.`; is_valid = false; return; }
+				if (typeof(field.id) != 'string') { err_msg = `Tool '${tool.id}' field #${idx+1} ID is not a string.`; is_valid = false; return; }
+				if (!field.id.match(/^[\w\-\.]+$/)) { err_msg = `Tool '${tool.id}' field #${idx+1} ID must contain only alphanumerics, underscore, dash and period.`; is_valid = false; return; }
+				if (field.id.match(app.MATCH_BAD_KEY)) { err_msg = `Tool '${tool.id}' field '${field.id}' ID is invalid (reserved word).`; is_valid = false; return; }
+				if (field.id == param.id) { err_msg = `Tool '${tool.id}' field '${field.id}' ID is invalid (cannot reuse toolset param ID).`; is_valid = false; return; }
+				
+				if (fids[field.id]) { err_msg = `Tool '${tool.id}' field ID ${field.id} is duplicated (each must be unique per tool).`; is_valid = false; return; }
+				fids[field.id] = 1;
+				
+				// title
+				if (!field.title || !field.title.length) { err_msg = `Tool '${tool.id}' field '${field.id}' is missing a title.`; is_valid = false; return; }
+				if (typeof(field.title) != 'string') { err_msg = `Tool '${tool.id}' field '${field.id}' title is not a string.`; is_valid = false; return; }
+				if (field.title.match(/[<>]/)) { err_msg = `Tool '${tool.id}' field '${field.id}' title contains invalid characters.`; is_valid = false; return; }
+				
+				// type
+				if (!field.type || !field.type.length) { err_msg = `Tool '${tool.id}' field '${field.id}' is missing a type.`; is_valid = false; return; }
+				if (typeof(field.type) != 'string') { err_msg = `Tool '${tool.id}' field '${field.id}' type is not a string.`; is_valid = false; return; }
+				if (!field.type.match(/^(checkbox|code|hidden|select|text|textarea)$/)) { err_msg = `Tool '${tool.id}' field '${field.id}' type is invalid.`; is_valid = false; return; }
+				
+				// variant
+				if ((field.type == 'text') && field.variant) {
+					if (typeof(field.variant) != 'string') { err_msg = `Tool '${tool.id}' field '${field.id}' variant is not a string.`; is_valid = false; return; }
+					if (!find_object(config.ui.text_field_variants, { id: field.variant })) { err_msg = `Tool '${tool.id}' field '${field.id}' variant is invalid.`; is_valid = false; return; }
+				}
+				
+				// caption
+				if (field.caption) {
+					if (typeof(field.caption) != 'string') { err_msg = `Tool '${tool.id}' field '${field.id}' caption is not a string.`; is_valid = false; return; }
+					if (field.caption.match(/[<>]/)) { err_msg = `Tool '${tool.id}' field '${field.id}' caption contains invalid characters.`; is_valid = false; return; }
+				}
+				
+				// value
+				if (!('value' in field)) { err_msg = `Tool '${tool.id}' field '${field.id}' is missing a value.`; is_valid = false; return; }
+				if (field.type == 'checkbox') {
+					if (typeof(field.value) != 'boolean') { err_msg = `Tool '${tool.id}' field '${field.id}' has an invalid checkbox value (must be boolean).`; is_valid = false; return; }
+				}
+				else {
+					if (typeof(field.value) != 'string') { err_msg = `Tool '${tool.id}' field '${field.id}' has an invalid value (must be string).`; is_valid = false; return; }
+				}
+			}); // foreach field
+		} ); // foreach tool
+		
+		if (!is_valid) return app.doError( err_prefix + err_msg );
+		else return true;
+	}
+	
+	editParamToolset() {
+		// popup code editor to edit toolset JSON
+		var elem_id = 'fe_epa_value_toolset';
+		var elem_value = $('#' + elem_id).val();
+		var title = 'Edit Toolset JSON';
+		
+		this.editCodeAuto(title, elem_value, function(new_value) {
+			$('#' + elem_id).val( new_value );
+		});
 	}
 	
 	getParamEditor(fields, params) {
