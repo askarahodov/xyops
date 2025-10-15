@@ -1349,6 +1349,18 @@ Page.Tickets = class Tickets extends Page.PageUtils {
 			})
 		});
 		
+		// tags
+		html += this.getFormRow({
+			id: 'd_td_tags',
+			content: this.getFormMenuMulti({
+				id: 'fe_td_tags',
+				options: app.tags,
+				values: event.tags || [],
+				default_icon: 'tag-outline',
+				// 'data-shrinkwrap': 1
+			})
+		});
+		
 		// params
 		html += this.getFormRow({
 			id: 'd_td_user_params',
@@ -1363,6 +1375,7 @@ Page.Tickets = class Tickets extends Page.PageUtils {
 			event.id = $('#fe_td_event').val();
 			event.targets = $('#fe_td_targets').val();
 			event.algo = $('#fe_td_algo').val();
+			event.tags = $('#fe_td_tags').val();
 			
 			var event_def = find_object( app.events, { id: event.id } );
 			event.params = self.getParamValues(event_def.fields);
@@ -1389,7 +1402,7 @@ Page.Tickets = class Tickets extends Page.PageUtils {
 			} ); // api.post
 		}); // Dialog.confirm
 		
-		MultiSelect.init( $('#fe_td_targets') );
+		MultiSelect.init( $('#fe_td_targets, #fe_td_tags') );
 		SingleSelect.init( $('#fe_td_event, #fe_td_algo') );
 		
 		// handle event change
@@ -1423,7 +1436,7 @@ Page.Tickets = class Tickets extends Page.PageUtils {
 		
 		var grid_args = {
 			rows: events,
-			cols: ['Event Title', 'Category', 'Plugin', 'Target', 'Trigger', 'Actions'],
+			cols: ['Event Title', 'Category', 'Plugin', 'Targets', 'Triggers', 'Actions'],
 			data_type: 'event',
 			class: 'data_grid ticket_event_grid',
 			empty_msg: 'No ticket events found.'
@@ -1465,8 +1478,9 @@ Page.Tickets = class Tickets extends Page.PageUtils {
 		Dialog.confirm( 'Run Event', text, ['run-fast', 'Run Now'], function(result) {
 			if (!result) return;
 			var job = { ...event, tickets: [ticket.id] };
-			if (!job.targets.length) job.targets = event_def.targets;
+			if (!job.targets || !job.targets.length) job.targets = event_def.targets;
 			if (!job.algo) job.algo = event_def.algo;
+			if (!job.tags || !job.tags.length) job.tags = event_def.tags || [];
 			
 			if (ticket.files && ticket.files.length) {
 				if (!job.input) job.input = {};

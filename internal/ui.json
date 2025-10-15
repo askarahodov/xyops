@@ -698,6 +698,14 @@
 				"label": "Algorithm:",
 				"caption": "Optionally override the target selection algorithm for the event."
 			},
+			"d_td_tags": {
+				"label": "Tags:",
+				"caption": "Optionally override the tags for running the event."
+			},
+			"fe_td_tags": {
+				"title": "Select tags for the event",
+				"placeholder": "(Use event defaults)"
+			},
 			"fe_td_algo": {
 				"title": "Select algorithm for targets"
 			},
