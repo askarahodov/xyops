@@ -116,7 +116,7 @@ Page.Events = class Events extends Page.PageUtils {
 							options: [['', 'Any Plugin']].concat( event_plugins ).concat([ 
 								{ id: "_workflow", title: "Workflow", icon: "clipboard-flow-outline", group: "Special" }
 							]),
-							value: args.group || '',
+							value: args.plugin || '',
 							default_icon: 'power-plug-outline',
 							'data-shrinkwrap': 1
 						})
@@ -468,8 +468,9 @@ Page.Events = class Events extends Page.PageUtils {
 		delete query.sub;
 		
 		var url = '#Events' + (num_keys(query) ? compose_query_string(query) : '');
-		history.replaceState( null, '', url );
+		history.pushState( null, '', url );
 		Nav.loc = url.replace(/^\#/, '');
+		// Nav.go(url);
 		
 		// magic trick: replace link in sidebar for Events
 		// $('#tab_Events').attr( 'href', url );
