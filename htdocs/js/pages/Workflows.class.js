@@ -22,7 +22,7 @@ Page.Workflows = class Workflows extends Page.Events {
 		this.args = args;
 		
 		app.showSidebar(true);
-		app.highlightTab( 'Events' );
+		app.highlightTab( 'Workflows' );
 		
 		this.loading();
 		this['gosub_'+args.sub](args);
@@ -35,7 +35,7 @@ Page.Workflows = class Workflows extends Page.Events {
 		var html = '';
 		var do_snap = true;
 		
-		app.setHeaderNav([ 'event_list', 'new_workflow' ]);
+		app.setHeaderNav([ 'workflow_list', 'new_workflow' ]);
 		app.setWindowTitle( config.ui.titles.new_workflow );
 		app.highlightTab( 'NewWorkflow' );
 		
@@ -160,7 +160,7 @@ Page.Workflows = class Workflows extends Page.Events {
 		this.deletePageSnapshot();
 		
 		if (this.event.id) Nav.go( '#Events?sub=view&id=' + this.event.id );
-		else Nav.go( '#Events?sub=list' );
+		else Nav.go( '#Events?plugin=_workflow' );
 	}
 	
 	do_new_workflow() {
@@ -228,7 +228,7 @@ Page.Workflows = class Workflows extends Page.Events {
 		this.workflow = this.event.workflow;
 		
 		app.setHeaderNav([
-			'event_list',
+			'workflow_list',
 			{ icon: this.event.icon || 'clipboard-flow-outline', loc: '#Events?sub=view&id=' + this.event.id, title: this.event.title },
 			'edit_workflow'
 		]);
