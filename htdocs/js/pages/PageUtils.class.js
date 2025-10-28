@@ -629,7 +629,7 @@ Page.PageUtils = class PageUtils extends Page.Base {
 				nice_skip = '<span class="link danger" onClick="$P().doSkipUpcomingJob(' + idx + ')"><b>Skip Job...</b></span>';
 			}
 			
-			return [
+			var tds = [
 				'<b>' + self.getNiceEvent(job.event, true) + '</b>',
 				self.getNiceCategory(event.category, true),
 				self.getNiceTargetList(event.targets),
@@ -638,6 +638,13 @@ Page.PageUtils = class PageUtils extends Page.Base {
 				nice_countdown,
 				nice_skip
 			];
+			
+			if (event.category) {
+				var category = find_object( app.categories, { id: event.category } );
+				if (category && category.color) tds.className = 'clr_' + category.color;
+			}
+			
+			return tds;
 		} );
 		
 		this.div.find('#d_upcoming_jobs > .box_content').removeClass('loading').html(html);
@@ -1359,6 +1366,15 @@ Page.PageUtils = class PageUtils extends Page.Base {
 				disp.icon = 'text-box-plus-outline';
 			break;
 			
+			case 'suspend':
+				disp.type = "Suspend Job";
+				var label = "";
+				if ((action.users && action.users.length) || action.email.length) label = "Send Email";
+				if (action.web_hook) label += (label.length ? ', ' : '') + "Web Hook";
+				disp.text = disp.desc = label || 'n/a';
+				disp.icon = 'motion-pause-outline';
+			break;
+			
 			case 'disable':
 				disp.type = "Disable Event";
 				disp.text = disp.desc = "(Current Event)";
@@ -1453,6 +1469,10 @@ Page.PageUtils = class PageUtils extends Page.Base {
 			title: title,
 			btn: btn,
 			show_condition: true,
+			
+			action_type_filter: function(item) { 
+				return !item.id.match(/^(suspend)$/); 
+			},
 			
 			callback: function(action) {
 				// see if we need to add or replace
@@ -1560,7 +1580,7 @@ Page.PageUtils = class PageUtils extends Page.Base {
 			content: this.getFormMenuSingle({
 				id: 'fe_eja_web_hook',
 				title: 'Select Web Hook',
-				options: app.web_hooks,
+				options: [ ['', '(None)'] ].concat( app.web_hooks ),
 				value: action.web_hook,
 				default_icon: 'webhook'
 			}),
@@ -1761,6 +1781,13 @@ Page.PageUtils = class PageUtils extends Page.Base {
 					action.ticket_tags = $('#fe_nt_tags').val();
 				break;
 				
+				case 'suspend':
+					action.users = $('#fe_eja_users').val();
+					action.email = $('#fe_eja_email').val();
+					action.web_hook = $('#fe_eja_web_hook').val();
+					action.text = $('#fe_eja_web_hook_text').val().trim();
+				break;
+				
 				case 'plugin':
 					action.plugin_id = $('#fe_eja_plugin').val();
 					if (!action.plugin_id) return app.badField('#fe_eja_plugin', "Please select a Plugin for the action.");
@@ -1806,6 +1833,13 @@ Page.PageUtils = class PageUtils extends Page.Base {
 				
 				case 'ticket':
 					$('#d_nt_type, #d_nt_assignees, #d_nt_tags').show();
+				break;
+				
+				case 'suspend':
+					$('#d_eja_email').show();
+					$('#d_eja_users').show();
+					$('#d_eja_web_hook').show();
+					$('#d_eja_web_hook_text').show();
 				break;
 				
 				case 'disable':
@@ -3112,6 +3146,21 @@ Page.PageUtils = class PageUtils extends Page.Base {
 				icon = bucket ? (bucket.icon || 'pail-outline') : 'alert-decagram-outline';
 			break;
 			
+			case 'ticket':
+				title = "Create Ticket";
+				var ticket_type = find_object( config.ui.ticket_types, { id: action.ticket_type } );
+				label = ticket_type.title;
+				icon = 'text-box-plus-outline';
+			break;
+			
+			case 'suspend':
+				title = "Suspend Job";
+				label = "";
+				if ((action.users && action.users.length) || action.email.length) label = "Send Email";
+				if (action.web_hook) label += (label.length ? ', ' : '') + "Web Hook";
+				icon = 'motion-pause-outline';
+			break;
+			
 			case 'disable':
 				title = "Disable Event";
 				label = "(Current event)";
@@ -4081,7 +4130,7 @@ Page.PageUtils = class PageUtils extends Page.Base {
 		});
 	}
 	
-	getParamValues(fields) {
+	getParamValues(fields, validate = true) {
 		// get all values for params hash
 		var params = {};
 		var is_valid = true;
@@ -4092,7 +4141,7 @@ Page.PageUtils = class PageUtils extends Page.Base {
 			else if (param.type == 'checkbox') params[ param.id ] = !!$('#fe_uf_' + param.id).is(':checked');
 			else {
 				params[ param.id ] = $('#fe_uf_' + param.id).val();
-				if (param.required && !params[ param.id ].length) {
+				if (param.required && !params[ param.id ].length && validate) {
 					app.badField('#fe_uf_' + param.id, "The &ldquo;" + param.title + "&rdquo; field is required.");
 					is_valid = false;
 				}
