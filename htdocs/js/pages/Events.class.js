@@ -59,8 +59,8 @@ Page.Events = class Events extends Page.PageUtils {
 			
 			// search box
 			html += '<div class="search_box">';
-				html += '<i class="mdi mdi-magnify" onClick="$(\'#fe_el_search\').focus()">&nbsp;</i>'; // TODO: fix search help url below:
-				html += '<div class="search_help"><a href="https://github.com/pixlcore/xyops#search" target="_blank">Search Help<i class="mdi mdi-open-in-new"></i></a></div>';
+				html += '<i class="mdi mdi-magnify" onClick="$(\'#fe_el_search\').focus()">&nbsp;</i>';
+				// html += '<div class="search_help"><a href="https://github.com/pixlcore/xyops#search" target="_blank">Search Help<i class="mdi mdi-open-in-new"></i></a></div>';
 				html += '<input type="text" id="fe_el_search" maxlength="128" placeholder="Search Keywords..." value="' + escape_text_field_value(args.search || '') + '">';
 			html += '</div>';
 			
@@ -356,8 +356,12 @@ Page.Events = class Events extends Page.PageUtils {
 		html += '<div class="box_buttons">';
 			html += '<div class="button tablet_collapse" onClick="$P().doFileImportPrompt()"><i class="mdi mdi-cloud-upload-outline">&nbsp;</i><span>Import File...</span></div>';
 			html += '<div class="button tablet_collapse secondary" onClick="$P().go_history()"><i class="mdi mdi-history">&nbsp;</i><span>Revision History...</span></div>';
-			html += '<div class="button phone_collapse default" onClick="$P().go_new_workflow()"><i class="mdi mdi-clipboard-plus-outline">&nbsp;</i><span>New Workflow...</span></div>';
-			html += '<div class="button phone_collapse default" onClick="$P().edit_event(-1)"><i class="mdi mdi-plus-circle-outline">&nbsp;</i><span>New Event...</span></div>';
+			if (this.args.plugin && (this.args.plugin == '_workflow')) {
+				html += '<div class="button phone_collapse default" onClick="$P().go_new_workflow()"><i class="mdi mdi-clipboard-plus-outline">&nbsp;</i><span>New Workflow...</span></div>';
+			}
+			else {
+				html += '<div class="button phone_collapse default" onClick="$P().edit_event(-1)"><i class="mdi mdi-plus-circle-outline">&nbsp;</i><span>New Event...</span></div>';
+			}
 		html += '</div>'; // box_buttons
 		
 		html += '</div>'; // box
