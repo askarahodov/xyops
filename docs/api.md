@@ -3417,17 +3417,267 @@ Server APIs can list active servers, fetch a server, update server metadata, del
 
 ### get_active_servers
 
+```
+GET /api/app/get_active_servers/v1
+```
+
+Fetch all active servers (connected to the current master server). No input parameters are required. No specific privilege is required beyond a valid user session or API Key.
+
+In addition to the [Standard Response Format](#standard-response-format), this will include a `rows` array of active servers, and a `list` object with list metadata (e.g. `length` for total rows). Example response:
+
+```json
+{
+  "code": 0,
+  "rows": [
+    {
+      "id": "sorbstack01",
+      "hostname": "centos-9-arm",
+      "ip": "::ffff:10.1.10.241",
+      "enabled": true,
+      "groups": ["main"],
+      "title": "",
+      "icon": "",
+      "autoGroup": true,
+      "created": 1754365804,
+      "modified": 1754872218,
+      "socket_id": "wsme6crecj2o",
+      "keywords": "centos-9-arm,::ffff:10,1,10,241,main,Linux,CentOS Stream,9,arm64,unknown,unknown,OrbStack,unknown,unknown,unknown",
+      "info": {
+        "os": { "platform": "Linux", "distro": "CentOS Stream", "release": "9", "arch": "arm64" },
+        "cpu": { "cores": 10, "combo": "Apple" },
+        "memory": { "total": 16810385408 },
+        "virt": { "vendor": "OrbStack" },
+        "satellite": "0.0.21"
+      }
+    }
+  ],
+  "list": { "length": 1 }
+}
+```
+
+See [Server](data-structures.md#server) for server object details.
+
 ### get_active_server
+
+```
+GET /api/app/get_active_server/v1
+```
+
+Fetch a single active (online) server by ID. No specific privilege is required beyond a valid user session or API Key. Both HTTP GET with query parameters and HTTP POST with JSON are accepted.
+
+Parameters:
+
+| Property Name | Type | Description |
+|---------------|------|-------------|
+| `id` | String | **(Required)** The server ID to fetch. |
+
+Example request:
+
+```json
+{ "id": "sorbstack01" }
+```
+
+Example response:
+
+```json
+{
+  "code": 0,
+  "server": {
+    "id": "sorbstack01",
+    "hostname": "centos-9-arm",
+    "ip": "::ffff:10.1.10.241",
+    "enabled": true,
+    "groups": ["main"],
+    "title": "",
+    "icon": "",
+    "autoGroup": true,
+    "created": 1754365804,
+    "modified": 1754872218,
+    "socket_id": "wsme6crecj2o",
+    "info": {
+      "os": { "platform": "Linux", "distro": "CentOS Stream", "release": "9", "arch": "arm64" },
+      "cpu": { "cores": 10, "combo": "Apple" },
+      "memory": { "total": 16810385408 },
+      "virt": { "vendor": "OrbStack" },
+      "satellite": "0.0.21"
+    }
+  }
+}
+```
+
+In addition to the [Standard Response Format](#standard-response-format), this will include a `server` object. See [Server](data-structures.md#server) for details.
 
 ### get_server
 
+```
+GET /api/app/get_server/v1
+```
+
+Fetch a server by ID from storage, including its most recent minute of monitoring data. If the server is currently online, the in-memory record is returned; if recently offline, a cached copy is returned; otherwise the last saved record is loaded from the database. No specific privilege is required beyond a valid user session or API Key. Both HTTP GET with query parameters and HTTP POST with JSON are accepted.
+
+Parameters:
+
+| Property Name | Type | Description |
+|---------------|------|-------------|
+| `id` | String | **(Required)** The server ID to fetch. |
+
+Example request:
+
+```json
+{ "id": "sorbstack01" }
+```
+
+Example response:
+
+```json
+{
+  "code": 0,
+  "server": { "id": "sorbstack01", "hostname": "centos-9-arm", "groups": ["main"], "enabled": true },
+  "data": {
+    "cpu": { "currentLoad": 0.14, "cores": 10 },
+    "memory": { "total": 16810385408, "used": 572403712 },
+    "load": [0.00, 0.04, 0.08],
+    "jobs": 0
+  },
+  "online": true
+}
+```
+
+In addition to the [Standard Response Format](#standard-response-format), this will include a [Server](data-structures.md#server) object, a `data` object containing [ServerMonitorData](data-structures.md#servermonitordata), and an `online` boolean indicating current connection status.
+
 ### update_server
+
+```
+POST /api/app/update_server/v1
+```
+
+Update server metadata (title, enabled, icon, groups, and auto-grouping). Admin only. Requires a valid administrator session or API Key. Send as HTTP POST with JSON. The request is shallow-merged into the existing server record.
+
+Parameters:
+
+| Property Name | Type | Description |
+|---------------|------|-------------|
+| `id` | String | **(Required)** The server ID to update. |
+| (Other) | Various | Any updatable [Server](data-structures.md#server) fields: e.g. `title`, `enabled`, `icon`, `groups` (array of [Group.id](data-structures.md#group-id)), `autoGroup` (boolean). |
+
+Special behavior:
+
+- If `autoGroup` is `true`, groups are automatically assigned from hostname rules and any provided `groups` are overridden.
+- If `autoGroup` is `false`, you may explicitly set `groups`.
+
+Example request:
+
+```json
+{
+  "id": "sorbstack01",
+  "title": "Build Agent A",
+  "enabled": true,
+  "icon": "server",
+  "groups": ["main", "staging"],
+  "autoGroup": false
+}
+```
+
+Example response:
+
+```json
+{ "code": 0 }
+```
 
 ### delete_server
 
+```
+POST /api/app/delete_server/v1
+```
+
+Delete a server and optionally its history. Admin only. Requires a valid administrator session or API Key. Send as HTTP POST with JSON.
+
+Parameters:
+
+| Property Name | Type | Description |
+|---------------|------|-------------|
+| `id` | String | **(Required)** The server ID to delete. |
+| `history` | Boolean | Optional. If `true`, also delete the server record, monitoring data and snapshots. If omitted or `false`, only uninstall the agent when online and keep history. |
+
+Behavior:
+
+- Online + `history: false`: Uninstalls xyOps Satellite and removes the server from the active list; the server record and monitoring history are retained.
+- Online + `history: true`: Uninstalls the Satellite, then starts a background job to delete the server record, monitoring data and snapshots.
+- Offline: You must pass `history: true` to delete; otherwise the call fails because only uninstall would be possible when online.
+- Deletion runs in the background; the response is returned immediately.
+
+Example request (delete including history):
+
+```json
+{ "id": "sorbstack01", "history": true }
+```
+
+Example response:
+
+```json
+{ "code": 0 }
+```
+
+Deletions are permanent and cannot be undone.
+
 ### watch_server
 
+```
+POST /api/app/watch_server/v1
+```
+
+Start or stop a watch on a server, which takes a snapshot once per minute for a specified duration. Requires the [create_snapshots](privileges.md#create_snapshots) privilege and a valid user session or API Key. Supports HTTP POST with JSON, or HTTP GET with query parameters.
+
+Parameters:
+
+| Property Name | Type | Description |
+|---------------|------|-------------|
+| `id` | String | **(Required)** The server ID to watch. |
+| `duration` | Number | **(Required)** Duration in seconds. Set to `0` to cancel an existing watch. |
+
+Example request:
+
+```json
+{ "id": "sorbstack01", "duration": 3600 }
+```
+
+Example response:
+
+```json
+{ "code": 0 }
+```
+
+See [Snapshots](snapshots.md) for more details.
+
 ### create_snapshot
+
+```
+POST /api/app/create_snapshot/v1
+```
+
+Create a snapshot for the specified server using the most recent server data. Requires the [create_snapshots](privileges.md#create_snapshots) privilege and a valid user session or API Key. Supports HTTP POST with JSON, or HTTP GET with query parameters.
+
+Parameters:
+
+| Property Name | Type | Description |
+|---------------|------|-------------|
+| `server` | String | **(Required)** The server ID for which to create a snapshot. |
+
+Example request:
+
+```json
+{ "server": "sorbstack01" }
+```
+
+Example response:
+
+```json
+{ "code": 0, "id": "snmhr6zkefh1" }
+```
+
+In addition to the [Standard Response Format](#standard-response-format), this will include an `id` property containing the new [Snapshot.id](data-structures.md#snapshot-id).
+
+See [Snapshots](snapshots.md) for more details.
 
 
 
