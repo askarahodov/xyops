@@ -2875,19 +2875,262 @@ Example response:
 
 ### search_jobs
 
+```
+GET /api/app/search_jobs/v1
+```
+
+Search completed jobs. Requires a valid user session or API Key. Results are automatically filtered by the caller’s category and group access rights.
+
+Parameters:
+
+| Property Name | Type | Description |
+|---------------|------|-------------|
+| `query` | String | Optional. [Unbase-style search query](https://github.com/jhuckaby/pixl-server-storage/blob/master/docs/Indexer.md#simple-queries). Defaults to `*` if omitted. |
+| `offset` | Number | Optional. Zero-based row offset for pagination. Defaults to `0`. |
+| `limit` | Number | Optional. Number of rows to return. Defaults to `1`. |
+| `sort_by` | String | Optional. Field to sort by. Defaults to `completed`. |
+| `sort_dir` | Number | Optional. Sort direction: `1` for ascending or `-1` for descending. Defaults to `-1`. |
+| `verbose` | Boolean | Optional. If `true`, include verbose job fields (`actions`, `activity`, `input`, `files`, etc.). Defaults to `false` (i.e. these are pruned). |
+
+Example response:
+
+```json
+{
+    "code": 0,
+    "rows": [
+        {
+            "id": "jabc123",
+            "event": "ev12345",
+            "title": "Nightly Database Backup",
+            "category": "ops",
+            "plugin": "shellplug",
+            "type": "event",
+            "completed": 1757439210,
+            "code": 0
+        }
+    ],
+    "list": { "length": 287 }
+}
+```
+
+In addition to the [Standard Response Format](#standard-response-format), this will include a `rows` array containing [Job](data-structures.md#job) records, and a `list` object containing list metadata (e.g. `length` for total rows without pagination). When `verbose` is not set, large fields are pruned from the job records.
+
 ### search_servers
+
+```
+GET /api/app/search_servers/v1
+```
+
+Search historical server records. Requires a valid user session or API Key.
+
+Parameters:
+
+| Property Name | Type | Description |
+|---------------|------|-------------|
+| `query` | String | Optional. [Unbase-style search query](https://github.com/jhuckaby/pixl-server-storage/blob/master/docs/Indexer.md#simple-queries). Defaults to `*`. |
+| `offset` | Number | Optional. Zero-based row offset for pagination. Defaults to `0`. |
+| `limit` | Number | Optional. Number of rows to return. Defaults to `1`. |
+| `sort_by` | String | Optional. Field to sort by. Defaults to `_id`. |
+| `sort_dir` | Number | Optional. Sort direction: `1` for ascending or `-1` for descending. Defaults to `-1`. |
+
+Example response:
+
+```json
+{
+    "code": 0,
+    "rows": [ /* server records */ ],
+    "list": { "length": 42 }
+}
+```
+
+In addition to the [Standard Response Format](#standard-response-format), this will include a `rows` array containing [Server](data-structures.md#server) records, and a `list` object containing list metadata.
 
 ### get_server_summaries
 
+```
+GET /api/app/get_server_summaries/v1
+```
+
+Fetch field summaries across all indexed servers (e.g., OS and CPU distributions). Requires a valid user session or API Key.
+
+No input parameters.
+
+Example response:
+
+```json
+{
+    "code": 0,
+    "summaries": {
+        "os_platform": { /* value → count map */ },
+        "os_distro": { /* value → count map */ },
+        "os_release": { /* value → count map */ },
+        "os_arch": { /* value → count map */ },
+        "cpu_virt": { /* value → count map */ },
+        "cpu_brand": { /* value → count map */ },
+        "cpu_cores": { /* value → count map */ }
+    }
+}
+```
+
+In addition to the [Standard Response Format](#standard-response-format), this will include a `summaries` object keyed by field ID, each containing a value-to-count map for that field.
+
 ### search_alerts
+
+```
+GET /api/app/search_alerts/v1
+```
+
+Search historical or active alert invocations. Requires a valid user session or API Key.
+
+Parameters:
+
+| Property Name | Type | Description |
+|---------------|------|-------------|
+| `query` | String | Optional. [Unbase-style search query](https://github.com/jhuckaby/pixl-server-storage/blob/master/docs/Indexer.md#simple-queries). Defaults to `*`. |
+| `offset` | Number | Optional. Zero-based row offset for pagination. Defaults to `0`. |
+| `limit` | Number | Optional. Number of rows to return. Defaults to `1`. |
+| `sort_by` | String | Optional. Field to sort by. Defaults to `_id`. |
+| `sort_dir` | Number | Optional. Sort direction: `1` for ascending or `-1` for descending. Defaults to `-1`. |
+
+Example response:
+
+```json
+{
+    "code": 0,
+    "rows": [ /* alert records */ ],
+    "list": { "length": 12 }
+}
+```
+
+In addition to the [Standard Response Format](#standard-response-format), this will include a `rows` array containing [AlertInvocation](data-structures.md#alertinvocation) records, and a `list` object containing list metadata.
 
 ### search_snapshots
 
+```
+GET /api/app/search_snapshots/v1
+```
+
+Search server snapshots (individual servers or group snapshots). Requires a valid user session or API Key.
+
+Parameters:
+
+| Property Name | Type | Description |
+|---------------|------|-------------|
+| `query` | String | Optional. [Unbase-style search query](https://github.com/jhuckaby/pixl-server-storage/blob/master/docs/Indexer.md#simple-queries). Defaults to `*`. |
+| `offset` | Number | Optional. Zero-based row offset for pagination. Defaults to `0`. |
+| `limit` | Number | Optional. Number of rows to return. Defaults to `1`. |
+| `sort_by` | String | Optional. Field to sort by. Defaults to `_id`. |
+| `sort_dir` | Number | Optional. Sort direction: `1` for ascending or `-1` for descending. Defaults to `-1`. |
+| `verbose` | Boolean | Optional. If `true`, include heavy nested fields (e.g., `data.processes`, `data.mounts`, group keys). Defaults to `false` (these are pruned). |
+
+Example response:
+
+```json
+{
+    "code": 0,
+    "rows": [ /* snapshot records */ ],
+    "list": { "length": 8 }
+}
+```
+
+In addition to the [Standard Response Format](#standard-response-format), this will include a `rows` array containing [Snapshot](data-structures.md#snapshot) records, and a `list` object containing list metadata. When `verbose` is not set, large fields are pruned from the snapshot records.
+
 ### search_activity
+
+```
+GET /api/app/search_activity/v1
+```
+
+Search the activity (audit) log. Admin only. Requires a valid administrator session or API Key with admin privileges.
+
+Parameters:
+
+| Property Name | Type | Description |
+|---------------|------|-------------|
+| `query` | String | Optional. [Unbase-style search query](https://github.com/jhuckaby/pixl-server-storage/blob/master/docs/Indexer.md#simple-queries). Defaults to `*`. |
+| `offset` | Number | Optional. Zero-based row offset for pagination. Defaults to `0`. |
+| `limit` | Number | Optional. Number of rows to return. Defaults to `1`. |
+| `sort_by` | String | Optional. Field to sort by. Defaults to `_id`. |
+| `sort_dir` | Number | Optional. Sort direction: `1` for ascending or `-1` for descending. Defaults to `-1`. |
+
+Example response:
+
+```json
+{
+    "code": 0,
+    "rows": [ /* activity records */ ],
+    "list": { "length": 120 }
+}
+```
+
+In addition to the [Standard Response Format](#standard-response-format), this will include a `rows` array containing [Activity](data-structures.md#activity) records, and a `list` object containing list metadata. When available, each activity record will also include a computed `useragent` string derived from the original `headers.user-agent`.
 
 ### search_revision_history
 
+```
+GET /api/app/search_revision_history/v1
+```
+
+Search the activity log for revision history related to a specific data type (e.g., events, plugins, roles). Requires a valid user session or API Key.
+
+Parameters:
+
+| Property Name | Type | Description |
+|---------------|------|-------------|
+| `type` | String | **(Required)** The data type to filter by. One of: `alerts`, `categories`, `channels`, `events`, `groups`, `monitors`, `plugins`, `tags`, `web_hooks`, `buckets`, `secrets`, `tickets`, `roles`. |
+| `query` | String | Optional. Additional Unbase-style search terms to AND with the type filter. |
+| `offset` | Number | Optional. Zero-based row offset for pagination. Defaults to `0`. |
+| `limit` | Number | Optional. Number of rows to return. Defaults to `1`. |
+| `sort_by` | String | Optional. Field to sort by. Defaults to `_id`. |
+| `sort_dir` | Number | Optional. Sort direction: `1` for ascending or `-1` for descending. Defaults to `-1`. |
+
+Example response:
+
+```json
+{
+    "code": 0,
+    "rows": [ /* activity records for the selected type */ ],
+    "list": { "length": 34 }
+}
+```
+
+In addition to the [Standard Response Format](#standard-response-format), this will include a `rows` array containing [Activity](data-structures.md#activity) records matching the selected type, and a `list` object containing list metadata. For security, these records have certain network details removed (e.g., IPs and raw headers).
+
 ### search_stat_history
+
+```
+GET /api/app/search_stat_history/v1
+```
+
+Fetch daily snapshots from the system stats history. These are counters incremented throughout the day, and used to display the "Job History Day Graph" and "Alert History Day Graph" swatch grids, among other things.  The API requires a valid user session or API Key.
+
+Parameters:
+
+| Property Name | Type | Description |
+|---------------|------|-------------|
+| `offset` | Number | Optional. Zero-based day offset for pagination. Defaults to `0`. |
+| `limit` | Number | Optional. Number of days to return. Defaults to `1`. |
+| `path` | String | Optional. Dot-path into the stats object to return a subset (e.g., `daily.jobs`). |
+| `key_prefix` | String | Optional. If set and the selected node is an object, include only keys beginning with this prefix. |
+| `current_day` | Boolean | Optional. If `true`, append in-progress counters for the current day as an extra item. |
+
+Example response:
+
+```json
+{
+    "code": 0,
+    "items": [
+        {
+            "epoch": 1757376000,
+            "date": "2025-10-09",
+            "data": { /* selected stats subtree for the day */ }
+        }
+    ],
+    "list": { "length": 30 }
+}
+```
+
+In addition to the [Standard Response Format](#standard-response-format), this will include an `items` array containing per-day records with `epoch`, human-readable `date`, and the selected `data` subtree, plus a `list` object containing list metadata.
 
 
 
