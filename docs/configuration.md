@@ -16,7 +16,7 @@ This string is the sender email address for all outbound messages (default: `adm
 
 ## secret_key
 
-This string is a shared secret (default: `CHANGE_ME`) used to sign tokens (e.g., download links), authenticate multi-master messages, and encrypt/decrypt stored secrets — set this to a long random value in production.
+This string is a shared secret used to sign tokens (e.g., download links), authenticate multi-master messages, and encrypt/decrypt stored secrets — set this to a long random value in production.
 
 ## mail_settings
 
@@ -30,7 +30,7 @@ This object configures the email transport and is passed verbatim to Nodemailer 
 }
 ```
 
-See https://nodemailer.com/smtp/ and https://nodemailer.com/transports/sendmail/ for full options.
+See [Nodemailer - SMTP](https://nodemailer.com/smtp/) and [Nodemailer - Sendmail](https://nodemailer.com/transports/sendmail/) for full options.
 
 Example (basic SMTP on localhost):
 
@@ -121,11 +121,13 @@ If this is a relative path, it is computed from the xyOps base directory, which 
 
 ## debug_level
 
-This number sets the verbosity level for the logger (default: `9`; 1 = quiet, 10 = very verbose).
+This number sets the verbosity level for the logger (default: `5`; 1 = quiet, 10 = very verbose).
 
 ## tick_precision_ms
 
-This number sets the internal timer precision in milliseconds used by the server framework for scheduling ticks (default: 50).
+This number sets the internal timer precision in milliseconds used by the server framework for scheduling ticks (default: `50`).
+
+This controls how precise xyOps is when executing actions targeted on a specific second.  Lower values mean xyOps is more precise, but will result in heavier idle CPU usage.
 
 ## maintenance
 
