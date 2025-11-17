@@ -349,4 +349,4 @@ When you save or run an event, xyOps validates triggers:
 - Schedule lists must contain numbers in valid ranges; `days` may include −1…−7 to represent reverse month days.
 - Enabled uniqueness and mutual exclusion rules are enforced (see Composition Rules).
 
-For complete data structure details, see [Trigger](data-structures.md#trigger) and [Trigger Types](data-structures.md#trigger-types).
+For complete data structure details, see [Trigger](data-structures.md#trigger) and [Trigger.type](data-structures.md#trigger-type).
