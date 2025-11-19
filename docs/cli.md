@@ -47,26 +47,6 @@ The `status` command will tell you if the service is running or not:
 /opt/xyops/bin/control.sh status
 ```
 
-## Environment Variables
-
-xyOps supports a special environment variable syntax, which can specify command-line options as well as override any configuration settings.  The variable name syntax is `XYOPS_key` where `key` is one of several command-line options (see table below) or a JSON configuration property path.  These can come in handy for automating installations, and using container systems.  
-
-For overriding configuration properties with environment variable, you can specify any top-level JSON key from `config.json`, or a *path* to a nested property using double-underscore (`__`) as a path separator.  For boolean properties, you can specify `1` for true and `0` for false.  Here is an example of some of the possibilities available:
-
-| Variable | Sample Value | Description |
-|----------|--------------|-------------|
-| `XYOPS_foreground` | `1` | Run xyOps in the foreground (no background daemon fork). |
-| `XYOPS_echo` | `1` | Echo the event log to the console (STDOUT), use in conjunction with `XYOPS_foreground`. |
-| `XYOPS_color` | `1` | Echo the event log with color-coded columns, use in conjunction with `XYOPS_echo`. |
-| `XYOPS_base_app_url` | `http://xyops.mycompany.com` | Override the [base_app_url](configuration.md#base_app_url) configuration property. |
-| `XYOPS_email_from` | `xyops@mycompany.com` | Override the [email_from](configuration.md#email_from) configuration property. |
-| `XYOPS_secret_key` | `CorrectHorseBatteryStaple` | Override the [secret_key](configuration.md#secret_key) configuration property. |
-| `XYOPS_WebServer__port` | `80` | Override the `port` property *inside* the [WebServer](configuration.md#webserver) object. |
-| `XYOPS_WebServer__https_port` | `443` | Override the `https_port` property *inside* the [WebServer](configuration.md#webserver) object. |
-| `XYOPS_Storage__Filesystem__base_dir` | `/data/xyops` | Override the `base_dir` property *inside* the [Filesystem](configuration.md#storage-filesystem) object *inside* the [Storage](configuration.md#storage) object. |
-
-Almost every [configuration property](configuration.md) can be overridden using this environment variable syntax.  The only exceptions are things like arrays, e.g. [log_columns](configuration.md#log_columns).
-
 ## Recover Admin Access
 
 Lost access to your admin account?  You can create a new temporary administrator account on the command-line.  Just execute this command on your primary server:
@@ -76,6 +56,8 @@ Lost access to your admin account?  You can create a new temporary administrator
 ```
 
 Replace `USERNAME` with the desired username, and `PASSWORD` with the desired password for the new account.  Note that the new user will not show up in the main list of users in the UI.  But you will be able to login using the provided credentials.  This is more of an emergency operation, just to allow you to get back into the system.  *This is not a good way to create permanent users*.  Once you are logged back in, you should consider creating another account from the UI, then deleting the emergency admin account.
+
+Note that this trick does **not** work with [SSO](sso.md).  It only applies to setups that use the built-in user management system.
 
 ## Server Startup
 
@@ -95,7 +77,7 @@ cd /opt/xyops
 npm run unboot
 ```
 
-**Important Note:** When xyOps starts on server boot, it typically does not have a proper user environment, namely a `PATH` environment variable.  So if your scripts rely on binary executables in alternate locations, e.g. `/usr/local/bin`, you may have to restore the `PATH` and other variables inside your scripts by redeclaring them.
+**Important Note:** When xyOps starts on server boot, it typically does not have a proper user environment, namely a `PATH` environment variable.  So if your scripts rely on binary executables in non-standard locations, you may have to restore your custom `PATH` and other variables inside your scripts by redeclaring them.
 
 ## Upgrading xyOps
 
