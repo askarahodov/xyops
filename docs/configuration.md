@@ -712,6 +712,33 @@ A regex for reserved/blocked usernames (for security and namespace protection).
 Sets cookie path, secure policy, httpOnly, and sameSite. Controls session cookie attributes.
 
 
+
+## SSO
+
+### enabled
+
+### whitelist
+
+### header_map
+
+### cleanup_username
+
+### cleanup_full_name
+
+### group_role_map
+
+### group_privilege_map
+
+### replace_roles
+
+### replace_privileges
+
+### admin_bootstrap
+
+### logout_url
+
+
+
 ## Debug
 
 ### Debug.enabled
