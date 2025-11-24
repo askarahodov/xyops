@@ -1274,7 +1274,7 @@ Page.ServerUtils = class ServerUtils extends Page.PageUtils {
 			content: this.getFormMenuSingle({
 				id: 'fe_as_platform',
 				title: 'Select Platform',
-				options: [ ['standard','Linux / macOS'], ['windows','Windows'] ],
+				options: config.ui.satellite_install_menu,
 				value: app.getPref('fe_as_platform') || 'standard',
 				onChange: '$P().updateServerInstallCode()',
 			}),

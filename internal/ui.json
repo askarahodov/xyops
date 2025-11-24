@@ -1131,8 +1131,17 @@
 		"delete": "deleted comment."
 	},
 	
+	"satellite_install_menu": [
+		{ "id": "standard", "title": "Linux", "icon": "penguin" },
+		{ "id": "macos", "title": "macOS", "icon": "apple" },
+		{ "id": "windows", "title": "Windows", "icon": "microsoft-windows" },
+		{ "id": "docker", "title": "Docker", "icon": "docker" }
+	],
+	
 	"satellite_install_commands": {
 		"standard": "curl -s \"[base_url]/api/app/satellite/install?t=[token]\" | sudo sh",
-		"windows": "powershell -Command \"IEX (Invoke-WebRequest -UseBasicParsing -Uri '[base_url]/api/app/satellite/install?t=[token]&os=windows').Content\""
+		"macos": "curl -s \"[base_url]/api/app/satellite/install?t=[token]&os=macos\" | sudo sh",
+		"windows": "powershell -Command \"IEX (Invoke-WebRequest -UseBasicParsing -Uri '[base_url]/api/app/satellite/install?t=[token]&os=windows').Content\"",
+		"docker": "docker run --detach --init -v /var/run/docker.sock:/var/run/docker.sock -e XYOPS_setup=\"[base_url]/api/app/satellite/config?t=[token]\" [image]:[version]"
 	}
 }
