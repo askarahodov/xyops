@@ -207,7 +207,10 @@ Page.Servers = class Servers extends Page.ServerUtils {
 		this.applyTableFilters();
 		SingleSelect.init( this.div.find('#fe_es_filter') );
 		
-		if (this.args.add) this.showAddServerDialog();
+		if (this.args.add) {
+			this.showAddServerDialog();
+			delete this.args.add;
+		}
 	}
 	
 	go_server_search() {
