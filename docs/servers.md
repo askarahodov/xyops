@@ -25,7 +25,7 @@ You can add servers in three ways:
 1. **Via the UI** (one-line installer)
 	- Go to the Servers tab and click "Add Server…".
 	- Optionally set a label, icon, enabled state, and pick groups (or leave automatic grouping on).
-	- Copy the pre-configured one-line install command for Linux/macOS or Windows and run it on the target host.
+	- Copy the pre-configured one-line install command for Docker, Linux, macOS or Windows and run it on the target host.
 	- The installer authenticates, installs xySat as a startup service (systemd/launchd/Windows Service), writes the config, and starts the agent.
 	- The server appears immediately in the cluster, begins streaming metrics, and can run jobs.
 2. **Automated bootstrap** (API Key)
@@ -37,7 +37,7 @@ You can add servers in three ways:
 
 Notes:
 
-- Server auth tokens do not expire. You can, however, [rotate your secret key](hosting.md#secret-key-rotation) (which also regenerates all tokens) from the UI if needed.
+- Server auth tokens do not expire. You can, however, [rotate your secret key](hosting.md#secret-key-rotation) (which regenerates all tokens) from the UI if needed.
 - Software upgrades for xySat are orchestrated from the UI and are designed to avoid interrupting running jobs.
 
 ### Automated Server Bootstrap
