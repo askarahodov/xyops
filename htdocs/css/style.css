@@ -1556,7 +1556,7 @@ body.dark .pxc_tt_content {
 	
 	font-family: var(--font-family-monospace);
 	font-size: 13px;
-	line-height: 16px;
+	line-height: 18px;
 }
 
 #d_live_job_log > div.log_message {
