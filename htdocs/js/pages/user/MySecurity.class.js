@@ -121,7 +121,7 @@ Page.MySecurity = class MySecurity extends Page.Base {
 			
 			return tds;
 			
-		} ); // getPaginatedTable
+		} ); // getPaginatedGrid
 		
 		html += '</div>'; // box_content
 		
