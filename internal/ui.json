@@ -60,7 +60,7 @@
 		{ "id": "add_servers", "title": "Add Servers", "icon": "server-plus-outline" }
 	],
 	
-	"globalMemoryLists": ["groups", "plugins", "categories", "events", "channels", "web_hooks", "buckets", "secrets", "monitors", "alerts", "tags", "roles"],
+	"globalMemoryLists": ["api_keys", "groups", "plugins", "categories", "events", "channels", "web_hooks", "buckets", "secrets", "monitors", "alerts", "tags", "roles"],
 	
 	"list_list": [
 		{ "id": "alerts", "title": "Alerts", "icon": "bell-outline" },

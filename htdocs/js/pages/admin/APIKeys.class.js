@@ -51,7 +51,7 @@ Page.APIKeys = class APIKeys extends Page.PageUtils {
 		} );
 		
 		// NOTE: Don't change these columns without also changing the responsive css column collapse rules in style.css
-		var cols = ['App Title', 'API Key', 'Status', 'Author', 'Created', 'Actions'];
+		var cols = ['App Title', 'Partial Key', 'Status', 'Author', 'Created', 'Actions'];
 		
 		html += '<div class="box">';
 		html += '<div class="box_title">';
@@ -72,12 +72,12 @@ Page.APIKeys = class APIKeys extends Page.PageUtils {
 				else nice_status = '<span class="color_label green"><i class="mdi mdi-check-circle">&nbsp;</i>Active</span>'
 			}
 			else {
-				nice_status = '<span class="color_label red"><i class="mdi mdi-alert-circle">&nbsp;</i>Suspended</span>';
+				nice_status = '<span class="color_label red"><i class="mdi mdi-alert-circle">&nbsp;</i>Disabled</span>';
 			}
 			
 			return [
 				'<b>' + self.getNiceAPIKey(item, true) + '</b>',
-				'<span class="mono" data-private>' + self.getMaskedKey(item.key) + '</span>',
+				'<span class="mono" data-private>' + item.mask + '</span>',
 				nice_status,
 				self.getNiceUser(item.username, app.isAdmin()),
 				'<span title="'+self.getNiceDateTimeText(item.created)+'">'+self.getNiceDate(item.created)+'</span>',
@@ -133,7 +133,6 @@ Page.APIKeys = class APIKeys extends Page.PageUtils {
 		html += '<div class="box_content">';
 		
 		this.api_key = { 
-			key: get_unique_id(24),
 			active: 1,
 			privileges: copy_object( config.default_user_privileges ),
 			roles: [],
@@ -148,11 +147,10 @@ Page.APIKeys = class APIKeys extends Page.PageUtils {
 				class: 'monospace',
 				spellcheck: 'false',
 				readonly: 'readonly',
-				value: this.api_key.key,
+				value: ('*').repeat(32),
 				'data-private': ''
 			}),
-			suffix: '<div class="form_suffix_icon mdi mdi-dice-5" title="Generate Random Key" onClick="$P().generate_key()" onMouseDown="event.preventDefault();"></div>',
-			caption: 'The API Key string is used to authenticate API calls.'
+			caption: 'The API Key will be revealed to you once upon saving.'
 		});
 		
 		html += this.get_api_key_edit_html();
@@ -203,10 +201,42 @@ Page.APIKeys = class APIKeys extends Page.PageUtils {
 		Dialog.hideProgress();
 		if (!this.active) return; // sanity
 		
-		// Nav.go('APIKeys?sub=edit&id=' + resp.id);
-		Nav.go( 'APIKeys?sub=list' );
-		
 		app.showMessage('success', "The new API Key was created successfully.");
+		
+		// show dialog so user can copy plain key (once only)
+		var html = '<div class="dialog_box_content maximize">';
+		
+		// api key
+		html += this.getFormRow({
+			label: 'API Key Secret:',
+			content: this.getFormText({
+				id: 'fe_ak_plain_key',
+				spellcheck: 'false',
+				class: 'monospace',
+				value: resp.plain_key,
+				'data-private': ''
+			}),
+			caption: 'Please copy the new API Key to your clipboard and store it safely.  **It will never be displayed again.**'
+		});
+		
+		html += '</div>';
+		
+		var buttons_html = "";
+		buttons_html += '<div class="button" onClick="$P().copyAPIKey()"><i class="mdi mdi-clipboard-text-outline">&nbsp;</i>Copy to Clipboard</div>';
+		buttons_html += '<div class="button primary" onClick="Dialog.confirm_click(true)"><i class="mdi mdi-close-circle-outline">&nbsp;</i>Close</div>';
+		
+		Dialog.showSimpleDialog('New API Key Created', html, buttons_html);
+		
+		// special mode for key capture
+		Dialog.active = 'confirmation';
+		Dialog.confirm_callback = function(result) { 
+			if (result) Dialog.hide(); 
+		};
+		Dialog.onHide = function() {
+			Nav.go( 'APIKeys?sub=list' );
+		};
+		
+		Dialog.autoResize();
 	}
 	
 	gosub_edit(args) {
@@ -215,22 +245,10 @@ Page.APIKeys = class APIKeys extends Page.PageUtils {
 		app.api.post( 'app/get_api_key', { id: args.id }, this.receive_key.bind(this), this.fullPageError.bind(this) );
 	}
 	
-	getFormKeyCopier() {
-		return `<div class="form_suffix_icon mdi mdi-clipboard-text-outline" title="Copy API Key" onClick="$P().copyAPIKey(this)"></div>`;
-	}
-	
-	copyAPIKey(elem) {
+	copyAPIKey() {
 		// copy api key to clipboard
-		var $elem = $(elem);
-		var $row = $elem.closest('.form_row');
-		copyToClipboard( this.api_key.key );
-		$elem.removeClass().addClass([ 'form_suffix_icon', 'mdi', 'mdi-clipboard-check-outline' ]).css('color', 'var(--green)');
+		copyToClipboard( $('#fe_ak_plain_key').val() );
 		app.showMessage('info', "The API Key was copied to your clipboard.");
-	}
-	
-	getMaskedKey(key) {
-		// mask key for security
-		return key.substring(0, 4) + ('*').repeat(key.length - 8) + key.substring(key.length - 4);
 	}
 	
 	receive_key(resp) {
@@ -261,11 +279,10 @@ Page.APIKeys = class APIKeys extends Page.PageUtils {
 				class: 'monospace',
 				spellcheck: 'false',
 				disabled: 'disabled',
-				value: this.getMaskedKey(this.api_key.key),
+				value: this.api_key.mask,
 				'data-private': ''
 			}),
-			suffix: this.getFormKeyCopier(),
-			caption: 'The API key is masked for security purposes.  However, you can still copy it to the clipboard using the button on the right.'
+			caption: 'This shows the first and last 4 characters of the API Key.  The full key cannot be retrieved.'
 		});
 		
 		html += this.get_api_key_edit_html();
@@ -493,10 +510,6 @@ Page.APIKeys = class APIKeys extends Page.PageUtils {
 		// get api key elements from form, used for new or edit
 		var api_key = this.api_key;
 		
-		// only grab api key from DOM when creating new
-		// on edit the existing value will pass thru
-		if (!api_key.id) api_key.key = $('#fe_ak_key').val();
-		
 		api_key.active = parseInt( $('#fe_ak_status').val() );
 		api_key.title = $('#fe_ak_title').val().trim();
 		api_key.description = $('#fe_ak_desc').val();
@@ -509,19 +522,7 @@ Page.APIKeys = class APIKeys extends Page.PageUtils {
 		}
 		else api_key.expires = 0;
 		
-		if (!api_key.key.length) {
-			return app.badField('#fe_ak_key', "Please enter an API Key string, or generate a random one.");
-		}
-		if (api_key.key.length < 16) {
-			return app.badField('#fe_ak_key', "API keys must be at least 16 characters in length.");
-		}
-		
 		return api_key;
-	}
-	
-	generate_key() {
-		// generate random api key
-		$('#fe_ak_key').val( get_unique_id(24) );
 	}
 	
 	onDeactivate() {
