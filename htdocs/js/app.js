@@ -139,7 +139,7 @@ app.extend({
 			{ ID: 'Roles' },
 			{ ID: 'Users' },
 			{ ID: 'ActivityLog' },
-			{ ID: 'Masters' },
+			{ ID: 'Conductors' },
 			{ ID: 'Servers' },
 			{ ID: 'ServerHist' },
 			{ ID: 'GroupHist' },

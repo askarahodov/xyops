@@ -1,10 +1,10 @@
-// Admin Page -- Masters (Peer) Stats
+// Admin Page -- Conductors (Peer) Stats
 
 // Copyright (c) 2019 - 2026 PixlCore LLC
 // Released under the BSD 3-Clause License.
 // See the LICENSE.md file in this repository.
 
-Page.Masters = class Masters extends Page.Base {
+Page.Conductors = class Conductors extends Page.Base {
 	
 	onInit() {
 		// called once at page load
