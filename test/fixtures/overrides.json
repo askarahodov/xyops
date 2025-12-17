@@ -6,7 +6,7 @@
 	"masters": false,
 	
 	"base_app_url": "http://localhost:6622",
-	"email_from": "unittest@localhost",
+	"email_from": "",
 	"secret_key": "UNIT_TEST",
 	"log_dir": "test/logs",
 	"temp_dir": "test/temp",
