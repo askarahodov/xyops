@@ -980,6 +980,7 @@ Page.Job = class Job extends Page.PageUtils {
 		var workflow = this.job.workflow;
 		var html = '';
 		var num_sus = 0;
+		var $cont = this.wfGetContainer();
 		
 		// active jobs on top, sorted
 		var rows = Object.values(app.activeJobs).filter( function(job) {
@@ -1082,6 +1083,10 @@ Page.Job = class Job extends Page.PageUtils {
 					`<a href="#Job?id=${job.id}"><b>View Details...</b></a>`
 				];
 			}
+			
+			var node_id = job.workflow.node;
+			var $elem = $cont.find(`#d_wfn_${node_id}`);
+			if ($elem.hasClass('selected') && !tds.className) tds.className = 'highlight';
 			
 			return tds;
 		} );
@@ -1195,7 +1200,7 @@ Page.Job = class Job extends Page.PageUtils {
 				} );
 				
 				// handle clicks
-				$elem.attr({ role: 'group', tabindex: '0' }).on( 'pointerdown keypress', function(event) {
+				$elem.attr({ role: 'group', tabindex: '0' }).off('pointerdown keypress').on( 'pointerdown keypress', function(event) {
 					var native = event.originalEvent;
 					if ('button' in native) {
 						// pointer event
@@ -1237,7 +1242,7 @@ Page.Job = class Job extends Page.PageUtils {
 					}
 				}); // pointerdown
 				
-				$elem.on( 'dblclick', function(event) {
+				$elem.off('dblclick').on( 'dblclick', function(event) {
 					// double-click event node == jump to first job
 					var job = self.wfJobRows.find( function(row) {
 						return row.workflow && row.workflow.node && (row.workflow.node == node.id);
