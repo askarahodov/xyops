@@ -24,6 +24,9 @@ See the LICENSE.md file in this repository. */
 	
 	cursor: grab;
 }
+.wf_root.wf_tool_draw {
+	cursor: default;
+}
 
 .wf_fade {
 	position: relative;
@@ -39,6 +42,11 @@ See the LICENSE.md file in this repository. */
 	mask-image: linear-gradient(to bottom, transparent 0px, black 25px, black calc(100% - 25px), transparent 100%),
 		linear-gradient(to right, transparent 0px, black 25px, black calc(100% - 25px), transparent 100%);
 	pointer-events: none;
+}
+
+.wf_container.job_preview .wf_fade {
+	mask-image: linear-gradient(to bottom, transparent 0px, black 25px, black calc(100% - 25px), transparent 100%),
+		linear-gradient(to right, transparent 0px, black 25px, black calc(100% - 25px), transparent 100%);
 }
 
 .wf_canvas {
@@ -119,6 +127,10 @@ See the LICENSE.md file in this repository. */
 }
 .wf_event.selected {
 	outline: 2px dashed var(--theme-color);
+}
+.wf_container.job_preview .wf_event.selected {
+	outline: 2px dashed var(--theme-color-highlight);
+	outline-offset: 4px;
 }
 
 .wf_event_title {
@@ -271,6 +283,10 @@ body.dark .wf_event_title {
 .wf_entity {
 	width: 64px;
 }
+.wf_entity:has(> .wf_ent_controller) {
+	width: 128px;
+}
+
 .wf_entity.selected > div {
 	outline: 2px dashed var(--theme-color);
 }
@@ -383,6 +399,10 @@ body.dark .wf_event_title {
 	transform: rotate(-45deg) scale(1.25);
 }
 
+.wf_container.job_preview .wf_entity, .wf_container.job_preview .wf_condition {
+	pointer-events: none;
+}
+
 /* Condition lives inside of a wire connection */
 
 .wf_condition {
@@ -478,6 +498,15 @@ body.dark .wf_condition {
 	height: 1;
 	opacity: 0;
 	pointer-events: none;
+}
+
+#d_wf_selection_draw {
+	position: absolute;
+	pointer-events: none;
+	
+	background: color-mix(in srgb, var(--theme-color) 6%, transparent);
+	border: 2px dashed var(--theme-color-highlight);
+	z-index: 1;
 }
 
 /* Active Jobs */
