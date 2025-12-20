@@ -1006,6 +1006,7 @@ Page.Job = class Job extends Page.PageUtils {
 				}
 				else {
 					stub.type = 'adhoc';
+					stub.category = node.data.category;
 					stub.plugin = node.data.plugin;
 					stub.label = node.data.label;
 					stub.icon = node.data.icon;
