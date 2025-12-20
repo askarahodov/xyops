@@ -1357,9 +1357,10 @@ app.extend({
 			if (user_keys[user_key_id]) key_def = { ...key_def, keys: user_keys[user_key_id] };
 			
 			if (key_def.keys.includes(key_id) && page[func]) {
-				Debug.trace('events', `${page_id} Page Hot Key Pressed: [${key_id}] → ${func} (${key_def.title})`);
 				event.stopPropagation();
 				event.preventDefault();
+				if (event.repeat && !key_def.repeatable) return;
+				Debug.trace('events', `${page_id} Page Hot Key Pressed: [${key_id}] → ${func} (${key_def.title})`);
 				page[func].apply( page, key_def.args || [] );
 				return;
 			}
@@ -1376,9 +1377,10 @@ app.extend({
 			if (user_keys[user_key_id]) key_def = { ...key_def, keys: user_keys[user_key_id] };
 			
 			if (key_def.keys.includes(key_id) && app[func]) {
-				Debug.trace('events', `Global Hot Key Pressed: [${key_id}] → ${func} (${key_def.title})`);
 				event.stopPropagation();
 				event.preventDefault();
+				if (event.repeat && !key_def.repeatable) return;
+				Debug.trace('events', `Global Hot Key Pressed: [${key_id}] → ${func} (${key_def.title})`);
 				app[func]( page, event );
 				return;
 			}
