@@ -2825,8 +2825,11 @@ Page.PageUtils = class PageUtils extends Page.Base {
 			// if we're soldering, pause it and pop menu to create node in place
 			if (self.wfSoldering) return self.solderNewNode(event);
 			
+			// special handler for draw edit mode
+			if (self.wfEdit && (self.wfTool == 'draw')) return self.drawSelectionStart(event);
+			
 			// if we're in edit mode, deselect all
-			if (self.wfEdit) self.deselectAll();
+			if (self.wfEdit || self.wfJobRows) self.deselectAll();
 			
 			self.wfScroll.dragging = true;
 			var start_pt = { x: event.clientX, y: event.clientY };
@@ -2843,7 +2846,7 @@ Page.PageUtils = class PageUtils extends Page.Base {
 			
 			$this.on('pointerup.scroll', function(event) {
 				delete self.wfScroll.dragging;
-				$this.css('cursor', 'grab');
+				$this.css('cursor', '');
 				$this.off('.scroll');
 				$cont.removeClass('dragging');
 				if (self.wfEdit) self.updateState();
