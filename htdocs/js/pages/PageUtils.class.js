@@ -2098,8 +2098,13 @@ Page.PageUtils = class PageUtils extends Page.Base {
 	
 	edit_eja_body() {
 		// popup markdown editor for test dialog
-		this.editCodeAuto("Edit Email Content", $('#fe_eja_body').val(), function(new_value) {
-			$('#fe_eja_body').val( new_value );
+		this.editCodeAuto({
+			title: "Edit Email Content", 
+			code: $('#fe_eja_body').val(), 
+			format: 'gfm',
+			callback: function(new_value) {
+				$('#fe_eja_body').val( new_value );
+			}
 		});
 	}
 	
@@ -2278,9 +2283,13 @@ Page.PageUtils = class PageUtils extends Page.Base {
 		var param = find_object( plugin.params, { id: param_id } );
 		if (!param) return; // sanity
 		
-		this.editCodeAuto(param.title, elem_value, function(new_value) {
-			$('#' + elem_id).val( new_value );
-			if (!Dialog.active) self.triggerEditChange();
+		this.editCodeAuto({
+			title: param.title, 
+			code: elem_value, 
+			callback: function(new_value) {
+				$('#' + elem_id).val( new_value );
+				if (!Dialog.active) self.triggerEditChange();
+			}
 		});
 	}
 	
@@ -4282,8 +4291,13 @@ Page.PageUtils = class PageUtils extends Page.Base {
 		var elem_value = $('#' + elem_id).val();
 		var title = 'Edit Toolset JSON';
 		
-		this.editCodeAuto(title, elem_value, function(new_value) {
-			$('#' + elem_id).val( new_value );
+		this.editCodeAuto({
+			title: title, 
+			code: elem_value, 
+			format: 'json',
+			callback: function(new_value) {
+				$('#' + elem_id).val( new_value );
+			}
 		});
 	}
 	
@@ -4386,9 +4400,13 @@ Page.PageUtils = class PageUtils extends Page.Base {
 		var elem_value = $('#' + elem_id).val();
 		var title = $('#' + elem_id).data('title');
 		
-		this.editCodeAuto(title, elem_value, function(new_value) {
-			$('#' + elem_id).val( new_value );
-			if (!Dialog.active) self.triggerEditChange();
+		this.editCodeAuto({
+			title: title, 
+			code: elem_value, 
+			callback: function(new_value) {
+				$('#' + elem_id).val( new_value );
+				if (!Dialog.active) self.triggerEditChange();
+			}
 		});
 	}
 	

@@ -619,9 +619,14 @@ Page.Buckets = class Buckets extends Page.PageUtils {
 		// popup json editor for test dialog
 		var self = this;
 		
-		this.editCodeAuto("Edit Bucket JSON", $('#fe_bu_data').val(), function(new_value) {
-			$('#fe_bu_data').val( new_value );
-			self.triggerEditChange();
+		this.editCodeAuto({
+			title: "Edit Bucket JSON", 
+			code: $('#fe_bu_data').val(), 
+			format: 'json',
+			callback: function(new_value) {
+				$('#fe_bu_data').val( new_value );
+				self.triggerEditChange();
+			}
 		});
 	}
 	

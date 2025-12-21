@@ -2125,8 +2125,13 @@ Page.Events = class Events extends Page.PageUtils {
 	
 	edit_test_input() {
 		// popup json editor for test dialog
-		this.editCodeAuto("Edit Raw Input Data", $('#fe_ete_input').val(), function(new_value) {
-			$('#fe_ete_input').val( new_value );
+		this.editCodeAuto({
+			title: "Edit Raw Input Data", 
+			code: $('#fe_ete_input').val(), 
+			format: 'json',
+			callback: function(new_value) {
+				$('#fe_ete_input').val( new_value );
+			}
 		});
 	}
 	

@@ -2757,9 +2757,166 @@ Page.Base = class Base extends Page {
 		}
 	}
 	
-	editCodeAuto(title, code, callback) {
+	editorSurroundText(chars) {
+		// surround selection with chars, or remove them
+		var editor = this.editor;
+		editor.focus();
+		
+		var last_line_idx = editor.lastLine();
+		var last_line_str = editor.getLine( last_line_idx );
+		
+		var doc_start = { line: 0, ch: 0 };
+		var doc_end = { line: last_line_idx, ch: last_line_str.length };
+		
+		var sel_start = editor.getCursor('from');
+		var sel_end = editor.getCursor('to');
+		
+		if (sel_start.line != sel_end.line) return; // sanity
+		
+		var before = editor.getRange( doc_start, sel_start );
+		var selection = editor.getRange( sel_start, sel_end );
+		var after = editor.getRange( sel_end, doc_end );
+		
+		var endsWith = new RegExp( escape_regexp(chars) + '$' );
+		var startsWith = new RegExp( '^' + escape_regexp(chars) );
+		
+		if (before.match(endsWith) && after.match(startsWith)) {
+			// remove chars
+			sel_start.ch -= chars.length;
+			sel_end.ch += chars.length;
+			if (sel_start.ch < 0) sel_start.ch = 0; // sanity
+			
+			editor.replaceRange( selection, sel_start, sel_end );
+			
+			sel_end.ch -= (chars.length * 2);
+			editor.setSelection( sel_start, sel_end );
+		}
+		else {
+			// add chars
+			selection = chars + selection + chars;
+			editor.replaceRange( selection, sel_start, sel_end );
+			
+			sel_start.ch += chars.length;
+			sel_end.ch += chars.length;
+			editor.setSelection( sel_start, sel_end );
+		}
+	}
+	
+	editorInsertBlockElem(text) {
+		// insert block level element, like # or - or >
+		var editor = this.editor;
+		editor.focus();
+		
+		var last_line_idx = editor.lastLine();
+		var last_line_str = editor.getLine( last_line_idx );
+		
+		var doc_start = { line: 0, ch: 0 };
+		var doc_end = { line: last_line_idx, ch: last_line_str.length };
+		
+		var sel_start = editor.getCursor('from');
+		var sel_end = editor.getCursor('to');
+		
+		if (sel_start.line != sel_end.line) return; // sanity
+		
+		var before = editor.getRange( doc_start, sel_start );
+		var selection = editor.getRange( sel_start, sel_end );
+		var after = editor.getRange( sel_end, doc_end );
+		
+		if (!before.match(/\n\n$/)) {
+			if (before.match(/\n$/)) text = "\n" + text;
+			else if (before.length) text = "\n\n" + text;
+		}
+		
+		var ins_after = '';
+		if (!after.match(/^\n\n/)) {
+			if (after.match(/^\n/)) ins_after += "\n";
+			else if (after.length) ins_after += "\n\n";
+			else ins_after += "\n";
+		}
+		
+		editor.replaceRange( text + selection, sel_start, sel_end );
+		
+		if (ins_after) {
+			var sel_new = editor.getCursor('from');
+			editor.replaceRange( ins_after, sel_new );
+			editor.setCursor( sel_new );
+		}
+	}
+	
+	editToggleBold() {
+		this.editorSurroundText('**');
+	}
+	
+	editToggleItalic() {
+		this.editorSurroundText('*');
+	}
+	
+	editToggleStrike() {
+		this.editorSurroundText('~~');
+	}
+	
+	editToggleCode() {
+		this.editorSurroundText('`');
+	}
+	
+	editInsertHeader(level) {
+		var prefix = '';
+		for (var idx = 0; idx < level; idx++) prefix += '#';
+		this.editorInsertBlockElem(prefix + ' ');
+	}
+	
+	editInsertList() {
+		this.editorInsertBlockElem('- ');
+	}
+	
+	editInsertNumList() {
+		this.editorInsertBlockElem('1. ');
+	}
+	
+	editInsertQuote() {
+		this.editorInsertBlockElem('> ');
+	}
+	
+	getEditToolbar() {
+		// return HTML for editor toolbar buttons
+		var html = '';
+		
+		html += '<div class="editor_toolbar">';
+			html += '<button class="editor_toolbar_button" title="Header 1" onClick="$P().editInsertHeader(1)"><i class="mdi mdi-format-header-1"></i></button>';
+			html += '<button class="editor_toolbar_button" title="Header 2" onClick="$P().editInsertHeader(2)"><i class="mdi mdi-format-header-2"></i></button>';
+			html += '<button class="editor_toolbar_button" title="Header 3" onClick="$P().editInsertHeader(3)"><i class="mdi mdi-format-header-3"></i></button>';
+			html += '<button class="editor_toolbar_button" title="Header 4" onClick="$P().editInsertHeader(4)"><i class="mdi mdi-format-header-4"></i></button>';
+			
+			html += '<div class="editor_toolbar_divider"></div>';
+			
+			html += '<button class="editor_toolbar_button" title="Bold" onClick="$P().editToggleBold()"><i class="mdi mdi-format-bold"></i></button>';
+			html += '<button class="editor_toolbar_button" title="Italic" onClick="$P().editToggleItalic()"><i class="mdi mdi-format-italic"></i></button>';
+			html += '<button class="editor_toolbar_button" title="Strikethrough" onClick="$P().editToggleStrike()"><i class="mdi mdi-format-strikethrough"></i></button>';
+			html += '<button class="editor_toolbar_button" title="Code" onClick="$P().editToggleCode()"><i class="mdi mdi-code-braces"></i></button>';
+			
+			html += '<div class="editor_toolbar_divider"></div>';
+			
+			html += '<button class="editor_toolbar_button" title="Insert Bullet List" onClick="$P().editInsertList()"><i class="mdi mdi-format-list-bulleted-square"></i></button>';
+			html += '<button class="editor_toolbar_button" title="Insert Numbered List" onClick="$P().editInsertNumList()"><i class="mdi mdi-format-list-numbered"></i></button>';
+			html += '<button class="editor_toolbar_button" title="Insert Blockquote" onClick="$P().editInsertQuote()"><i class="mdi mdi-format-quote-open"></i></button>';
+			
+			// html += '<button class="editor_toolbar_button" title="Upload Files..." onClick="$P().editUploadFiles()"><i class="mdi mdi-cloud-upload-outline"></i></button>';
+			
+			// html += '<div class="editor_toolbar_divider"></div>';
+			
+			// html += '<button class="editor_toolbar_button" id="btn_show_preview" title="Show Preview" onClick="$P().editShowPreview()"><i class="mdi mdi-file-find-outline"></i></button>';
+			
+			html += '<div class="clear"></div>';
+		html += '</div>';
+		
+		return html;
+	}
+	
+	editCodeAuto(opts) {
 		// show dialog with codemirror for editing code (auto-highlight)
 		var self = this;
+		var { title, code, format, callback } = opts;
+		
 		var html = '';
 		var is_maxed = app.getPref('code_editor_max');
 		
@@ -2770,7 +2927,10 @@ Page.Base = class Base extends Page {
 		delete this.defaultEditorMode;
 		
 		// start with a "fake" codemirror element so the dialog can auto-size itself
-		html += '<div id="fe_dialog_editor" aria-label="' + config.ui.labels.code_editor + '"><div class="CodeMirror ' + (is_maxed ? 'maximize' : '') + '"></div></div>';
+		html += '<div id="fe_dialog_editor" aria-label="' + config.ui.labels.code_editor + '">';
+			if (format == 'gfm') html += this.getEditToolbar();
+			html += '<div class="CodeMirror ' + (is_maxed ? 'maximize' : '') + '"></div>';
+		html += '</div>';
 		
 		var buttons_html = "";
 		buttons_html += '<div class="button phone_collapse" onClick="CodeEditor.hide()"><i class="mdi mdi-close-circle-outline">&nbsp;</i><span>Cancel</span></div>';
@@ -2806,6 +2966,9 @@ Page.Base = class Base extends Page {
 				self.editor.setValue( e.target.result );
 				self.editor.focus();
 				
+				// if format is static, return now, do not auto-detect uploaded text
+				if (format) return;
+				
 				var old_mode = self.editor.getOption('mode');
 				if (old_mode.backdrop) old_mode = old_mode.backdrop;
 				var mode = app.detectCodemirrorMode(e.target.result) || null;
@@ -2833,10 +2996,38 @@ Page.Base = class Base extends Page {
 		};
 		
 		// now setup the editor itself
-		var elem = document.getElementById("fe_dialog_editor");
+		var elem = $('#fe_dialog_editor > .CodeMirror').get(0);
 		var mode = null;
+		var editor_config = {};
+		var error_line = null;
 		
-		if (code.length) {
+		if (format) {
+			if (format == 'gfm') {
+				mode = { name: "gfm", gitHubSpice: false };
+				editor_config = {
+					inputStyle: 'contenteditable',
+					spellcheck: true,
+					
+					extraKeys: {
+						'Ctrl-B': function() { self.editToggleBold(); },
+						'Ctrl-I': function() { self.editToggleItalic(); },
+						
+						'Cmd-B': function() { self.editToggleBold(); },
+						'Cmd-I': function() { self.editToggleItalic(); },
+						
+						'Esc': function() { app.focusNext(); }
+					}
+				};
+			}
+			else if (format == 'json') {
+				mode = 'application/json';
+				editor_config = {
+					lineNumbers: true
+				};
+			}
+			else mode = app.cmLangMap[format] || format;
+		}
+		else if (code.length) {
 			mode = app.detectCodemirrorMode(code) || this.defaultEditorMode || null;
 			Debug.trace('debug', "Detected initial language: " + mode);
 		}
@@ -2844,10 +3035,10 @@ Page.Base = class Base extends Page {
 		this.editor = CodeMirror(
 			function(cm_elem) {
 				// replace fake codemirror with real one
-				elem.firstChild.replaceWith(cm_elem);
+				elem.replaceWith(cm_elem);
 				if (is_maxed) cm_elem.classList.add('maximize');
 			}, 
-			merge_objects( config.editor_defaults, {
+			Object.assign( {}, config.editor_defaults, editor_config, {
 				mode: { name: 'mustache', backdrop: mode },
 				theme: app.getCodemirrorTheme(),
 				scrollbarStyle: "simple",
@@ -2855,11 +3046,39 @@ Page.Base = class Base extends Page {
 			} )
 		);
 		
-		this.setupEditorAutoDetect();
+		if (!format) this.setupEditorAutoDetect();
+		else if (format == 'json') {
+			this.editor.on('change', function() {
+				// clear error state on input
+				if (error_line) {
+					self.editor.removeLineClass(error_line, "background", "cm-error-line");
+					app.clearError();
+					error_line = null;
+				}
+			});
+		}
 		
 		// handle apply button
 		$('#btn_ceditor_confirm').on('click', function() {
+			app.clearError();
 			var value = self.editor.getValue();
+			
+			if (format == 'json') {
+				// let's validate the json for the user, and why not
+				try { JSON.parse(value); }
+				catch (err) {
+					app.doError( 'JSON Validation Failed: ' + err );
+					
+					// if the error contains a line number (i.e. chrome / firefox) mark it
+					if (err.toString().match(/\bline\s+(\d+)\s+column\s+(\d+)/)) {
+						var line_num = parseInt( RegExp.$1 );
+						error_line = self.editor.getLineHandle( line_num - 1);
+						self.editor.addLineClass(error_line, "background", "cm-error-line");
+					}
+					return;
+				}
+			} // json
+			
 			CodeEditor.hide();
 			callback(value);
 		});
