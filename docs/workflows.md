@@ -139,6 +139,12 @@ The Wait controller pauses flow for a configured duration, then passes control t
 
 Wait does not require a single output and can feed multiple downstream steps.
 
+### Note Nodes
+
+A Note node is simply a customizable text box you can use to annotate your workflows.  Enter your note's body content using [GitHub Flavored Markdown](https://guides.github.com/features/mastering-markdown/), and it will display on your workflow map.  You can drag notes around to position them wherever you like, and even make a double-wide note.
+
+By default, notes are not shown during job runs -- they are more for providing instructions to users who are configuring the workflow.  However, a checkbox is provided to always show the note, even during job runs.
+
 ## Connections and Conditions
 
 Here are the connection rules by node type: 
