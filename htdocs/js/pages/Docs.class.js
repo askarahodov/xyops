@@ -176,7 +176,6 @@ Page.Docs = class Docs extends Page.PageUtils {
 		} );
 		
 		if (chapters.length < 4) return '';
-		console.log( chapters );
 		
 		var toc = '';
 		chapters.forEach( function(item) {
