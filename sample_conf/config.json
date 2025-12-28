@@ -21,7 +21,7 @@
 	"log_crashes": true,
 	"temp_dir": "temp",
 	"pid_file": "logs/xyops.pid",
-	"debug_level": 9,
+	"debug_level": 5,
 	"tick_precision_ms": 50,
 	"maintenance": "04:00",
 	"ttl": 300,
