@@ -4642,7 +4642,7 @@ Page.PageUtils = class PageUtils extends Page.Base {
 				// type
 				if (!field.type || !field.type.length) { err_msg = `Tool '${tool.id}' field '${field.id}' is missing a type.`; is_valid = false; return; }
 				if (typeof(field.type) != 'string') { err_msg = `Tool '${tool.id}' field '${field.id}' type is not a string.`; is_valid = false; return; }
-				if (!field.type.match(/^(checkbox|code|hidden|select|text|textarea)$/)) { err_msg = `Tool '${tool.id}' field '${field.id}' type is invalid.`; is_valid = false; return; }
+				if (!field.type.match(/^(checkbox|code|json|hidden|select|text|textarea)$/)) { err_msg = `Tool '${tool.id}' field '${field.id}' type is invalid.`; is_valid = false; return; }
 				
 				// variant
 				if ((field.type == 'text') && field.variant) {
@@ -4659,10 +4659,16 @@ Page.PageUtils = class PageUtils extends Page.Base {
 				// value
 				if (!('value' in field)) { err_msg = `Tool '${tool.id}' field '${field.id}' is missing a value.`; is_valid = false; return; }
 				if (field.type == 'checkbox') {
-					if (typeof(field.value) != 'boolean') { err_msg = `Tool '${tool.id}' field '${field.id}' has an invalid checkbox value (must be boolean).`; is_valid = false; return; }
+					if (typeof(field.value) != 'boolean') { err_msg = `Tool '${tool.id}' field '${field.id}' has an invalid checkbox value (must be a boolean).`; is_valid = false; return; }
+				}
+				else if (field.type == 'json') {
+					if (typeof(field.value) != 'object') { err_msg = `Tool '${tool.id}' field '${field.id}' has an invalid JSON value (must be an object).`; is_valid = false; return; }
+				}
+				else if ((field.type == 'text') && (field.variant == 'number')) {
+					if (typeof(field.value) != 'number') { err_msg = `Tool '${tool.id}' field '${field.id}' has an invalid numeric value (must be a number).`; is_valid = false; return; }
 				}
 				else {
-					if (typeof(field.value) != 'string') { err_msg = `Tool '${tool.id}' field '${field.id}' has an invalid value (must be string).`; is_valid = false; return; }
+					if (typeof(field.value) != 'string') { err_msg = `Tool '${tool.id}' field '${field.id}' has an invalid text value (must be a string).`; is_valid = false; return; }
 				}
 			}); // foreach field
 		} ); // foreach tool
@@ -5196,6 +5202,7 @@ Page.PageUtils = class PageUtils extends Page.Base {
 		var self = this;
 		if (!page_id) page_id = this.ID;
 		if (!app.user.page_info) return;
+		if (this.div.find('#d_page_desc').length) return; // sanity
 		
 		app.api.get( 'app/get_doc', { doc: 'pages' }, function(resp) {
 			var text = resp.text;
@@ -5214,6 +5221,7 @@ Page.PageUtils = class PageUtils extends Page.Base {
 				</div>
 			`);
 			
+			if (self.div.find('#d_page_desc').length) return; // sanity
 			self.div.append($box);
 			
 			$box.buttonize();
