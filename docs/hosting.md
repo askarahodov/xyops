@@ -175,7 +175,7 @@ For a load balanced multi-conductor setup with Nginx w/TLS, please read this sec
 
 - [Nginx](https://nginx.org/) sits in front, and handles TLS termination, as well as routing requests to various backends.
 - Nginx handles xyOps multi-conductor using an embedded [Health Check Daemon](https://github.com/pixlcore/xyops-healthcheck) which runs in the same container.
-	- The health check keeps track of which server is conductor, and dynamically reconfigures and hot-reloads Nginx as needed.
+	- The health check keeps track of which conductor server is primary, and dynamically reconfigures and hot-reloads Nginx as needed.
 	- We maintain our own custom Nginx docker image for this (shown below), or you can [build your own from source](https://github.com/pixlcore/xyops-nginx/blob/main/Dockerfile).
 
 A few prerequisites for this setup:
@@ -337,7 +337,7 @@ When xySat is first installed, it is provided an array of hosts to connect to, w
 
 In certain situations you may need to have xySat connect to a specific conductor host, instead of the default conductor list.  For e.g. you may have servers "out in the wild" and they need to connect through a proxy, or some other kind of complex network topology.  Either way, you can override the usual array of hosts that xySat connects to, and specify a static value instead.
 
-To do this, add a `host` property into the xySat config as a top-level JSON property, on each server that requires it.  The xySat config file is be located at:
+To do this, add a `host` property into the xySat config as a top-level JSON property, on each server that requires it.  The xySat config file is located at:
 
 ```
 /opt/xyops/satellite/config.json
