@@ -422,7 +422,7 @@
 			"d d";
 	}
 	
-	.form_suffix_icon {
+	.form_suffix_icon, .form_suffix_symbol {
 		left: 3px;
 	}
 	 
@@ -908,7 +908,7 @@
 			"d d";
 	}
 	
-	.form_suffix_icon {
+	.form_suffix_icon, .form_suffix_symbol {
 		left: 3px;
 	}
 	
@@ -928,6 +928,10 @@
 	}
 	.dialog_content .form_row > div.fr_suffix {
 		display: none;
+	}
+	
+	.form_row_range {
+		grid-template-columns: 10fr 2fr;
 	}
 	
 	.dialog.inline {
@@ -1438,7 +1442,8 @@
 	.data_grid.ticket_event_grid > ul > div:nth-child(5) { visibility: hidden; }
 	
 	/* "Group", "Action", "Bound Keys", "Edited", "Actions" */
-	.data_grid.hot_key_grid { grid-template-columns: auto auto auto 0px 0px !important; }
+	.data_grid.hot_key_grid { grid-template-columns: auto auto 0px 0px 0px !important; }
+	.data_grid.hot_key_grid > ul > div:nth-child(3) { visibility: hidden; }
 	.data_grid.hot_key_grid > ul > div:nth-child(4) { visibility: hidden; }
 	.data_grid.hot_key_grid > ul > div:nth-child(5) { visibility: hidden; }
 }
@@ -1923,7 +1928,6 @@
 	
 	/* '#', 'Subject', 'Type', 'Status', 'Assignees', 'Tags', 'Created', 'Actions' */
 	.data_grid.ticket_grid { grid-template-columns: min-content auto 0px 0px 0px 0px 0px 0px !important; }
-	.data_grid.ticket_grid > ul > div:nth-child(1) { visibility: hidden; }
 	.data_grid.ticket_grid > ul > div:nth-child(3) { visibility: hidden; }
 	.data_grid.ticket_grid > ul > div:nth-child(4) { visibility: hidden; }
 	.data_grid.ticket_grid > ul > div:nth-child(5) { visibility: hidden; }
@@ -1939,7 +1943,8 @@
 	.data_grid.ticket_event_grid > ul > div:nth-child(5) { visibility: hidden; }
 	
 	/* "Group", "Action", "Bound Keys", "Edited", "Actions" */
-	.data_grid.hot_key_grid { grid-template-columns: auto auto auto 0px 0px !important; }
+	.data_grid.hot_key_grid { grid-template-columns: auto auto 0px 0px 0px !important; }
+	.data_grid.hot_key_grid > ul > div:nth-child(3) { visibility: hidden; }
 	.data_grid.hot_key_grid > ul > div:nth-child(4) { visibility: hidden; }
 	.data_grid.hot_key_grid > ul > div:nth-child(5) { visibility: hidden; }
 }
