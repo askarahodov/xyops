@@ -12,6 +12,13 @@ PATH=$PATH:/usr/bin:/bin:/usr/local/bin:/usr/sbin:/sbin:/usr/local/sbin
 HOMEDIR="$(dirname "$(cd -- "$(dirname "$0")" && (pwd -P 2>/dev/null || pwd))")"
 cd $HOMEDIR
 
+# bootstrap config on first run
+if [ ! -f /opt/xyops/conf/config.json ]; then
+	echo "Initializing config directory..."
+	mkdir -p /opt/xyops/conf
+	cp -a /opt/xyops/sample_conf/. /opt/xyops/conf/
+fi
+
 # the path to xyops entrypoint, including options
 BINARY="node --max-old-space-size=${NODE_MAX_MEMORY:-4096} $HOMEDIR/lib/main.js --foreground"
 
