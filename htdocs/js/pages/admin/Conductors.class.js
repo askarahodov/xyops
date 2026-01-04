@@ -23,7 +23,6 @@ Page.Conductors = class Conductors extends Page.PageUtils {
 		app.setWindowTitle( "Conductor Servers" );
 		
 		this.render_masters();
-		this.addPageDescription();
 		
 		return true;
 	}
@@ -75,7 +74,7 @@ Page.Conductors = class Conductors extends Page.PageUtils {
 				'<div class="td_big">' + self.getNiceMaster(item) + '</div>',
 				status,
 				'<div style=""><i class="mdi mdi-tag-text-outline">&nbsp;</i>v' + (item.version || '-') + '</div>',
-				'<div style=""><i class="mdi mdi-chip">&nbsp;</i>' + (item.stats.load ? short_float(item.stats.load) : '-') + '</div>',
+				'<div style=""><i class="mdi mdi-chip">&nbsp;</i>' + short_float(item.stats.load || 0) + '</div>',
 				'<div style=""><i class="mdi mdi-timer-outline">&nbsp;</i>' + item.ping + ' ms</div>',
 				'<div style="">' + (item.date ? self.getNiceUptime( app.epoch - item.date ) : 'n/a') + '</div>',
 				item.online ? actions.join(' | ') : '-'
@@ -93,6 +92,7 @@ Page.Conductors = class Conductors extends Page.PageUtils {
 		html += '</div>'; // box
 		
 		this.div.html( html );
+		this.addPageDescription();
 	}
 	
 	do_master_cmd(idx, cmds) {
