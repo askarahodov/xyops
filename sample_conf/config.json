@@ -125,7 +125,9 @@
 	
 	"marketplace": {
 		"enabled": true,
-		"base_url": "https://xyops.io/api/marketplace"
+		"metadata_url": "https://raw.githubusercontent.com/pixlcore/xyops-marketplace/refs/heads/main/marketplace.json",
+		"repo_url_template": "https://raw.githubusercontent.com/[id]/refs/tags/[version]/[filename]",
+		"ttl": 3600
 	},
 	
 	"quick_monitors": [
@@ -445,7 +447,7 @@
 		"blacklist": [],
 		"uri_response_headers": {
 			"(\/|\\.html)$": {
-				"Content-Security-Policy": "default-src 'none'; script-src 'self'; script-src-elem 'self'; script-src-attr 'unsafe-inline'; style-src 'self' 'unsafe-inline'; style-src-attr 'unsafe-inline'; manifest-src 'self';img-src 'self' data: blob:; font-src 'self'; connect-src 'self' ws: wss:; media-src 'self' blob:; worker-src 'self' blob:; object-src 'none'; base-uri 'self'; form-action 'self'; frame-ancestors 'none';",
+				"Content-Security-Policy": "default-src 'none'; script-src 'self'; script-src-elem 'self'; script-src-attr 'unsafe-inline'; style-src 'self' 'unsafe-inline'; style-src-attr 'unsafe-inline'; manifest-src 'self';img-src 'self' data: blob: https:; font-src 'self'; connect-src 'self' ws: wss:; media-src 'self' blob:; worker-src 'self' blob:; object-src 'none'; base-uri 'self'; form-action 'self'; frame-ancestors 'none';",
 				"X-Frame-Options": "DENY",
 				"X-Content-Type-Options": "nosniff",
 				"Referrer-Policy": "strict-origin-when-cross-origin",

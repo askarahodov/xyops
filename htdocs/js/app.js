@@ -146,7 +146,8 @@ app.extend({
 			{ ID: 'Snapshots' },
 			{ ID: 'Alerts' },
 			{ ID: 'System' },
-			{ ID: 'Magic' }
+			{ ID: 'Magic' },
+			{ ID: 'Marketplace' }
 		];
 		if (!this.config.DefaultPage) this.config.DefaultPage = 'Dashboard';
 		
@@ -497,6 +498,7 @@ app.extend({
 			$('#tab_System').removeClass('enabled').hide();
 			$('#tab_Users').removeClass('enabled').hide();
 			$('#tab_Roles').removeClass('enabled').hide();
+			$('#tab_Marketplace').removeClass('enabled').hide();
 		}
 		
 		// possibly hide entire admin section

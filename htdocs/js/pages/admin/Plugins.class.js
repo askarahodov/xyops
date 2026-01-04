@@ -19,6 +19,7 @@ Page.Plugins = class Plugins extends Page.PageUtils {
 		if (!this.requireAnyPrivilege('create_plugins', 'edit_plugins', 'delete_plugins')) return true;
 		
 		if (!args) args = {};
+		if (!args.sub && args.id) args.sub = 'edit';
 		if (!args.sub) args.sub = this.default_sub;
 		this.args = args;
 		
@@ -55,7 +56,7 @@ Page.Plugins = class Plugins extends Page.PageUtils {
 		this.plugins = resp.rows;
 		
 		// NOTE: Don't change these columns without also changing the responsive css column collapse rules in style.css
-		var cols = ['<i class="mdi mdi-checkbox-marked-outline"></i>', 'Plugin Title', 'Plugin ID', 'Type', 'Author', 'Created', 'Actions'];
+		var cols = ['<i class="mdi mdi-checkbox-marked-outline"></i>', 'Plugin Title', 'Plugin ID', 'Type', 'Source', 'Created', 'Actions'];
 		
 		html += '<div class="box">';
 		html += '<div class="box_title">';
@@ -87,7 +88,8 @@ Page.Plugins = class Plugins extends Page.PageUtils {
 				'<span class="mono">' + item.id + '</span>',
 				self.getNicePluginType(item.type),
 				// commify( num_events ),
-				self.getNiceUser(item.username, app.isAdmin()),
+				self.getNicePluginSource(item),
+				// self.getNiceUser(item.username, app.isAdmin()),
 				'<span title="'+self.getNiceDateTimeText(item.created)+'">'+self.getNiceDate(item.created)+'</span>',
 				actions.join(' | ') || '&nbsp;'
 			];
@@ -109,6 +111,13 @@ Page.Plugins = class Plugins extends Page.PageUtils {
 		this.div.html( html ).buttonize();
 		this.setupBoxButtonFloater();
 		this.addPageDescription();
+	}
+	
+	getNicePluginSource(plugin) {
+		// marketplace, stock, or user
+		if (plugin.marketplace) return '<span class="nowrap"><i class="mdi mdi-cart-outline"></i>Marketplace</span>';
+		else if (plugin.stock) return '<span class="nowrap"><i class="mdi mdi-rocket-launch-outline"></i>xyOps Default</span>';
+		else return this.getNiceUser(plugin.username, app.isAdmin());
 	}
 	
 	toggle_plugin_enabled(elem, idx) {
@@ -338,6 +347,7 @@ Page.Plugins = class Plugins extends Page.PageUtils {
 		delete clone.revision;
 		delete clone.username;
 		delete clone.marketplace;
+		delete clone.stock;
 		
 		this.clone = clone;
 		Nav.go('Plugins?sub=new');

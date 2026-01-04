@@ -2058,7 +2058,7 @@ Page.Events = class Events extends Page.PageUtils {
 				if (deps.plugins) {
 					find_objects(workflow.nodes || [], { type: 'job' }).forEach( function(node) {
 						var plugin = find_object( app.plugins, { id: node.data.plugin } );
-						if (plugin && !plugin.command.match(/^\[[\w\-]+\]$/)) items.push({ type: 'plugin', data: plugin });
+						if (plugin && !plugin.stock) items.push({ type: 'plugin', data: plugin });
 					} );
 				}
 				
@@ -2072,7 +2072,7 @@ Page.Events = class Events extends Page.PageUtils {
 				// plugin (skip stock ones)
 				if (deps.plugins) {
 					var plugin = find_object( app.plugins, { id: event.plugin } );
-					if (plugin && !plugin.command.match(/^\[[\w\-]+\]$/)) items.push({ type: 'plugin', data: plugin });
+					if (plugin && !plugin.stock) items.push({ type: 'plugin', data: plugin });
 				}
 			}
 			

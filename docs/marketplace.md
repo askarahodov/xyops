@@ -6,7 +6,10 @@ xyOps has an integrated Plugin Marketplace, so you can expand the app's feature 
 
 This document explains how to create and publish your own xyOps Plugins.  Marketplace Plugins are essentially cloud-hosted code libraries that self-download and self-execute, along with metadata to populate the marketplace listing, and define Plugin parameters for configuration.
 
-The marketplace doesn't actually "host" Plugins -- it merely provides a search mechanism to discover them.  The Plugins themselves are hosted elsewhere on package repositories like NPM or GitHub, and the marketplace links to them.
+The marketplace doesn't actually "host" Plugins -- it merely provides a search mechanism to discover them.  The Plugins themselves are hosted on package repositories like NPM, PyPI or GitHub, and the marketplace links to them.
+
+> [!NOTE]
+> For marketplace v1, your source code repository must be hosted on GitHub.  We will expand to support other hosts like GitLab and BitBucket in the future.
 
 ## Requirements
 
@@ -15,8 +18,8 @@ To publish your xyOps Plugin to the marketplace, it must:
 - Be free to use
 	- The Plugin may need to access a 3rd party paid service, which is fine.
 	- By "free" we mean that the Plugin itself doesn't cost any money to install (our marketplace has no "buy" button).
-- Be hosted publicly on an accessible code sharing site.
-	- Such as NPM, UV, GitHub, GitLab or BitBucket.
+- Be hosted publicly on GitHub.
+	- We will expand to support other hosts in the future.
 - Be able to execute using a self-contained download + launch combo command.
 	- Examples of these include [npx](https://docs.npmjs.com/cli/commands/npx), [uvx](https://docs.astral.sh/uv/guides/tools/), [go run](https://pkg.go.dev/cmd/go#hdr-Compile_and_run_Go_program), and [docker run](https://docs.docker.com/reference/cli/docker/container/run/).
 	- The command must download a specific tagged version or commit hash of the Plugin.
@@ -57,7 +60,7 @@ Your module does not actually need to be published to the NPM package registry. 
 npx -y github:myorg/xyplug-example#v1.0.0
 ```
 
-This variant uses `npx` with a GitHub repo link, and an inline version tag (`#v1.0.0`).  Note that in this case the user would also need the `git` CLI, as that is how NPX resolves these types of package links.  So you would need to list `git` as an additional Plugin requirement (see [Plugin Requirements](#requirements) below).
+This variant uses `npx` with a GitHub repo link, and an inline version tag (`#v1.0.0`).  Note that in this case the user would also need the `git` CLI, as that is how NPX resolves these types of package links.  So you would need to list `git` as an additional Plugin requirement (see [Plugin Requirements](#requirements)).
 
 To learn more about how to package up your Node.js project for NPX, and to see a live working demo, check out [xyplug-sample-npx](https://github.com/pixlcore/xyplug-sample-npx) on GitHub.
 
@@ -149,7 +152,7 @@ On the Plugin Edit screen, xyOps provides a "**Export...**" button.  Click this 
 }
 ```
 
-You will be prompted to upload this file on the marketplace submission page.
+Commit this file to your Plugin's source code repository.  It must live at the root level and be named `xyops.json`.
 
 ## README
 
@@ -164,35 +167,94 @@ Make sure your Plugin has a detailed `README.md` file at the root level of your 
 - Declare any user data or metrics collection.
 - Usage examples (nice-to-have).
 
+## Logo
+
+Your Plugin should have a logo image, for displaying in the marketplace search results.  It should be:
+
+- 1:1 aspect ratio (square)
+- Alpha transparent and light/dark friendly
+- At least 128x128px
+- PNG format
+- Named `logo.png`
+- Stored at the root level of your repo
+
 ## License
 
 Make sure your Plugin has a `LICENSE.md` (or `LICENSE`) file at the root level of your code repository.
 
 Note that it must be an [OSI-approved license](https://spdx.org/licenses/) to be eligible for inclusion in the marketplace.
 
+## Files
+
+In summary, the following files are required to live at the root level of your git repo:
+
+```
+README.md
+LICENSE.md
+xyops.json
+logo.png
+```
+
+(The license can alternatively be named `LICENSE` or `COPYING`, with or without an extension.)
+
+## Tags
+
+Make sure you tag your repo for each release.  The git tag name should be the version number, typically with a leading `v` character, followed by a 3-part number.  Examples:
+
+```
+v1.0.0
+v1.0.1
+v2.0.0
+```
+
+Using [semver](https://semver.org/) style versioning is recommended, but not required.
+
+## Examples
+
+See the following repositories which are good example Plugins to use as references:
+
+- [pixlcore/xyplug-bluesky](https://github.com/pixlcore/xyplug-bluesky)
+- [pixlcore/xyplug-stagehand](https://github.com/pixlcore/xyplug-stagehand)
+
 ## Marketplace Submission
 
-When you are ready to publish your Plugin, head on over to the xyOps User Portal, and login or create an account:
+When you are ready to publish your Plugin, head on over to the marketplace's GitHub repository:
 
-https://xyops.io/
+https://github.com/pixlcore/xyops-marketplace
 
-Note that you do **not** need a paid Professional or Enterprise account to publish on the marketplace.  A free account will do just fine.
+Make a pull request, and add your Plugin metadata to the `marketplace.json` file, specifically as a new object at the end of the `rows` array.  It should be formatted like this:
 
-On the Plugin submission page, you will be asked to provide the following:
+```json
+{
+	"id": "pixlcore/xyplug-stagehand",
+	"title": "Stagehand",
+	"author": "PixlCore",
+	"description": "An AI-powered browser automation framework for xyOps.  Drive a headless browser with simple English instructions, take actions, extract data, capture network requests, and even record a video of the whole session.",
+	"versions": ["v1.0.9", "v1.0.8", "v1.0.7"],
+	"type": "plugin",
+	"license": "MIT",
+	"tags": ["Stagehand", "Playwright"],
+	"requires": [ "docker" ],
+	"created": "2026-01-01",
+	"modified": "2026-01-02"
+}
+```
 
-- Your Plugin export file (upload).
-- A title for your Plugin.  Displayed in bold in the marketplace.
-- A short description of your Plugin.  Displayed under the title in the marketplace.
-- Your name (or handle).  Also displayed in the marketplace.
-- The location of your Plugin's source code repository.
-- The current version number of the Plugin you are submitting.
-- An optional image for the Plugin, which should be square (1:1 aspect ratio, i.e. icon format).
-	- Alpha transparency is encouraged, PNG or WebP are best.
-- The [SPDX Identifier](https://spdx.org/licenses/) for the open-source license your Plugin uses (must be OSI-approved).
-- An optional keyword list for marketplace searches (freeform, user-defined).
-- An array of which built-in commands need to be preinstalled in order to run use Plugin (`npx`, `uvx`, etc.).
-- An optional list of environment variables needed by the Plugin.
-	- If provided, the user will be prompted to create a [Secret Vault](secrets.md) to store them at install time. 
+Here are descriptions of the properties:
+
+| Property Name | Type | Description |
+|---------------|------|-------------|
+| `id` | String | The ID of your Plugin, which should be your GitHub Org and your repo ID, joined with a slash. |
+| `title` | String | A title for your Plugin.  Displayed in bold in the marketplace. |
+| `author` | String | The author of the Plugin (company or individual). |
+| `description` | String | A short description of your Plugin.  Displayed under the title in the marketplace. |
+| `versions` | Array | A sorted array of strings containing all the available versions (git tags) of your Plugin.  The latest release should be listed first. |
+| `type` | String | What type of item you are publishing.  Set this to `plugin` for v1 (will be expanded in the future). |
+| `license` | String | The [SPDX Identifier](https://spdx.org/licenses/) for the open-source license your Plugin uses (must be OSI-approved). |
+| `tags` | Array | An array of keyword strings, used for searching. |
+| `requires` | Array | List the CLI requirements to launch your Plugin, e.g. `npx`, `uvx`, `go run` and/or `docker`. |
+| `created` | String | Date of first publication, in YYYY-MM-DD format. |
+| `modified` | String | Date of latest version, in YYYY-MM-DD format. |
 
 Note that all Plugin submissions are human-reviewed.  Please be prepared to wait several days before your Plugin is approved.  If your Plugin is denied, a xyOps team member will explain why, and help you to resubmit with the necessary changes to get approved.
 

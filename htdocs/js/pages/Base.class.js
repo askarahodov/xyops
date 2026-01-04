@@ -370,7 +370,8 @@ Page.Base = class Base extends Page {
 		var html = '<span class="nowrap">';
 		var icon = '<i class="mdi mdi-' + (item.icon || 'power-plug-outline') + '"></i>';
 		if (link) {
-			html += '<a href="#Plugins?sub=edit&id=' + item.id + '">';
+			if (item.marketplace) html += '<a href="#Marketplace?id=' + item.marketplace.id + '">';
+			else html += '<a href="#Plugins?sub=edit&id=' + item.id + '">';
 			html += icon + '<span>' + item.title + '</span></a>';
 		}
 		else {

@@ -378,6 +378,10 @@
 	/* 'Event Title', 'Category', 'Plugin', 'Target', 'Trigger', 'Actions' */
 	.data_grid.ticket_event_grid { grid-template-columns: auto auto auto auto 0px auto !important; }
 	.data_grid.ticket_event_grid > ul > div:nth-child(5) { visibility: hidden; }
+	
+	/* 'Title / Description', 'Author', 'License', 'Type', 'Modified', 'Version' */
+	.data_grid.product_grid { grid-template-columns: auto auto 0px auto auto auto !important; }
+	.data_grid.product_grid > ul > div:nth-child(3) { visibility: hidden; }
 }
 
 /* Tablets */
@@ -830,6 +834,11 @@
 	.data_grid.ticket_event_grid { grid-template-columns: auto auto auto 0px 0px auto !important; }
 	.data_grid.ticket_event_grid > ul > div:nth-child(4) { visibility: hidden; }
 	.data_grid.ticket_event_grid > ul > div:nth-child(5) { visibility: hidden; }
+	
+	/* 'Title / Description', 'Author', 'License', 'Type', 'Modified', 'Version' */
+	.data_grid.product_grid { grid-template-columns: auto auto 0px 0px auto auto !important; }
+	.data_grid.product_grid > ul > div:nth-child(3) { visibility: hidden; }
+	.data_grid.product_grid > ul > div:nth-child(4) { visibility: hidden; }
 }
 
 /* Phones */
@@ -1446,6 +1455,12 @@
 	.data_grid.hot_key_grid > ul > div:nth-child(3) { visibility: hidden; }
 	.data_grid.hot_key_grid > ul > div:nth-child(4) { visibility: hidden; }
 	.data_grid.hot_key_grid > ul > div:nth-child(5) { visibility: hidden; }
+	
+	/* 'Title / Description', 'Author', 'License', 'Type', 'Modified', 'Version' */
+	.data_grid.product_grid { grid-template-columns: auto auto 0px 0px 0px auto !important; }
+	.data_grid.product_grid > ul > div:nth-child(3) { visibility: hidden; }
+	.data_grid.product_grid > ul > div:nth-child(4) { visibility: hidden; }
+	.data_grid.product_grid > ul > div:nth-child(5) { visibility: hidden; }
 }
 
 /* Smaller Phones */
@@ -1947,4 +1962,12 @@
 	.data_grid.hot_key_grid > ul > div:nth-child(3) { visibility: hidden; }
 	.data_grid.hot_key_grid > ul > div:nth-child(4) { visibility: hidden; }
 	.data_grid.hot_key_grid > ul > div:nth-child(5) { visibility: hidden; }
+	
+	/* 'Title / Description', 'Author', 'License', 'Type', 'Modified', 'Version' */
+	.data_grid.product_grid { grid-template-columns: auto 0px 0px 0px 0px 0px !important; }
+	.data_grid.product_grid > ul > div:nth-child(2) { visibility: hidden; }
+	.data_grid.product_grid > ul > div:nth-child(3) { visibility: hidden; }
+	.data_grid.product_grid > ul > div:nth-child(4) { visibility: hidden; }
+	.data_grid.product_grid > ul > div:nth-child(5) { visibility: hidden; }
+	.data_grid.product_grid > ul > div:nth-child(6) { visibility: hidden; }
 }

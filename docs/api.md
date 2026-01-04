@@ -3266,7 +3266,117 @@ Example response:
 
 In addition to the [Standard Response Format](#standard-response-format), this will include an `items` array containing per-day records with `epoch`, human-readable `date`, and the selected `data` subtree, plus a `list` object containing list metadata.
 
+### marketplace
 
+```
+GET /api/app/marketplace/v1
+```
+
+Search listings and fetch detailed product information from the [xyOps Marketplace](marketplace.md).  The marketplace data exists only on GitHub, so this will trigger an external request, but the data is cached locally after the first fetch (default TTL is 1 hour).  The API has three different modes, triggered by different parameters:
+
+**Search Listings:**
+
+The default action of the API is to search the marketplace for plugins.  The following parameters are used for search:
+
+| Parameter Name | Description |
+|----------------|-------------|
+| `query` | Optional keywords, matches case-insensitively against various product properties (title, description, tags, license, etc.). |
+| `type` | Optionally limit results to one specific type, e.g. `plugin`. |
+| `license` | Optionally limit results to one specific license, e.g. `mit` (case-insensitive). |
+| `tags` | Optionally limit results to one or more tags, comma separated and case-insensitive.  All must match to be included. |
+| `requires` | Optionally limit results to one or more requirements, comma separated and case-insensitive.  All must match to be included. |
+| `sort_by` | Which property to sort by (property value needs to be a string, e.g. `title`). |
+| `sort_dir` | Which direction to sort (`1` is ascending, `-1` is descending). |
+| `offset` | Pagination offset into the matched result set. |
+| `limit` | Maximum number of rows to return at once. |
+
+Example:
+
+```
+GET /api/app/marketplace/v1?query=bluesky
+```
+
+Response:
+
+```json
+{
+	"code": 0,
+	"rows": [
+		{
+			"id": "pixlcore/xyplug-bluesky",
+			"title": "Bluesky Social",
+			"author": "PixlCore",
+			"description": "Access your Bluesky social profile, read your timeline, make posts, leave likes, and more.",
+			"versions": ["v1.0.3"],
+			"type": "plugin",
+			"license": "MIT",
+			"tags": ["Bluesky", "Social", "MCP"],
+			"requires": [ "npx", "uvx", "git" ],
+			"created": "2026-01-01",
+			"modified": "2026-01-01"
+		}
+	],
+	"list": { "length": 1 }
+}
+```
+
+The `list.length` is the total number of matched rows before pagination chop.
+
+**Fetch Metadata:**
+
+Fetch general marketplace metadata, specifically all the unique product types, requirements, tags, and licenses.  To use this mode, set the `fields` query string parameter to any true value.  Example:
+
+```
+GET /api/app/marketplace/v1?fields=1
+```
+
+Response:
+
+```json
+{
+	"code": 0,
+	"fields": {
+		"types": ["plugin"],
+		"requirements": ["npx", "uvx", "docker"],
+		"tags": ["backup", "notification", "cleanup", "reporting"],
+		"licenses": ["MIT", "GPL-3.0", "Apache-2.0"]
+	}
+}
+```
+
+**Get Product Details:**
+
+Fetch product details about a specific product (and optionally version).  You can fetch the product README (in markdown format), the product data (in [XYPDF](xypdf.md) format), or the product logo image (in binary PNG format).  To activate this mode, specify the `id` of the product, and optionally a `version`.  If the version is omitted the latest version is used.  Examples:
+
+Fetch README: `GET /api/app/marketplace/v1?id=pixlcore/xyplug-bluesky&readme=1`
+
+Response:
+
+```json
+{
+	"code": 0,
+	"item": { /* product listing metadata */ },
+	"version": "v1.0.3",
+	"text": "...Markdown README content here..."
+}
+```
+
+Fetch Data: `GET /api/app/marketplace/v1?id=pixlcore/xyplug-bluesky&data=1`
+
+Response:
+
+```json
+{
+	"code": 0,
+	"item": { /* product listing metadata */ },
+	"version": "v1.0.3",
+	"data": { /* XYPDF data */ }
+}
+```
+
+Fetch Logo: `GET /api/app/marketplace/v1?id=pixlcore/xyplug-bluesky&logo=1`
+
+(The response is binary in this case.)
 
 ## Secrets
 

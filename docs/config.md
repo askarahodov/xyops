@@ -342,6 +342,37 @@ This number (seconds) sets the cache TTL for satellite release metadata to reduc
 This object contains web server and runtime settings for xySat; these options are passed along when managing or provisioning satellite nodes (defaults provided in the sample config).
 
 
+
+## marketplace
+
+This section configures the xyOps Marketplace.
+
+## marketplace.enabled
+
+This boolean enables or disables the marketplace.  If disabled, users cannot search for or install plugins.  The default is `true` (enabled).
+
+## marketplace.metadata_url
+
+This string points to the central marketplace metadata location, which contains the full product catalog.  Example:
+
+```
+https://raw.githubusercontent.com/pixlcore/xyops-marketplace/refs/heads/main/marketplace.json
+```
+
+## marketplace.repo_url_template
+
+This string is a template used to generate plugin repository URLs to specific files.  It has placeholder macros for `id` (org and repo), `version` (git tag), and `filename`.  Example:
+
+```
+https://raw.githubusercontent.com/[id]/refs/tags/[version]/[filename]
+```
+
+## marketplace.ttl
+
+This is the number of seconds to cache the marketplace metadata locally before re-fetching from origin.  The default is `3600` (one hour).
+
+
+
 ## quick_monitors
 
 This array defines built-in metrics to collect (defaults include CPU, memory, disk, and network presets).  These are displayed on server detail pages for real-time monitoring.

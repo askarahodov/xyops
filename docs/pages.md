@@ -251,3 +251,13 @@ The Web Hooks page lets you create definitions with URL, method, headers, option
 Templates can include job or alert context and reference assigned secrets for tokens or credentials. Executions record timing and success for troubleshooting. 
 
 Learn more: [Web Hooks](webhooks.md).
+
+## Marketplace
+
+The **xyOps Marketplace** allows you to download and install plugins created by PixlCore and the community.  All plugins are checked by PixlCore before publishing to ensure quality and safety, but always use caution when downloading software from the internet.
+
+The marketplace doesn't actually "host" the Plugins -- it merely provides a search mechanism to discover them.  The Plugins themselves are hosted on package repositories like NPM, PyPI or GitHub, and the marketplace links to them directly.
+
+For your privacy, requests never go out to the PixlCore / xyOps servers.  Instead, everything is hosted entirely on GitHub, including the marketplace index.
+
+Learn more: [Marketplace](marketplace.md).

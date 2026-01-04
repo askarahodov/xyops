@@ -127,6 +127,42 @@ div.load_more {
 	text-align: center;
 }
 
+/* Marketplace */
+
+.data_grid.product_grid > ul.grid_row > div {
+	height: 58px;
+	line-height: 42px;
+}
+
+.product_result {
+	height: 42px;
+	padding-left: 50px;
+	line-height: 21px;
+	
+	background-position: left center;
+	background-repeat: no-repeat;
+	background-size: contain;
+	
+	cursor: pointer;
+}
+
+.product_title {
+	height: 21px;
+	font-size: 13px;
+	font-weight: bold;
+	color: var(--label-color);
+}
+.product_result:hover > .product_title {
+	color: var(--theme-color);
+	text-decoration: underline;
+}
+
+.product_desc {
+	height: 21px;
+	font-size: 12px;
+	color: var(--label-color);
+}
+
 /* Form Grid */
 
 .form_grid {
