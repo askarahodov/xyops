@@ -4,6 +4,10 @@
 
 This guide covers self-hosting xyOps on your own infrastructure.  However, please note that for live production installs, it is dangerous to go alone.  While we provide all necessary documentation here, we strongly recommend our [Enterprise Plan](https://xyops.io/pricing). This gives you access to our white-glove onboarding service, where our team will guide you through every step, validate your configuration, and ensure your integration is both secure and reliable.  This also gets you priority ticket support, and live chat support from a xyOps engineer.
 
+## Prerequisites
+
+It is really important to understand that wherever you decide to run xyOps, that server (or container) needs to be **addressable on your network by its hostname**.  This is how your worker servers will connect to xyOps, so they need a fixed hostname that will resolve to an IP that they can reach from wherever they are.  With Docker you should set the **container hostname** to something that resolves and can be reached on your network.
+
 ## Quick-Start
 
 To start quickly and just get xyOps up and running to test it out, you can use the following Docker command:
@@ -56,13 +60,14 @@ Then hit http://localhost:5522/ in your browser for HTTP, or https://localhost:5
 
 A few notes:
 
+- **Important:** Please change the `xyops01` sample hostname to something that resolves and is addressable on your network.  Without this, many features will not work properly.
 - In this case xyOps will have a self-signed cert for TLS, which the worker will accept by default.  See [TLS](#tls) for more details.
 - Change the `TZ` environment variable to your local timezone, for proper midnight log rotation and daily stat resets.
 - The `XYOPS_xysat_local` environment variable causes xyOps to launch [xySat](#satellite) in the background, in the same container.  This is so you can start running jobs right away -- it is great for testing and home labs, but not recommended for production setups.
 - If you plan on using the container long term, please make sure to [rotate the secret key](#secret-key-rotation).
 - The `/var/run/docker.sock` bind is optional, and allows xyOps to launch its own containers (i.e. for the [Docker Plugin](plugins.md#docker-plugin), and the [Plugin Marketplace](marketplace.md)).
 
-Note that in order to add worker servers, the container needs to be *addressable on your network* by its hostname.  Typically this is done by adding the hostname to your local DNS, or using a `/etc/hosts` file.  If you only want to add workers as local containers, you can [create a network](https://docs.docker.com/reference/cli/docker/network/create/), and put everything in there.  See [Adding Servers](servers.md#adding-servers) for more details.
+Note that in order to add worker servers, the container needs to be *addressable on your network* by its hostname.  Typically this is done by adding the hostname to your local DNS, or using a `/etc/hosts` file.  See [Adding Servers](servers.md#adding-servers) for more details.
 
 ### Configuration
 
