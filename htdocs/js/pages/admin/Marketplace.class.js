@@ -544,8 +544,8 @@ Page.Marketplace = class Marketplace extends Page.PageUtils {
 		
 		if (installed) {
 			// check version
-			if (installed.marketplace.version == product.versions[0]) return '<i class="mdi mdi-check-circle-outline">&nbsp;</i>Up to Date'
-			else return '<i class="mdi mdi-alert-circle-outline">&nbsp;</i>Outdated';
+			if (installed.marketplace.version == product.versions[0]) return '<span style="color:var(--green)"><i class="mdi mdi-check-circle-outline">&nbsp;</i>Up to Date</span>'
+			else return '<span style="color:var(--red)"><i class="mdi mdi-alert-rhombus">&nbsp;</i>Outdated</span>';
 		}
 		else return '<i class="mdi mdi-cancel">&nbsp;</i>Not Installed';
 	}
