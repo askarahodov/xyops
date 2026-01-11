@@ -1040,6 +1040,12 @@ X-UUID: 7617a494-823f-4566-8f8b-f479c2a6e707
 
 You can chain as many requests together as you like, but note that each request can only see and act on chain data from the *previous* request (the one that directly chained to it).
 
+#### Using Secrets in Requests
+
+To use secrets in the HTTP Request Plugin, you need to specify them using a custom macro syntax: `[secrets.KEY_NAME]`.  This square-bracket format works in the URL, the request headers, and the request body.
+
+Note that the secrets will be printed on the job output screen.
+
 ### Test Plugin
 
 The Test Plugin exists mainly to test xyOps, but it can also be useful for testing pieces of workflows.  It outputs sample data and optionally a sample file, which are passed to downstream events, if connected.  It can also simulate various job outcomes (success, fail, etc.).  It offers the following parameters:
