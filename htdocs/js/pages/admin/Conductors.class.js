@@ -58,7 +58,6 @@ Page.Conductors = class Conductors extends Page.PageUtils {
 				// '<button class="link" onClick="$P().upgrade_master(' + idx + ')"><b>Upgrade</b></button>',
 				'<button class="link" onClick="$P().restart_master(' + idx + ')"><b>Restart</b></button>',
 				'<button class="link" onClick="$P().shutdown_master(' + idx + ')"><b>Shutdown</b></button>',
-				// '<button class="link" onClick="$P().remove_master(' + idx + ')"><b>Remove</b></button>'
 			];
 			var status = item.online ? (item.master ? '<span class="color_label green"><i class="mdi mdi-check-circle">&nbsp;</i>Primary</span>' : '<span class="color_label blue">Online</span>') : '<span class="color_label gray"><i class="mdi mdi-alert-circle">&nbsp;</i>Offline</span>';
 			
@@ -68,6 +67,9 @@ Page.Conductors = class Conductors extends Page.PageUtils {
 				item.ping = 0;
 				item.date = null;
 				item.stats = {};
+				actions = [
+					'<button class="link" onClick="$P().remove_master(' + idx + ')"><b>Remove</b></button>'
+				];
 			}
 			
 			var row = [
@@ -77,18 +79,13 @@ Page.Conductors = class Conductors extends Page.PageUtils {
 				'<div style=""><i class="mdi mdi-chip">&nbsp;</i>' + short_float(item.stats.load || 0) + '</div>',
 				'<div style=""><i class="mdi mdi-timer-outline">&nbsp;</i>' + item.ping + ' ms</div>',
 				'<div style="">' + (item.date ? self.getNiceUptime( app.epoch - item.date ) : 'n/a') + '</div>',
-				item.online ? actions.join(' | ') : '-'
+				actions.join(' | ')
 			];
 			if (!item.online) row.className = 'disabled';
 			return row;
 		} ); // getBasicGrid
 		
 		html += '</div>'; // box_content
-		
-		// html += '<div class="box_buttons">';
-		// 	html += '<div class="button secondary" onClick="$P().edit_api_key(-1)">Add API Key...</div>';
-		// html += '</div>'; // box_buttons
-		
 		html += '</div>'; // box
 		
 		this.div.html( html );
