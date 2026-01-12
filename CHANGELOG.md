@@ -1,5 +1,19 @@
 # xyOps Changelog
 
+## Version v0.9.20
+
+> January 11, 2026
+
+- [`29822dc`](https://github.com/pixlcore/xyops/commit/29822dc0b2d67be908759441569dd252036f1426): Version 0.9.20
+- [`f8d153b`](https://github.com/pixlcore/xyops/commit/f8d153b57200acecdd7ee9c69a4398709dc55599): Fix: Flickering dialog issue when waiting for conductor server election.
+- [`84160de`](https://github.com/pixlcore/xyops/commit/84160de2135081052026ecee71edb6c940ceab72): Conductor Page: Add "Remove" link to remove dead / ghost conductor servers.
+- [`437f209`](https://github.com/pixlcore/xyops/commit/437f2090949583292fe3b3443487114657b2cc28): Marketplace Improvements: Allow filtering by plugin type, and also display plugin type in the search results, and on landing pages.
+- [`63b45f6`](https://github.com/pixlcore/xyops/commit/63b45f606dda1798b8d3f0d8e6e71320ca8213e6): Marketplace Doc: Added "plugin_type" metadata property.
+- [`5bf7ab8`](https://github.com/pixlcore/xyops/commit/5bf7ab89a8ff25e6cddd6c0e753a31f6b41af4e0): UI: Improve styling of links in workflow controller description blocks.
+- [`21e4e6d`](https://github.com/pixlcore/xyops/commit/21e4e6d8f7540ec929116769cd9ec9494f81e80c): UI: Added links to docs in workflow controller descriptions.
+- [`ba2f605`](https://github.com/pixlcore/xyops/commit/ba2f6054b5cdcf703dd0efc7b9f2a84b7b6a6333): Data Structures Doc: Indicate that IDs must be lowercase alphanumeric.
+- [`41312f0`](https://github.com/pixlcore/xyops/commit/41312f0f49fb92c458bec0d7a9927332b11cb8cc): Plugins Doc: Added note re: use of secrets in the HTTP Request Plugin.
+
 ## Version v0.9.19
 
 > January 10, 2026
