@@ -84,7 +84,7 @@ try {
 	var stats = fs.statSync( base_dir + '/package.json' );
 	var json = require( base_dir + '/package.json' );
 	if (json && json.version) {
-		cur_version = json.version;
+		cur_version = 'v' + json.version;
 		is_preinstalled = true;
 	}
 }
@@ -124,14 +124,12 @@ cp.exec('curl -s ' + gh_releases_url, function (err, stdout, stderr) {
 		die("Failed to parse JSON from GitHub: " + gh_releases_url + ": " + err);
 	}
 	
-	// util.isArray is DEPRECATED??? Nooooooooode!
-	var isArray = Array.isArray || util.isArray;
-	if (!isArray(releases)) die("Unexpected response from GitHub Releases API: " + gh_releases_url + ": Not an array");
+	if (!Array.isArray(releases)) die("Unexpected response from GitHub Releases API: " + gh_releases_url + ": Not an array");
 	
 	var release = null;
 	for (var idx = 0, len = releases.length; idx < len; idx++) {
 		var rel = releases[idx];
-		var ver = rel.tag_name.replace(/^\D+/, '');
+		var ver = rel.tag_name;
 		rel.version = ver;
 		
 		if (!new_version || (ver == new_version)) { 
