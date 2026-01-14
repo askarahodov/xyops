@@ -1,5 +1,14 @@
 # xyOps Changelog
 
+## Version v0.9.24
+
+> January 14, 2026
+
+- [`ad751b5`](https://github.com/pixlcore/xyops/commit/ad751b5707f752d67d1ba84b1bd7b4c09bce0972): Version 0.9.24
+- [`09c5da2`](https://github.com/pixlcore/xyops/commit/09c5da221fed4eef3fad011c9a655d567d35ece7): UI: Fix color of critical notification banner.
+- [`7bb2346`](https://github.com/pixlcore/xyops/commit/7bb23465cff1db2a738e98e6efaf46a9ebdf89d2): Crasher Fix: Sending incorrect websocket data for notice/critical.
+- [`9c99743`](https://github.com/pixlcore/xyops/commit/9c99743e7ef207b7b4d03fb5bb9c6af99d85dff5): System Hooks Doc: Added note regarding shell_exec running on the primary conductor, and debugging tips.
+
 ## Version v0.9.23
 
 > January 14, 2026
