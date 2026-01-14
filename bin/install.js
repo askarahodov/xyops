@@ -18,7 +18,6 @@ var log_dir = base_dir + '/logs';
 var log_file = '';
 var gh_repo_url = 'http://github.com/pixlcore/xyops';
 var gh_releases_url = 'https://api.github.com/repos/pixlcore/xyops/releases';
-var gh_head_tarball_url = 'https://github.com/pixlcore/xyops/archive/master.tar.gz';
 
 // Check if Node.js version is old
 if (process.version.match(/^v?(\d+)/) && (parseInt(RegExp.$1) < 16) && !process.env['XYOPS_OLD']) {
@@ -140,28 +139,14 @@ cp.exec('curl -s ' + gh_releases_url, function (err, stdout, stderr) {
 	} // foreach release
 	
 	if (!release) {
-		// no release found -- use HEAD rev?
-		if (!new_version || new_version.match(/HEAD/i)) {
-			release = {
-				version: 'HEAD',
-				tarball_url: gh_head_tarball_url
-			};
-		}
-		else {
-			die("Release not found: " + new_version);
-		}
+		// no release found
+		if (!new_version) die("No releases found!");
+		else die("Release not found: " + new_version);
 	}
 	
-	// // sanity check
-	// if (is_preinstalled && (cur_version == new_version)) {
-	// 	if (process.argv[2]) print( "\nVersion " + cur_version + " is already installed.\n\n" );
-	// 	else print( "\nVersion " + cur_version + " is already installed, and is the latest.\n\n" );
-	// 	process.exit(0);
-	// }
-	
 	// proceed with installation
-	if (is_preinstalled) print("Upgrading xyOps from v"+cur_version+" to v"+new_version+"...\n");
-	else print("Installing xyOps v"+new_version+"...\n");
+	if (is_preinstalled) print("Upgrading xyOps from " + cur_version + " to " + new_version + "...\n");
+	else print("Installing xyOps " + new_version + "...\n");
 	
 	if (is_running) {
 		print("\n");
