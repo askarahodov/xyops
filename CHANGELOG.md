@@ -1,5 +1,12 @@
 # xyOps Changelog
 
+## Version v0.9.25
+
+> January 14, 2026
+
+- [`f70bc7c`](https://github.com/pixlcore/xyops/commit/f70bc7cc96c3c06838f39d13881be919c241f00c): Version 0.9.25
+- [`e431b11`](https://github.com/pixlcore/xyops/commit/e431b11cb233bc3972cfe662544f413e3b2721bc): Satellite Upgrade Script: Improve logging output.
+
 ## Version v0.9.24
 
 > January 14, 2026
