@@ -3357,6 +3357,43 @@ In addition to the [Standard Response Format](#standard-response-format), this w
 
 ### bulk_search_export
 
+```
+GET /api/app/bulk_search_export/v1
+```
+
+Stream a bulk export of search results for any database index to the client. Requires a valid user session or API Key. Results are scoped by the caller's category and group access in the same way as the search APIs. The response is a streamed file, not JSON.
+
+Parameters:
+
+| Property Name | Type | Description |
+|---------------|------|-------------|
+| `index` | String | **(Required)** Database index ID to query. Supported indexes are `jobs`, `tickets`, `servers`, `alerts`, `snapshots`, and `activity`. |
+| `query` | String | Optional search query. Defaults to `*`. The query format depends on the selected index. |
+| `columns` | Array(String) or String | **(Required)** Column IDs to include in the export, in the desired order. For HTTP GET query strings, pass a comma-separated list. |
+| `sort_by` | String | Optional. Sorter ID for the index. Defaults to `_id`. |
+| `sort_dir` | Number | Optional. Sort direction: `1` for ascending or `-1` for descending. Defaults to `-1`. |
+| `format` | String | **(Required)** Output format: `csv`, `tsv`, or `ndjson`. |
+| `compress` | Boolean | Optional. If set to any true value, the response is gzip-compressed. For HTTP GET query strings, use `compress=1`. |
+
+Query syntax and examples are documented in the search APIs for each index:
+
+- [search_jobs](#search_jobs)
+- [search_tickets](#search_tickets)
+- [search_servers](#search_servers)
+- [search_alerts](#search_alerts)
+- [search_snapshots](#search_snapshots)
+- [search_activity](#search_activity)
+
+For searchable fields and index definitions, see [Database](db.md).
+
+Example request:
+
+```
+GET /api/app/bulk_search_export/v1?index=jobs&query=tags:_error&columns=id,event,category,plugin,completed,code&sort_by=completed&sort_dir=-1&format=csv&compress=1
+```
+
+Response: `200 OK` with a streamed file. CSV and TSV responses include a header row using the configured column titles. NDJSON responses include one JSON object per line with only the requested columns. A UTF-8 BOM is always prepended for spreadsheet compatibility. If `compress` is enabled, the response is gzip and the filename will end with `.gz`.
+
 
 
 ### marketplace
