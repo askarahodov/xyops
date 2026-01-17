@@ -321,7 +321,7 @@ Page.Job = class Job extends Page.PageUtils {
 		if (is_workflow) {
 			html += '<div class="box">';
 			html += '<div class="box_content">';
-			html += '<div class="wf_container job_preview" id="d_wf_container" style="height:40vh; min-height:400px;">';
+			html += '<div class="wf_container job_preview" id="d_wf_container" style="height:50vh; min-height:400px;">';
 			
 			html += `<div class="wf_grid_header">
 				<div class="wf_title left"><i class="mdi mdi-clipboard-play-outline">&nbsp;</i>Workflow Run</div>
