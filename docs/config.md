@@ -114,6 +114,26 @@ This string sets the nightly log archive path pattern (default: `logs/archives/[
 
 Accepts [date/time placeholders](https://github.com/jhuckaby/pixl-tools#getdateargs) to dynamically generate the log archive filenames.
 
+## log_archive_keep
+
+This string specifies how long to keep log archives for, e.g. `30 days`.
+
+Older log archives found in [log_archive_path](#log_archive_path) are automatically deleted after the nightly logs are rotated.
+
+Set this to an empty string to disable the feature and keep log archives indefinitely.
+
+## log_archive_storage
+
+Optionally archive logs to storage instead of local disk.  This is primarily designed for 3rd party storage engines like S3.  To use this feature, first *disable* [log_archive_path](#log_archive_path) (set to empty string), and then set this property accordingly:
+
+```json
+"log_archive_storage": {
+	"enabled": true,
+	"key_template": "logs/archives/[yyyy]/[mm]/[dd]/[filename]-[yyyy]-[mm]-[dd].log.gz",
+	"expiration": "1 year"
+}
+```
+
 ## log_crashes
 
 This boolean enables capturing uncaught exceptions and crashes in the logger subsystem (default: `true`).
