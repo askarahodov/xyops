@@ -281,7 +281,7 @@ Page.Events = class Events extends Page.PageUtils {
 		} );
 		
 		// NOTE: Don't change these columns without also changing the responsive css column collapse rules in style.css
-		var cols = ['<i class="mdi mdi-checkbox-marked-outline"></i>', 'Event Title', 'Category', 'Plugin', 'Target', 'Trigger', 'Status', 'Actions'];
+		var cols = ['<i class="mdi mdi-checkbox-marked-outline"></i>', 'Event Title', 'Category', 'Tags', 'Plugin', 'Target', 'Trigger', 'Status', 'Actions'];
 		
 		html += '<div class="box" id="d_el_results">';
 		html += '<div class="box_title">';
@@ -315,6 +315,7 @@ Page.Events = class Events extends Page.PageUtils {
 				}) + '</div>',
 				'<span style="font-weight:bold">' + self.getNiceEvent(item, true) + '</span>',
 				self.getNiceCategory(item.category, true),
+				self.getNiceTagList(item.tags || [], true, ', '),
 				(item.plugin == '_workflow') ? '(Workflow)' : self.getNicePlugin(item.plugin, true),
 				self.getNiceTargetList(item.targets, true),
 				summarize_event_timings(item),
