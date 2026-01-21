@@ -1,0 +1,46 @@
+## Version v0.9.35 - Pre-commit Validation Setup
+
+**January 21, 2026**
+
+### Features
+- **Pre-commit validation script** (`bin/pre-commit-check.js`): Automatic checks before commit
+  - Job state separation (activeJobs vs jobDetails)
+  - loadSession() in API endpoints
+  - Blocking I/O detection (fs.readFileSync, execSync)
+  - Storage key normalization
+  - JEXL expression safety
+  - Test execution
+  - CHANGELOG.md updates
+
+- **Git hooks setup utility** (`bin/setup-hooks.js`): One-command installation
+- **npm scripts**:
+  - `npm run validate` - Manual code validation
+  - `npm run setup-hooks` - Install git hooks
+
+### Documentation
+- **PRE_COMMIT_SETUP.md**: Complete installation and usage guide
+- **Updated repo-workflow.md**: Integration with development workflow
+
+### Quality Improvements
+- Pre-commit checklist for developers
+- Code review guidelines
+- Automatic enforcement of critical patterns
+- Cross-platform support (Linux/macOS/Windows)
+
+### How to Use
+```bash
+# Install hooks (one-time)
+npm run setup-hooks
+
+# Then hooks run automatically on every commit
+git commit -m "Your changes"
+
+# Manual validation
+npm run validate
+
+# Skip hook if needed
+git commit --no-verify -m "Emergency fix"
+```
+
+---
+
