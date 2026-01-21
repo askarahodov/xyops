@@ -41,7 +41,7 @@
 		"bcrypt-node": "0.1.0",
 		"canvas-confetti": "1.9.3",
 		"codemirror": "5.65.17",
-		"diff": "5.0.0",
+		"diff": "5.2.2",
 		"jexl": "2.3.0",
 		"jimp": "1.6.0",
 		"jquery": "3.6.0",
