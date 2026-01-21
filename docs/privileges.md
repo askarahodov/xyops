@@ -1,169 +1,169 @@
-# Privileges
+# Привилегии
 
-## Overview
+## Обзор
 
-xyOps uses a simple, flexible privilege system to control access to features. Privileges can be assigned directly to Users and API Keys, and Roles can bundle sets of privileges that are then attached to Users and API Keys. The effective permission set is the union of all directly assigned privileges plus those granted by any roles. The special `admin` privilege grants full access to all features.
+xyOps использует простую и гибкую систему привилегий для контроля доступа. Привилегии можно назначать напрямую пользователям и API ключам, а роли могут объединять наборы привилегий, которые затем привязываются к пользователям и API ключам. Эффективный набор прав - объединение всех прямых привилегий и тех, что даны ролями. Специальная привилегия `admin` дает полный доступ ко всем возможностям.
 
-Note: Some operations also enforce resource-level access (e.g., category, group, or target restrictions). Having a privilege is necessary, but certain actions may additionally require access to the specific resource.
+Примечание: Некоторые операции также проверяют доступ на уровне ресурсов (например, категории, группы или цели). Наличие привилегии необходимо, но для некоторых действий может дополнительно требоваться доступ к конкретному ресурсу.
 
 ## Special
 
 ### admin
-Full administrator access; implies all privileges and bypasses normal restrictions.
+Полный админ доступ; включает все привилегии и обходит обычные ограничения.
 
 ## Alerts
 
 ### create_alerts
-Create new alert definitions that evaluate monitor data and trigger actions.
+Создание новых определений алертов, которые оценивают данные мониторинга и запускают actions.
 
 ### edit_alerts
-Edit existing alert definitions, including expressions, messages, and settings.
+Редактирование существующих алертов, включая выражения, сообщения и настройки.
 
 ### delete_alerts
-Delete alert definitions and remove their associated configuration.
+Удаление определений алертов и связанных конфигураций.
 
 ## Buckets
 
 ### create_buckets
-Create new data storage buckets for artifacts or structured data.
+Создание новых buckets для артефактов или структурированных данных.
 
 ### edit_buckets
-Edit existing buckets, including metadata, data payload, and file lists.
+Редактирование buckets, включая метаданные, payload и списки файлов.
 
 ### delete_buckets
-Delete buckets, including all associated data and files.
+Удаление buckets вместе со всеми данными и файлами.
 
 ## Categories
 
 ### create_categories
-Create new event categories that define defaults and organization.
+Создание новых категорий событий, которые задают умолчания и организацию.
 
 ### edit_categories
-Edit existing categories and their defaults (limits, actions, colors, etc.).
+Редактирование категорий и их defaults (limits, actions, colors и т.д.).
 
 ### delete_categories
-Delete categories from the system (subject to normal references and usage).
+Удаление категорий из системы (с учетом ссылок и использования).
 
 ## Channels
 
 ### create_channels
-Create outbound notification channels (e.g., email, web hook destinations).
+Создание каналов исходящих уведомлений (например, email или web hook).
 
 ### edit_channels
-Edit existing notification channels and their delivery settings.
+Редактирование каналов уведомлений и их параметров доставки.
 
 ### delete_channels
-Delete notification channels from the system.
+Удаление каналов уведомлений из системы.
 
 ## Events
 
 ### create_events
-Create new events and workflows, including schedules, targets, and plugin settings.
+Создание новых событий и workflows, включая расписания, цели и настройки плагинов.
 
 ### edit_events
-Edit existing events and workflows, including schedules, limits, actions, and parameters.
+Редактирование существующих событий и workflows, включая расписания, limits, actions и параметры.
 
 ### delete_events
-Delete events and workflows (optionally including associated jobs where applicable).
+Удаление событий и workflows (включая связанные jobs при необходимости).
 
 ## Groups
 
 ### create_groups
-Create new server groups for organizing and targeting servers.
+Создание новых групп серверов для организации и таргетинга.
 
 ### edit_groups
-Edit existing server groups, including titles, rules, and alert settings.
+Редактирование групп серверов, включая заголовки, правила и настройки алертов.
 
 ### delete_groups
-Delete server groups from the system.
+Удаление групп серверов из системы.
 
 ## Jobs
 
 ### run_jobs
-Run events on demand and upload pre-run input files for jobs.
+Запуск событий по требованию и загрузка входных файлов перед запуском задач.
 
 ### abort_jobs
-Abort running jobs.
+Прерывание выполняющихся задач.
 
 ### delete_jobs
-Delete jobs and their associated files or logs (where applicable).
+Удаление задач и связанных файлов или логов (при наличии).
 
 ### tag_jobs
-Add or update tags on completed jobs.
+Добавление или обновление тегов у завершенных задач.
 
 ## Monitors
 
 ### create_monitors
-Create new monitors that collect and process server or application metrics.
+Создание новых monitors для сбора и обработки метрик сервера или приложения.
 
 ### edit_monitors
-Edit existing monitors, including expressions, matching rules, and settings.
+Редактирование monitors, включая выражения, правила matching и настройки.
 
 ### delete_monitors
-Delete monitors from the system.
+Удаление monitors из системы.
 
 ## Plugins
 
 ### create_plugins
-Create new plugins (event, monitor, action, or scheduler types).
+Создание новых plugins (event, monitor, action или scheduler).
 
 ### edit_plugins
-Edit existing plugin definitions and their configuration.
+Редактирование определений plugins и их конфигурации.
 
 ### delete_plugins
-Delete plugins from the system.
+Удаление plugins из системы.
 
 ## Roles
 
 ### create_roles
-Create new roles that bundle sets of privileges.
+Создание новых ролей, объединяющих набор привилегий.
 
 ### edit_roles
-Edit existing roles, including titles and assigned privileges.
+Редактирование существующих ролей, включая названия и назначенные привилегии.
 
 ### delete_roles
-Delete roles from the system.
+Удаление ролей из системы.
 
 ## Tags
 
 ### create_tags
-Create system tags for organizing events, jobs, and related data.
+Создание системных тегов для организации событий, задач и связанных данных.
 
 ### edit_tags
-Edit existing tags.
+Редактирование существующих тегов.
 
 ### delete_tags
-Delete tags from the system.
+Удаление тегов из системы.
 
 ## Tickets
 
 ### create_tickets
-Create new tickets for tracking tasks, reviews, or follow-ups.
+Создание новых тикетов для задач, ревью или follow-up.
 
 ### edit_tickets
-Edit existing tickets, including subject, details, assignees, and status.
+Редактирование тикетов, включая тему, детали, назначенных и статус.
 
 ### delete_tickets
-Delete tickets from the system.
+Удаление тикетов из системы.
 
 ## Web Hooks
 
 ### create_web_hooks
-Create new web hooks for outgoing notifications and integrations.
+Создание новых web hooks для исходящих уведомлений и интеграций.
 
 ### edit_web_hooks
-Edit existing web hooks and their request details.
+Редактирование web hooks и их параметров запросов.
 
 ### delete_web_hooks
-Delete web hooks from the system.
+Удаление web hooks из системы.
 
 ## Servers
 
 ### add_servers
-Add new servers on-demand in the UI, and also allow access to the API to dynamically register ephemeral servers.
+Добавление новых серверов по требованию в UI, а также доступ к API для динамической регистрации эфемерных серверов.
 
 ### create_snapshots
-Create on-demand server snapshots and set/cancel watches that take periodic snapshots.
+Создание снимков серверов по требованию и постановка/отмена watches для периодических снимков.
 
 ### delete_snapshots
-Delete server or group snapshots from the system.
+Удаление снимков серверов или групп.

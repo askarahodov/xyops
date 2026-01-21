@@ -13,7 +13,9 @@
 		"boot": "pixl-boot install --script bin/control.sh",
 		"unboot": "pixl-boot uninstall",
 		"test": "pixl-unit test/test.js",
-		"changelog": "node bin/changelog.js"
+		"changelog": "node bin/changelog.js",
+		"prepare": "chmod +x bin/pre-commit-hook.sh && if [ -d .git ]; then ln -sf ../../bin/pre-commit-hook.sh .git/hooks/pre-commit; fi",
+		"setup-hooks": "bash bin/pre-commit-hook.sh --install"
 	},
 	"repository": {
 		"type": "git",

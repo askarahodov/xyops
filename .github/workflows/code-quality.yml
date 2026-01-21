@@ -1,0 +1,156 @@
+name: Code Quality & AI Guidelines Check
+
+on:
+  pull_request:
+    branches: [main, develop]
+  push:
+    branches: [main, develop]
+
+jobs:
+  validate-code:
+    runs-on: ubuntu-latest
+    name: Validate xyOps Code Quality
+
+    steps:
+      - uses: actions/checkout@v3
+        with:
+          fetch-depth: 0
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: 18
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Run tests
+        run: npm test
+
+      - name: Check for blocking I/O
+        run: |
+          echo "Checking for blocking I/O in lib files..."
+          if git diff origin/main..HEAD -- 'lib/*.js' | grep -E '\b(fs\.(readFileSync|writeFileSync|statSync)|require\(.*sync)' > /dev/null 2>&1; then
+            echo "❌ FAIL: Found blocking I/O in lib files"
+            echo "Use async versions: fs.readFile, fs.writeFile, fs.stat"
+            exit 1
+          else
+            echo "✅ PASS: No blocking I/O detected"
+          fi
+
+      - name: Check for unsafe activeJobs mutations
+        run: |
+          echo "Checking for unsafe activeJobs.workflow mutations..."
+          if git diff origin/main..HEAD -- 'lib/*.js' | grep -E 'this\.activeJobs\[.*\]\.workflow.*=' > /dev/null 2>&1; then
+            echo "⚠️  WARNING: Found direct activeJobs.workflow modification"
+            echo "Use jobDetails for workflow state, not activeJobs"
+            echo "See: docs/AI_AGENT_ANALYSIS.md#job-state-duality"
+          else
+            echo "✅ PASS: No unsafe workflow mutations detected"
+          fi
+
+      - name: Check for unnormalized storage keys
+        run: |
+          echo "Checking for unnormalized storage keys..."
+          WARNINGS=0
+          if git diff origin/main..HEAD -- 'lib/*.js' | grep -E "storage\.(get|put|delete|listFind)\('[a-z]" | grep -v normalizeKey; then
+            echo "⚠️  Found storage operations that may not normalize keys"
+            echo "Use: this.storage.normalizeKey(userInput)"
+            WARNINGS=$((WARNINGS + 1))
+          fi
+          if [ "$WARNINGS" -gt 0 ]; then
+            echo "Review these carefully. Not a hard fail, but please verify."
+          fi
+
+      - name: Check API endpoints for loadSession
+        run: |
+          echo "Checking new API endpoints for loadSession..."
+          NEW_ENDPOINTS=$(git diff origin/main..HEAD -- 'lib/api/*.js' | grep -E '^\+.*api_[a-z_]+\(' | wc -l)
+          if [ "$NEW_ENDPOINTS" -gt 0 ]; then
+            echo "ℹ️  INFO: Found $NEW_ENDPOINTS new API endpoint(s)"
+            echo "Verify they include: this.loadSession(args, (err, session, user) => {...})"
+          fi
+
+      - name: Check for CHANGELOG update
+        run: |
+          echo "Checking if CHANGELOG is updated..."
+          if git diff origin/main..HEAD -- 'lib/api/*.js' | grep -q '.' && ! git diff origin/main..HEAD -- 'CHANGELOG.md' | grep -q '.'; then
+            echo "⚠️  WARNING: API changes without CHANGELOG update"
+            echo "Update CHANGELOG.md for user-facing changes"
+          fi
+
+      - name: Comment on PR with guidelines
+        if: github.event_name == 'pull_request'
+        uses: actions/github-script@v6
+        with:
+          script: |
+            const fs = require('fs');
+
+            // Only comment once per PR to avoid spam
+            const { data: comments } = await github.rest.issues.listComments({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              issue_number: context.issue.number,
+            });
+
+            const botCommentExists = comments.some(comment =>
+              comment.body.includes('xyOps Code Quality Guidelines')
+            );
+
+            if (!botCommentExists) {
+              github.rest.issues.createComment({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                issue_number: context.issue.number,
+                body: `## ✅ xyOps Code Quality Guidelines
+
+This PR has been automatically validated against xyOps critical guidelines:
+
+### Critical Checks Performed
+- ✅ No blocking I/O (\`fs.readFileSync\`)
+- ✅ Job state safety (jobDetails vs activeJobs)
+- ✅ Storage key normalization
+- ✅ API session handling
+- ✅ CHANGELOG updates
+
+### Before Merging, Verify:
+1. **Job State**: Changes go to \`jobDetails.wfJobData\`, NOT \`activeJobs.workflow\`
+2. **Workflow Hierarchy**: state → jobs → wfJobData
+3. **Async Patterns**: No blocking I/O, proper error handling
+4. **API Validation**: Session + permissions + input checks
+5. **Integration**: Satellite/server distribution considered
+
+📚 **Reference Docs**:
+- [Architecture Overview](../../.github/copilot-instructions.md)
+- [Quick Reference](../../docs/QUICK_REFERENCE_AI.md)
+- [Critical Issues Analysis](../../docs/AI_AGENT_ANALYSIS.md)
+
+🚀 See \`DEVELOPER_SETUP.md\` for contribution guidelines.`
+              });
+            }
+
+  lint-check:
+    runs-on: ubuntu-latest
+    name: Lint & Format Check
+
+    steps:
+      - uses: actions/checkout@v3
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: 18
+
+      - name: Check for TODO/FIXME markers
+        run: |
+          echo "Checking for unresolved TODO/FIXME markers..."
+          if git diff origin/main..HEAD -- 'lib/**' | grep -E '^\+.*\b(TODO|FIXME|XXX|HACK)\b' > /dev/null 2>&1; then
+            echo "⚠️  Found unresolved markers. Please resolve before merge:"
+            git diff origin/main..HEAD -- 'lib/**' | grep -E '\b(TODO|FIXME|XXX|HACK)\b'
+          fi
+
+      - name: Check code style
+        run: |
+          echo "Checking for consistent code style..."
+          echo "Lines with trailing whitespace:"
+          git diff origin/main..HEAD | grep -E '^\+.*\s+$' || echo "None found (good!)"

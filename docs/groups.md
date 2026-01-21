@@ -1,129 +1,129 @@
-# Server Groups
+# Группы серверов
 
-## Overview
+## Обзор
 
-Server Groups (often simply called "Groups") let you organize multiple servers into logical sets and operate on them as a unit. A single server may belong to any number of groups. Groups power event targeting (run jobs against a group rather than a specific host), aggregate live and historical views in the UI, provide default alert actions, and enable group snapshots and watches.
+Группы серверов (часто просто "Groups") позволяют объединять несколько серверов в логические наборы и работать с ними как с единым целым. Один сервер может входить в любое количество групп. Группы используются для таргетинга событий (запуск задач по группе), агрегирования текущих и исторических представлений в UI, задания default alert actions, а также для group snapshots и watches.
 
-This document explains what groups are, how servers join groups (manually and automatically), how events target groups and choose servers, how default alert actions work, how to take group snapshots and watches, and what you can do on the group UI pages.
+Этот документ объясняет, что такое группы, как серверы попадают в группы (вручную и автоматически), как события таргетируются на группы и выбираются серверы, как работают default alert actions, как делать group snapshots и watches и что доступно на страницах групп в UI.
 
-## Key Points
+## Ключевые моменты
 
-- Groups are named collections of servers; a server can be in multiple groups.
-- Servers can join groups automatically via a hostname regular expression match, or you can assign groups manually on each server.
-- Events can target groups for running jobs; xyOps selects one eligible server from the group per job using a configurable algorithm.
-- Each group has a dedicated UI page showing the group's servers, live status, monitors, processes, connections, jobs, upcoming jobs, and stats.
-- Groups can define default alert actions that run when any alert fires or clears on any server in the group.
-- You can take a snapshot of a group on demand, or set a "watch" to take snapshots every minute for a duration.
+- Группы - это именованные коллекции серверов; один сервер может быть в нескольких группах.
+- Серверы могут попадать в группы автоматически по regex на hostname, либо вы можете назначать их вручную.
+- События могут таргетировать группы для запуска задач; xyOps выбирает один подходящий сервер из группы на каждую задачу по настраиваемому алгоритму.
+- У каждой группы есть отдельная страница в UI с серверами группы, live статусом, мониторами, процессами, соединениями, задачами, будущими задачами и статистикой.
+- Группы могут задавать default alert actions, которые срабатывают при алертах на любых серверах группы.
+- Можно снять snapshot группы по запросу или настроить "watch" на снимки каждую минуту в течение заданного времени.
 
-## Creating and Editing Groups
+## Создание и редактирование групп
 
-- **Location**: Sidebar → Monitoring → Groups.
-- **Create**: Click "New Group...", set a title, optional icon, and an optional hostname regex for auto-assignment. You can also add default alert actions and notes.
-- **Edit**: Click a group → Edit Group to change fields; ID is immutable.
-- **Reorder**: Drag rows in the list to change sort order.
-- **Import/Export**: Use the Import/Export buttons on the list and editor.
-- **Permissions**: Creating, editing, deleting groups require privileges [create_groups](privileges.md#create_groups), [edit_groups](privileges.md#edit_groups), and [delete_groups](privileges.md#delete_groups) respectively.
+- **Location**: Sidebar -> Monitoring -> Groups.
+- **Create**: Нажмите "New Group...", задайте title, опциональный icon и опциональный hostname regex для авто-назначения. Также можно добавить default alert actions и notes.
+- **Edit**: Нажмите на группу -> Edit Group для изменения полей; ID неизменяем.
+- **Reorder**: Перетаскивайте строки списка для сортировки.
+- **Import/Export**: Используйте кнопки Import/Export на списке и в редакторе.
+- **Permissions**: Для создания/редактирования/удаления групп нужны привилегии [create_groups](privileges.md#create_groups), [edit_groups](privileges.md#edit_groups) и [delete_groups](privileges.md#delete_groups) соответственно.
 
-Group fields:
+Поля группы:
 
-- **Title**: Display name for the group.
-- **Icon**: Optional Material Design Icon ID.
-- **Hostname Match**: Regular expression to auto-assign servers by hostname. Leave blank to match none; use `.+` to match all servers.
-- **Alert Actions**: Default alert actions for alerts in this group (details below).
-- **Notes**: Optional freeform text.
+- **Title**: Отображаемое имя группы.
+- **Icon**: Опциональный Material Design Icon ID.
+- **Hostname Match**: Regex для авто-назначения серверов по hostname. Оставьте пустым, чтобы не матчить ничего; используйте `.+` для всех серверов.
+- **Alert Actions**: Default alert actions для алертов в группе (подробнее ниже).
+- **Notes**: Опциональный свободный текст.
 
-## Adding Servers to Groups
+## Добавление серверов в группы
 
-Servers can be added to groups in two ways, and a server may belong to multiple groups at once.
+Серверы можно добавлять в группы двумя способами, и один сервер может входить в несколько групп одновременно.
 
-1. **Automatic by Hostname**
-	- Each group may specify a hostname regular expression in `hostname_match`.
-	- When a server connects (or its hostname changes), xyOps tests it against all groups and assigns any matching groups.
-	- This automatic assignment is re-evaluated whenever groups change (create/edit/delete) and propagated to servers and storage.
-	- To match all servers, use `.+`.
-2. **Manual Assignment per Server**
-	- From any Server page, choose "Edit Server..." and set Groups explicitly, or use "Add Server..." on a Group view.
-	- When you manually assign groups to a server, the server's "Auto Group" behavior is disabled for that server.
-	- To return a server to automatic assignment, clear its manual group list and re-enable Auto Group in the server editor.
+1. **Автоматически по hostname**
+	- Каждая группа может задать regex в `hostname_match`.
+	- Когда сервер подключается (или меняется hostname), xyOps проверяет его по всем группам и назначает совпадающие группы.
+	- Автоматическое назначение пересчитывается при изменении групп (create/edit/delete) и распространяется на серверы и storage.
+	- Чтобы матчить все серверы, используйте `.+`.
+2. **Ручное назначение для сервера**
+	- На странице сервера выберите "Edit Server..." и задайте Groups, либо используйте "Add Server..." на странице группы.
+	- При ручном назначении групп для сервера авто-группировка отключается для этого сервера.
+	- Чтобы вернуть сервер в авто-назначение, очистите список групп вручную и включите Auto Group в редакторе сервера.
 
-Notes:
+Примечания:
 
-- Group membership is additive: a server can be in many groups via both automatic and manual assignment (unless Auto Group is disabled by manual override).
-- Event targeting honors the server's current live groups; changes take effect immediately for new jobs.
+- Членство в группах аддитивное: сервер может быть в нескольких группах и автоматически, и вручную (если Auto Group не отключен вручным override).
+- Таргетинг событий учитывает текущие live группы серверов; изменения вступают в силу сразу для новых задач.
 
 ## Default Alert Actions
 
-Groups can define default alert actions that run when any alert fires or clears on any server in the group.
+Группы могут задавать default alert actions, которые срабатывают при любом алерте на сервере группы.
 
-- In the Group editor, under "Alert Actions".
-- When they run: On `alert_new` (alert fired) and/or `alert_cleared` (alert cleared), based on each action's `condition`.
-- How they combine: For a given alert event, the final action list is a merge of:
-	- The alert definition's own actions.
-	- All matching servers' group default actions (for each group the server is in).
-	- Universal alert actions from configuration.
-	- Actions are deduplicated by type + target (e.g., same email recipients, same web hook ID).
-- Target context: Group actions include group and server context in notifications (emails/web hooks include group titles and links).
+- В редакторе группы, раздел "Alert Actions".
+- Когда срабатывают: при `alert_new` (алерт сработал) и/или `alert_cleared` (алерт снят), в зависимости от `condition` каждого action.
+- Как объединяются: итоговый список actions для события алерта - это слияние:
+	- actions самого определения алерта.
+	- default actions всех групп сервера (для каждой группы, в которой состоит сервер).
+	- universal alert actions из конфигурации.
+	- Actions дедуплицируются по type + target (например, одни и те же email recipients или один и тот же web hook ID).
+- Контекст: group actions включают контекст группы и сервера в уведомления (email/web hooks включают заголовки групп и ссылки).
 
-See [Actions](actions.md) for supported types and parameters.
+См. [Actions](actions.md) для поддерживаемых типов и параметров.
 
-## Targeting Events at Groups
+## Таргетинг событий на группы
 
-Instead of selecting specific servers, you can target one or more Groups for an Event. At job launch time, xyOps resolves groups to the set of currently online, enabled servers and selects one server for the job using the event's selection algorithm.
+Вместо выбора конкретных серверов можно таргетировать одно или несколько Groups для события. При запуске задачи xyOps разворачивает группы в набор текущих онлайн и включенных серверов и выбирает один сервер по алгоритму выбора события.
 
-Behavior:
+Поведение:
 
-- **Resolution**: Event `targets` may include server IDs and/or group IDs. Groups expand to their member servers (as of launch time).
-- **Eligibility**: Only online and enabled servers are considered. Servers may be excluded if certain active alerts specify "limit jobs" (alert-level setting).
-- **No servers available**: If none qualify, xyOps can queue the job if the event defines a Queue limit; otherwise it fails immediately. See [Limits](limits.md#max-queue-limit).
+- **Resolution**: `targets` события могут включать ID серверов и/или ID групп. Группы разворачиваются в текущих участников (на момент запуска).
+- **Eligibility**: Учитываются только онлайн и включенные серверы. Серверы могут быть исключены, если активные алерты имеют "limit jobs" (настройка уровня алерта).
+- **No servers available**: Если нет доступных серверов, xyOps может поставить задачу в очередь при наличии Queue limit; иначе задача сразу упадет. См. [Limits](limits.md#max-queue-limit).
 
-Selection algorithms:
+Алгоритмы выбора:
 
-- `random`: Pick a random server from the eligible set.
-- `round_robin`: Cycle through the eligible set per event; persists across runs.
-- `prefer_first`: Pick the first server after sorting by hostname ascending.
-- `prefer_last`: Pick the last server after sorting by hostname ascending.
-- `least_cpu`: Pick the server with the lowest current average CPU load (`info.cpu.avgLoad`).
-- `least_mem`: Pick the server with the lowest current active memory usage (`info.memory.active`).
-- `monitor:<id>`: Pick the server with the lowest value of the specified monitor.
+- `random`: выбрать случайный сервер из подходящих.
+- `round_robin`: циклический выбор по набору серверов для события; состояние сохраняется между запусками.
+- `prefer_first`: выбрать первый сервер после сортировки по hostname (по возрастанию).
+- `prefer_last`: выбрать последний сервер после сортировки по hostname (по возрастанию).
+- `least_cpu`: выбрать сервер с наименьшей текущей средней нагрузкой CPU (`info.cpu.avgLoad`).
+- `least_mem`: выбрать сервер с наименьшим текущим использованием памяти (`info.memory.active`).
+- `monitor:<id>`: выбрать сервер с минимальным значением указанного monitor.
 
-Details:
+Детали:
 
-- The eligible set is de-duplicated and built from all targets (groups and servers), then filtered by online/enabled status and alert exclusion.
-- For `round_robin`, xyOps maintains per-event rotation state so distribution is fair across restarts or conductor failover.
+- Набор кандидатов дедуплицируется и строится из всех целей (группы и серверы), затем фильтруется по online/enabled и исключению по алертам.
+- Для `round_robin` xyOps хранит состояние ротации для события, так что распределение остается честным при рестартах или failover conductors.
 
-See [Events → Server Selection](events.md#server-selection) and [Data → Event.algo](data.md#event-algo) for additional context.
+См. [Events -> Server Selection](events.md#server-selection) и [Data -> Event.algo](data.md#event-algo) для контекста.
 
-## Group Snapshots and Watches
+## Group Snapshots и Watches
 
-Snapshots capture the group's state at a point in time (including member servers, recent metrics, jobs, and alerts). Watches automate snapshots every minute for a duration.
+Snapshots фиксируют состояние группы на момент времени (с участниками, метриками, задачами и алертами). Watches автоматизируют снимки каждую минуту на протяжении заданной длительности.
 
-- **Take snapshot**: On a Group view, click "Snapshot". Requires privilege [create_snapshots](privileges.md#create_snapshots).
-- **Group watch**: Click the Watch button, set a duration, and xyOps will take a group snapshot every minute until the duration elapses. Set duration to 0 to cancel.
-- **History**: Group snapshots appear on the Snapshots page and link back to the group.
-- **Contents**: A Group snapshot includes the group definition, the matching servers, each server's last minute of "quick" metrics, active jobs on those servers, and alerts touching the group.
+- **Take snapshot**: на странице группы нажмите "Snapshot". Требуется привилегия [create_snapshots](privileges.md#create_snapshots).
+- **Group watch**: нажмите кнопку Watch, задайте длительность, и xyOps будет делать снимки каждую минуту до истечения длительности. Установите 0 для отмены.
+- **History**: снимки групп отображаются на странице Snapshots и имеют ссылки на группу.
+- **Contents**: snapshot группы включает определение группы, подходящие серверы, последнюю минуту "quick" метрик каждого сервера, активные задачи на этих серверах и алерты, затрагивающие группу.
 
-See also: [Snapshots](snapshots.md) and [Data → GroupSnapshot](data.md#groupsnapshot).
+См. также: [Snapshots](snapshots.md) и [Data -> GroupSnapshot](data.md#groupsnapshot).
 
-## Group UI
+## UI группы
 
-Each group has a dedicated live view aggregating all member servers. From Monitoring → Groups, click a group to open its page.
+У каждой группы есть отдельный live view, который агрегирует всех участников. В Monitoring -> Groups нажмите на группу, чтобы открыть страницу.
 
-What you'll see:
+Что видно:
 
-- Summary: Group ID/title/icon, hostname match regex, server count, alert action count, author, created/modified, and fleet breakdown (architectures, OSes, CPU types, virtualization).
-- Controls: Edit Group, Snapshot, Watch, Add Server, plus shortcuts to Group History, Alert History, and Job History.
-- Server table: All servers in the group (online and recently offline), with live status, resource donuts, running jobs, and controls. Supports filtering and selection.
-- Quick Look: Live per-second charts for CPU, memory, disk, and network across visible servers for the last minute.
-- Memory and CPU details: Aggregated memory/CPU breakdowns per server with merging options for compact views.
-- Monitors: Last hour of configured monitors, with filter and chart sizing; one layer per server.
-- Processes and Connections: Aggregated current process table and active network connections across the group with filters.
-- Jobs: Active jobs running on any server in the group; includes progress bars and remaining time.
-- Upcoming jobs: Predicted future jobs that will land on any server in the group (based on event schedules targeting the group).
-- Alerts: Active alerts affecting any member server, with links to detail.
+- Summary: ID/название/иконка группы, hostname match regex, количество серверов, количество alert actions, автор, created/modified и breakdown парка (архитектуры, ОС, типы CPU, виртуализация).
+- Controls: Edit Group, Snapshot, Watch, Add Server, а также ссылки на Group History, Alert History и Job History.
+- Таблица серверов: все серверы группы (онлайн и недавно офлайн), со статусом, resource donut диаграммами, running jobs и контролами. Поддерживает фильтры и выделение.
+- Quick Look: live графики с секундным разрешением по CPU, памяти, диску и сети для видимых серверов за последнюю минуту.
+- Memory и CPU details: агрегированная разбивка памяти/CPU по серверам с режимами объединения для компактного вида.
+- Monitors: последний час настроенных monitors, с фильтрами и размерами графиков; один слой на сервер.
+- Processes и Connections: агрегированные таблицы процессов и активных сетевых соединений по группе с фильтрами.
+- Jobs: активные задачи, выполняющиеся на серверах группы, с прогресс-барами и оставшимся временем.
+- Upcoming jobs: прогноз будущих задач, которые попадут на сервера группы (на основе расписаний событий, таргетирующих группу).
+- Alerts: активные алерты, затрагивающие серверы группы, со ссылками на детали.
 
 ## API
 
-The following endpoints back groups in the UI and automation:
+Эндпойнты, которые используются для групп в UI и автоматизации:
 
 - List groups: `app/get_groups`
 - Get group: `app/get_group`
@@ -134,11 +134,11 @@ The following endpoints back groups in the UI and automation:
 - Create group snapshot: `app/create_group_snapshot`
 - Set/cancel watch: `app/watch_group`
 
-See [API](api.md) for request/response details.
+См. [API](api.md) для деталей запросов/ответов.
 
-## Best Practices
+## Лучшие практики
 
-- Prefer automatic grouping with clear, stable hostname patterns (e.g., environment or role prefixes). Fall back to manual assignments for one-offs.
-- Use multiple groups to express orthogonal concepts (e.g., "prod", "db", "east"), then target events with multiple groups as needed.
-- Combine group default alert actions with alert-specific actions to keep on-call routing centralized.
-- For heterogeneous fleets, consider `monitor:<id>` selection to route jobs based on current load or capacity.
+- Предпочитайте автоматическую группировку с понятными и стабильными шаблонами hostname (например, префиксы окружения или роли). Для исключений используйте ручное назначение.
+- Используйте несколько групп для ортогональных понятий (например, "prod", "db", "east"), затем таргетируйте события на несколько групп по необходимости.
+- Комбинируйте default alert actions групп с действиями на уровне алертов, чтобы централизовать on-call маршрутизацию.
+- Для разнородных парков рассмотрите выбор по `monitor:<id>` для распределения задач по текущей нагрузке.

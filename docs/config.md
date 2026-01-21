@@ -1,28 +1,28 @@
-# Configuration
+# Конфигурация
 
 ## Overview
 
-xyOps is configured primarily by a single JSON file located here: `/opt/xyops/conf/config.json` (the location may vary for custom installs).
+xyOps в основном настраивается через единый JSON файл здесь: `/opt/xyops/conf/config.json` (путь может отличаться при кастомной установке).
 
-However, if the configuration is modified using the UI, overrides are saved in a separate file: `/opt/xyops/conf/overrides.json`
+Однако, если конфигурация изменяется через UI, переопределения сохраняются в отдельный файл: `/opt/xyops/conf/overrides.json`.
 
-This document describes all the editable properties in the `config.json` file.
+Этот документ описывает все изменяемые свойства в `config.json`.
 
 ## base_app_url
 
-This string is the base URL of your xyOps instance (default: `http://localhost:5522`), and is used to build fully-qualified links in emails, alerts, tickets, and web hooks (e.g., job/ticket URLs and the logo URL in emails).
+Эта строка задает базовый URL вашего инстанса xyOps (по умолчанию: `http://localhost:5522`) и используется для построения полных ссылок в письмах, алертах, тикетах и web hooks (например, URL задач/тикетов и URL логотипа в письмах).
 
 ## email_from
 
-This string is the sender email address for all outbound messages (default: `admin@localhost`); many SMTP servers require this to be a valid address.
+Эта строка задает адрес отправителя для всех исходящих сообщений (по умолчанию: `admin@localhost`); многие SMTP серверы требуют, чтобы это был валидный адрес.
 
 ## secret_key
 
-This string is a shared secret used to sign tokens (e.g., download links), authenticate multi-conductor messages, and encrypt/decrypt stored secrets -- set this to a long random value in production.
+Эта строка - общий секрет, используемый для подписи токенов (например, ссылок на скачивание), аутентификации сообщений multi-conductor и шифрования/дешифрования сохраненных секретов. В продакшене задайте длинное случайное значение.
 
 ## mail_settings
 
-This object configures the email transport and is passed verbatim to Nodemailer via pixl-mail. The default is:
+Этот объект конфигурирует транспорт для email и передается напрямую в Nodemailer через pixl-mail. Значение по умолчанию:
 
 ```json
 {
@@ -32,9 +32,9 @@ This object configures the email transport and is passed verbatim to Nodemailer 
 }
 ```
 
-See [Nodemailer - SMTP](https://nodemailer.com/smtp/) and [Nodemailer - Sendmail](https://nodemailer.com/transports/sendmail/) for full options.
+См. [Nodemailer - SMTP](https://nodemailer.com/smtp/) и [Nodemailer - Sendmail](https://nodemailer.com/transports/sendmail/) для полного списка опций.
 
-Example (basic SMTP on localhost):
+Пример (базовый SMTP на localhost):
 
 ```json
 "mail_settings": {
@@ -43,7 +43,7 @@ Example (basic SMTP on localhost):
 }
 ```
 
-Example (local sendmail):
+Пример (локальный sendmail):
 
 ```json
 "mail_settings": {
@@ -53,7 +53,7 @@ Example (local sendmail):
 }
 ```
 
-Example (Fastmail):
+Пример (Fastmail):
 
 ```json
 "mail_settings": {
@@ -66,15 +66,15 @@ Example (Fastmail):
 
 ### mail_settings.host
 
-This string sets the SMTP hostname (default: `localhost`).
+Эта строка задает SMTP hostname (по умолчанию: `localhost`).
 
 ### mail_settings.port
 
-This number sets the SMTP port (default: `25`).
+Это число задает SMTP порт (по умолчанию: `25`).
 
 ### mail_settings.auth
 
-This object holds SMTP auth credentials. Default:
+Этот объект содержит учетные данные SMTP. По умолчанию:
 
 ```json
 { "user": "", "pass": "" }
@@ -82,49 +82,49 @@ This object holds SMTP auth credentials. Default:
 
 ## email_format
 
-This string controls the email body format (default: `html`); use `html` for styled emails or `text` for plain text.
+Эта строка управляет форматом тела письма (по умолчанию: `html`); используйте `html` для писем с оформлением или `text` для plain text.
 
 ## max_emails_per_day
 
-This number caps total emails sent per day across the app (default: 0, meaning no limit); excess sends are rejected with an error.
+Это число ограничивает общее количество отправляемых писем в день по всей системе (по умолчанию: 0, то есть без лимита); избыточные отправки отклоняются с ошибкой.
 
 ## log_dir
 
-This string sets the base directory for server logs and job logs (default: `logs`), e.g., `logs/Error.log` and `logs/jobs/ID.log`.
+Эта строка задает базовую директорию для логов сервера и задач (по умолчанию: `logs`), например `logs/Error.log` и `logs/jobs/ID.log`.
 
-If this is a relative path, it is computed from the xyOps base directory, which is typically `/opt/xyops`.
+Если путь относительный, он считается от базовой директории xyOps (обычно `/opt/xyops`).
 
 ## log_filename
 
-This string is the filename pattern used by the core logger (default: `[component].log`); supports log column placeholders like `[component]`.
+Эта строка задает шаблон имени файла логов для core logger (по умолчанию: `[component].log`); поддерживает плейсхолдеры колонок логов вроде `[component]`.
 
 ## log_columns
 
-This array of strings controls which log columns are written and their order. Default:
+Этот массив строк задает колонки логов и их порядок. По умолчанию:
 
 ```json
 ["hires_epoch", "date", "hostname", "pid", "component", "category", "code", "msg", "data"]
 ```
 
-See [pixl-logger](https://github.com/jhuckaby/pixl-logger) for more details.
+См. [pixl-logger](https://github.com/jhuckaby/pixl-logger) для подробностей.
 
 ## log_archive_path
 
-This string sets the nightly log archive path pattern (default: `logs/archives/[yyyy]/[mm]/[dd]/[filename]-[yyyy]-[mm]-[dd].log.gz`); maintenance gzips and writes logs here.
+Эта строка задает шаблон пути ночного архива логов (по умолчанию: `logs/archives/[yyyy]/[mm]/[dd]/[filename]-[yyyy]-[mm]-[dd].log.gz`); обслуживание сжимает и записывает логи сюда.
 
-Accepts [date/time placeholders](https://github.com/jhuckaby/pixl-tools#getdateargs) to dynamically generate the log archive filenames.
+Поддерживает [date/time placeholders](https://github.com/jhuckaby/pixl-tools#getdateargs) для динамического формирования имен архивов.
 
 ## log_archive_keep
 
-This string specifies how long to keep log archives for, e.g. `30 days`.
+Эта строка задает срок хранения архивов логов, например `30 days`.
 
-Older log archives found in [log_archive_path](#log_archive_path) are automatically deleted after the nightly logs are rotated.
+Старые архивы в [log_archive_path](#log_archive_path) автоматически удаляются после ночной ротации.
 
-Set this to an empty string to disable the feature and keep log archives indefinitely.
+Установите пустую строку, чтобы отключить функцию и хранить архивы бессрочно.
 
 ## log_archive_storage
 
-Optionally archive logs to storage instead of local disk.  This is primarily designed for 3rd party storage engines like S3.  To use this feature, first *disable* [log_archive_path](#log_archive_path) (set to empty string), and then set this property accordingly:
+Опционально архивировать логи в хранилище вместо локального диска. Это в первую очередь для сторонних storage engines вроде S3. Для использования сначала *отключите* [log_archive_path](#log_archive_path) (задайте пустую строку), затем настройте это свойство:
 
 ```json
 "log_archive_storage": {
@@ -136,79 +136,79 @@ Optionally archive logs to storage instead of local disk.  This is primarily des
 
 ## log_crashes
 
-This boolean enables capturing uncaught exceptions and crashes in the logger subsystem (default: `true`).
+Этот boolean включает фиксацию необработанных исключений и крэшей в logger subsystem (по умолчанию: `true`).
 
-The crash log location will be: `/opt/xyops/logs/crash.log`
+Файл crash лога будет: `/opt/xyops/logs/crash.log`.
 
 ## temp_dir
 
-This string is the scratch directory for temporary files such as plugin bundles and staging uploads (default: `temp`).
+Эта строка задает scratch директорию для временных файлов, таких как plugin bundles и staging uploads (по умолчанию: `temp`).
 
-If this is a relative path, it is computed from the xyOps base directory, which is typically `/opt/xyops`.
+Если путь относительный, он считается от базовой директории xyOps (обычно `/opt/xyops`).
 
 ## pid_file
 
-This string sets the path to the main process PID file for start/stop tooling (default: `logs/xyops.pid`).
+Эта строка задает путь к PID файлу основного процесса для старт/стоп утилит (по умолчанию: `logs/xyops.pid`).
 
-If this is a relative path, it is computed from the xyOps base directory, which is typically `/opt/xyops`.
+Если путь относительный, он считается от базовой директории xyOps (обычно `/opt/xyops`).
 
 ## debug_level
 
-This number sets the verbosity level for the logger (default: `5`; 1 = quiet, 10 = very verbose).
+Это число задает уровень подробности логов (по умолчанию: `5`; 1 = тихо, 10 = очень подробно).
 
 ## tick_precision_ms
 
-This number sets the internal timer precision in milliseconds used by the server framework for scheduling ticks (default: `50`).
+Это число задает внутреннюю точность таймера в миллисекундах для планировщика (по умолчанию: `50`).
 
-This controls how precise xyOps is when executing actions targeted on a specific second.  Lower values mean xyOps is more precise, but will result in heavier idle CPU usage.
+Это определяет точность выполнения действий, нацеленных на конкретную секунду. Меньшее значение дает большую точность, но увеличивает CPU нагрузку в простое.
 
 ## maintenance
 
-This string (in `HH:MM` format, server local time) schedules daily maintenance tasks such as DB trimming and log archival (default: `04:00`).
+Эта строка (в формате `HH:MM`, локальное время сервера) задает ежедневное время обслуживания, например подрезку БД и архивирование логов (по умолчанию: `04:00`).
 
 ## ttl
 
-This number (seconds) is the default HTTP cache TTL applied to selected API responses and static resources where applicable (default: `300`).
+Это число (в секундах) задает дефолтный HTTP cache TTL для некоторых API ответов и статических ресурсов (по умолчанию: `300`).
 
 ## file_expiration
 
-This duration string sets the default expiration for uploaded files (e.g., ticket attachments), used to compute per-file expiration timestamps (default: `5 years`).
+Эта строка-диапазон задает дефолтный срок хранения загруженных файлов (например, вложений тикетов), используется для расчета per-file expiration (по умолчанию: `5 years`).
 
 ## timeline_expiration
 
-This duration string sets the retention for monitor timelines; older points are pruned during maintenance (default: `10 years`).
+Эта строка-диапазон задает срок хранения временных рядов мониторинга; старые точки удаляются при обслуживании (по умолчанию: `10 years`).
 
 ## ping_freq_sec
 
-This number (seconds) controls the interval for sending WebSocket pings to clients/workers (default: `10`).
+Это число (в секундах) задает интервал WebSocket ping до клиентов/воркеров (по умолчанию: `10`).
 
 ## ping_timeout_sec
 
-This number (seconds) is the max allowed time without a pong before a socket is considered timed out (default: `20`).
+Это число (в секундах) задает максимальное время без pong, после чего сокет считается тайм-аутным (по умолчанию: `20`).
 
 ## max_jobs_per_min
 
-This number sets a global rate limit on job starts per minute (default: 100); additional jobs are deferred with an error.
+Это число задает глобальный лимит стартов задач в минуту (по умолчанию: 100); лишние задачи отклоняются с ошибкой.
 
-This is designed as a runaway e-brake mechanism, to prevent an erroneous workflow configuration from bringing down the entire system.
+Это аварийный тормоз, предотвращающий ситуацию, когда неверная конфигурация workflow кладет всю систему.
 
 ## dead_job_timeout
 
-This number (seconds) determines when a running job with no updates is considered dead and aborted (default: `120`).
+Это число (в секундах) определяет, когда выполняющаяся задача без обновлений считается мертвой и прерывается (по умолчанию: `120`).
 
 ## job_env
 
-This object contains environment variables merged into every job process.
+Этот объект содержит переменные окружения, которые добавляются в каждый процесс задачи.
 
-Values can be overridden per job.
+Значения могут быть переопределены на уровне задачи.
 
 ## job_universal_limits
 
-This object defines global limit rules automatically applied to all jobs/workflows, such as concurrency, queue, or retry caps.
+Этот объект определяет глобальные правила limits, автоматически применяемые ко всем задачам/workflows, например ограничения на параллелизм, очередь или ретраи.
 
 ## job_universal_actions
 
-This object defines global actions executed when conditions are met (default includes a system snapshot on error).  Actions can be assigned by job type (workflow or event).  Example:
+Этот объект задает глобальные actions, выполняемые при выполнении условий (по умолчанию включает system snapshot при ошибке). Actions могут назначаться по типу задачи (workflow или event). Пример:
 
 ```json
 "job_universal_actions": {
@@ -226,7 +226,7 @@ This object defines global actions executed when conditions are met (default inc
 
 ## alert_universal_actions
 
-This array lists actions automatically applied to all alerts for standardized behavior (default includes a hidden snapshot on new alert):
+Этот массив содержит actions, автоматически применяемые ко всем алертам для стандартизированного поведения (по умолчанию включает скрытый snapshot при новом алерте):
 
 ```json
 "alert_universal_actions": [
@@ -241,67 +241,67 @@ This array lists actions automatically applied to all alerts for standardized be
 
 ## hostname_display_strip
 
-This regex string is removed from the end of hostnames for display and notifications (default: `\\.[\\w\\-]+\\.\\w+$`), e.g., to strip the domain suffix.
+Эта regex строка удаляется из конца hostname для отображения и уведомлений (по умолчанию: `\\.[\\w\\-]+\\.\\w+$`), например, чтобы убрать доменный суффикс.
 
 ## ip_display_strip
 
-This regex string is removed from IP addresses for display (default: `^::ffff:`), e.g., to strip the IPv6 IPv4-mapped prefix.
+Эта regex строка удаляется из IP адресов для отображения (по умолчанию: `^::ffff:`), например, чтобы убрать IPv6 IPv4-mapped префикс.
 
 ## search_file_threads
 
-This number sets how many worker threads are used when searching files on disk (default: `1`).
+Это число задает количество worker threads для поиска файлов на диске (по умолчанию: `1`).
 
 ## search_file_regex
 
-This regex string limits which filenames are scanned by the file search APIs (default: `\\.(txt|log|csv|tsv|xml|json)(\\.gz)?$`).
+Эта regex строка ограничивает, какие имена файлов просматриваются file search API (по умолчанию: `\\.(txt|log|csv|tsv|xml|json)(\\.gz)?$`).
 
 
 ## tickets
 
-This section configures the ticketing subsystem.
+Этот раздел настраивает подсистему тикетов.
 
 ### tickets.email_enabled
 
-This boolean enables ticket-related outgoing emails such as new/overdue notifications (default: `true`).
+Этот boolean включает исходящие письма по тикетам (новые/просроченные уведомления) (по умолчанию: `true`).
 
 ### tickets.email_debounce_sec
 
-This number (seconds) sets the minimum spacing between repeated ticket update emails to reduce noise (default: `30`).
+Это число (в секундах) задает минимальный интервал между повторными письмами о тикете, чтобы снизить шум (по умолчанию: `30`).
 
-For example, if a user makes a series of sequential changes to a ticket, only one email will be sent in a 30-second window, containing a summary of all the accumulated changes.
+Например, если пользователь сделал серию изменений подряд, будет отправлено одно письмо в окно 30 секунд с суммарными изменениями.
 
 ### tickets.overdue_schedule
 
-This string (`HH:MM`) sets the daily time when the system scans for overdue tickets and sends notices (default: `04:30`).
+Эта строка (`HH:MM`) задает ежедневное время сканирования просроченных тикетов и отправки уведомлений (по умолчанию: `04:30`).
 
 ### tickets.overdue_query
 
-This string is the [Unbase-style search query](https://github.com/jhuckaby/pixl-server-storage/blob/master/docs/Indexer.md#simple-queries) used to select overdue tickets during the scheduled scan (default: `status:open due:<today`).
+Эта строка - [Unbase-style search query](https://github.com/jhuckaby/pixl-server-storage/blob/master/docs/Indexer.md#simple-queries), которая используется для выбора просроченных тикетов (по умолчанию: `status:open due:<today`).
 
 ### tickets.due_date_format
 
-This date format string controls how ticket due dates are displayed (default: `[dddd], [mmmm] [mday], [yyyy]`).
+Этот формат даты задает отображение сроков тикетов (по умолчанию: `[dddd], [mmmm] [mday], [yyyy]`).
 
 ### tickets.date_time_format
 
-This date/time format string controls how ticket timestamps are displayed (default: `[dddd], [mmmm] [mday], [yyyy] [hour12]:[mi] [ampm]`).
+Этот формат даты/времени задает отображение timestamps тикетов (по умолчанию: `[dddd], [mmmm] [mday], [yyyy] [hour12]:[mi] [ampm]`).
 
 
 ## hooks
 
-This object defines system-wide web hook triggers that can fire on any logged activity.  Example:
+Этот объект задает системные web hook триггеры, которые могут срабатывать на любую активность. Пример:
 
 ```json
 { "job_complete": "wmhv3s16ymk" }
 ```
 
-See [System Hooks](syshooks.md) for more details.
+См. [System Hooks](syshooks.md) для подробностей.
 
 
 
 ## hook_text_templates
 
-This object provides message templates for jobs and alerts; Mustache-style placeholders populate human-readable text for emails and web hooks (default includes templates like `{{links.job_details}}`).  Example set:
+Этот объект задает шаблоны сообщений для задач и алертов; плейсхолдеры в стиле Mustache формируют человекочитаемый текст для email и web hooks (по умолчанию включает шаблоны вроде `{{links.job_details}}`). Пример набора:
 
 ```json
 {
@@ -316,33 +316,33 @@ This object provides message templates for jobs and alerts; Mustache-style place
 }
 ```
 
-See [JobHookData](data.md#jobhookdata) and [AlertHookData](data.md#alerthookdata) for a list of the placeholder macros you can use here.
+См. [JobHookData](data.md#jobhookdata) и [AlertHookData](data.md#alerthookdata) для списка доступных макросов.
 
 
 
 ## multi
 
-This section configures the multi-server subsystem.
+Этот раздел настраивает multi-server подсистему.
 
 ### multi.list_url
 
-This URL string points to the release metadata used by multi-conductor upgrade flows (default: `https://api.github.com/repos/pixlcore/xyops/releases`).
+Эта строка URL указывает на метаданные релизов, используемые для обновлений multi-conductor (по умолчанию: `https://api.github.com/repos/pixlcore/xyops/releases`).
 
 ### multi.protocol
 
-This string selects the WebSocket protocol for peer communications (default: `ws:`); set to `wss:` to require TLS.
+Эта строка выбирает протокол WebSocket для связи между peers (по умолчанию: `ws:`); установите `wss:` для обязательного TLS.
 
 ### multi.connect_timeout_sec
 
-This number (seconds) sets the connection timeout for initial peer socket connections (default: `3`).
+Это число (в секундах) задает таймаут подключения для первичных peer socket соединений (по умолчанию: `3`).
 
 ### multi.master_timeout_sec
 
-This number (seconds) is used for the election timer and general control timeouts for conductor operations (default: `10`).
+Это число (в секундах) используется для election таймера и общих таймаутов управления conductors (по умолчанию: `10`).
 
 ### multi.socket_opts
 
-This object holds options merged into the WebSocket client, e.g., TLS options for self-signed certs. Default:
+Этот объект содержит опции, объединяемые с WebSocket клиентом, например TLS настройки для self-signed сертификатов. По умолчанию:
 
 ```json
 { "rejectUnauthorized": false }
@@ -352,41 +352,41 @@ This object holds options merged into the WebSocket client, e.g., TLS options fo
 
 ## satellite
 
-This section configures xySat, our remote satellite agent.
+Этот раздел настраивает xySat, наш удаленный satellite агент.
 
 ### satellite.list_url
 
-This URL string points to the release metadata for the satellite agent (default: `https://api.github.com/repos/pixlcore/xysat/releases`).
+Эта строка URL указывает на метаданные релизов satellite агента (по умолчанию: `https://api.github.com/repos/pixlcore/xysat/releases`).
 
 ### satellite.base_url
 
-This URL string is the base for satellite downloads/upgrades (default: `https://github.com/pixlcore/xysat/releases`).
+Эта строка URL задает базовый URL для загрузок/обновлений satellite (по умолчанию: `https://github.com/pixlcore/xysat/releases`).
 
 ### satellite.version
 
-This string sets the desired satellite version to fetch; may be a semver or tag (default: `latest`).
+Эта строка задает желаемую версию satellite для загрузки; может быть semver или тег (по умолчанию: `latest`).
 
 ### satellite.cache_ttl
 
-This number (seconds) sets the cache TTL for satellite release metadata to reduce network calls (default: `3600`).
+Это число (в секундах) задает TTL кэша метаданных релизов satellite, чтобы уменьшить сетевые запросы (по умолчанию: `3600`).
 
 ### satellite.config
 
-This object contains web server and runtime settings for xySat; these options are passed along when managing or provisioning satellite nodes (defaults provided in the sample config).
+Этот объект содержит настройки web server и runtime для xySat; эти опции передаются при управлении или провижининге satellite узлов (дефолты в sample config).
 
 
 
 ## marketplace
 
-This section configures the xyOps Marketplace.
+Этот раздел настраивает xyOps Marketplace.
 
 ## marketplace.enabled
 
-This boolean enables or disables the marketplace.  If disabled, users cannot search for or install plugins.  The default is `true` (enabled).
+Этот boolean включает или отключает marketplace. Если отключен, пользователи не смогут искать или устанавливать плагины. По умолчанию `true` (включено).
 
 ## marketplace.metadata_url
 
-This string points to the central marketplace metadata location, which contains the full product catalog.  Example:
+Эта строка указывает на центральные метаданные marketplace, где находится полный каталог продуктов. Пример:
 
 ```
 https://raw.githubusercontent.com/pixlcore/xyops-marketplace/refs/heads/main/marketplace.json
@@ -394,7 +394,7 @@ https://raw.githubusercontent.com/pixlcore/xyops-marketplace/refs/heads/main/mar
 
 ## marketplace.repo_url_template
 
-This string is a template used to generate plugin repository URLs to specific files.  It has placeholder macros for `id` (org and repo), `version` (git tag), and `filename`.  Example:
+Эта строка - шаблон для формирования URL репозитория плагина к конкретным файлам. Содержит макросы `id` (org и repo), `version` (git tag) и `filename`. Пример:
 
 ```
 https://raw.githubusercontent.com/[id]/refs/tags/[version]/[filename]
@@ -402,447 +402,447 @@ https://raw.githubusercontent.com/[id]/refs/tags/[version]/[filename]
 
 ## marketplace.ttl
 
-This is the number of seconds to cache the marketplace metadata locally before re-fetching from origin.  The default is `3600` (one hour).
+Это количество секунд для кэширования metadata marketplace локально перед повторным запросом. По умолчанию `3600` (1 час).
 
 
 
 ## quick_monitors
 
-This array defines built-in metrics to collect (defaults include CPU, memory, disk, and network presets).  These are displayed on server detail pages for real-time monitoring.
+Этот массив задает встроенные метрики для сбора (по умолчанию включает CPU, память, диск и сеть). Они отображаются на страницах серверов для realtime мониторинга.
 
 ## default_user_privileges
 
-This object sets default privileges for new users (defaults include create/edit events, run/tag/comment jobs, and ticket permissions) unless overridden by roles or SSO.
+Этот объект задает дефолтные привилегии для новых пользователей (по умолчанию включает создание/редактирование событий, запуск/тег/комментарий задач и права по тикетам), если не переопределено ролями или SSO.
 
-See [Privileges](privileges.md) for more details on privileges.
+См. [Privileges](privileges.md) для подробностей.
 
 ## default_user_prefs
 
-This object sets default UI preferences for new users (locale, theme, motion/contrast, volume, saved searches, etc.), merged into profiles at creation/login.
+Этот объект задает дефолтные UI предпочтения новых пользователей (locale, theme, motion/contrast, volume, saved searches и т.д.), которые объединяются с профилем при создании/входе.
 
 
 ## db_maint
 
-These settings are used during nightly database maintenance.
+Эти настройки используются во время ночного обслуживания базы данных.
 
 ### db_maint.jobs
 
 #### db_maint.jobs.max_rows
 
-This number sets the maximum rows retained for the jobs database table (default: `1000000`); oldest are pruned during maintenance.
+Это число задает максимальное количество строк в таблице jobs (по умолчанию: `1000000`); самые старые удаляются при обслуживании.
 
 ### db_maint.alerts
 
 #### db_maint.alerts.max_rows
 
-This number sets the maximum rows retained for the alerts database table (default: `100000`); oldest are pruned during maintenance.
+Это число задает максимальное количество строк в таблице alerts (по умолчанию: `100000`); самые старые удаляются при обслуживании.
 
 ### db_maint.snapshots
 
 #### db_maint.snapshots.max_rows
 
-This number sets the maximum rows retained for the snapshots database table (default: `100000`); oldest are pruned during maintenance.
+Это число задает максимальное количество строк в таблице snapshots (по умолчанию: `100000`); самые старые удаляются при обслуживании.
 
 ### db_maint.activity
 
 #### db_maint.activity.max_rows
 
-This number sets the maximum rows retained for the activity database table (default: `100000`); oldest are pruned during maintenance.
+Это число задает максимальное количество строк в таблице activity (по умолчанию: `100000`); самые старые удаляются при обслуживании.
 
 ### db_maint.servers
 
 #### db_maint.servers.max_rows
 
-This number sets the maximum rows retained for the servers database table (default: `10000`); oldest are pruned during maintenance.
+Это число задает максимальное количество строк в таблице servers (по умолчанию: `10000`); самые старые удаляются при обслуживании.
 
 
 ## airgap
 
-This section is for airgap mode, which can prevent xyOps from making unauthorized outbound connections beyond a specified IP range.
+Этот раздел для airgap режима, который может запретить xyOps делать несанкционированные исходящие подключения вне заданного диапазона IP.
 
-See [Air-Gapped Mode](hosting.md#air-gapped-mode) for more details.
+См. [Air-Gapped Mode](hosting.md#air-gapped-mode) для подробностей.
 
 ### airgap.enabled
 
-This boolean enables outbound network egress controls for server-initiated HTTP(S) requests (default: `false`).
+Этот boolean включает контроль исходящих HTTP(S) запросов, инициированных сервером (по умолчанию: `false`).
 
 ### airgap.outbound_whitelist
 
-This array of CIDRs/hosts defines destinations explicitly allowed for outbound requests (default includes local/private networks); when enabled, only these are permitted.
+Этот массив CIDR/hosts задает разрешенные назначения для исходящих запросов (по умолчанию включает локальные/приватные сети); когда режим включен, разрешены только эти адреса.
 
 ### airgap.outbound_blacklist
 
-This array of CIDRs/hosts defines destinations that are always blocked for outbound requests.
+Этот массив CIDR/hosts задает назначения, которые всегда блокируются.
 
 
 ## client
 
-This section is for the client-side configuration, used in the xyOps web application.
+Этот раздел для клиентской конфигурации, используемой в web приложении xyOps.
 
 ### client.name
 
-This string is the product name displayed in the UI and included in email/version text (default: `xyOps`).
+Эта строка - имя продукта, отображаемое в UI и в тексте писем/версии (по умолчанию: `xyOps`).
 
 ### client.company
 
-This string is displayed as part of the copyright message at the bottom-left corner of the UI (default: `PixlCore LLC`).
+Эта строка отображается как часть копирайта в левом нижнем углу UI (по умолчанию: `PixlCore LLC`).
 
 ### client.logo_url
 
-This path string points to the logo used in the UI header/sidebar and in emails (default: `images/logotype.png`).
+Этот путь указывает логотип, используемый в header/sidebar UI и в письмах (по умолчанию: `images/logotype.png`).
 
 ### client.items_per_page
 
-This number sets the default page size for list views and searches (default: `50`).
+Это число задает дефолтный размер страниц для списков и поиска (по умолчанию: `50`).
 
 ### client.alt_items_per_page
 
-This number sets the secondary page size for inline widgets and dropdown lists (default: `25`).
+Это число задает дополнительный размер страницы для inline widgets и dropdown списков (по умолчанию: `25`).
 
 ### client.events_per_page
 
-This number controls how many additional events are loaded per increment in the Events view (default: `500`).
+Это число управляет тем, сколько дополнительных событий загружается за один шаг в Events view (по умолчанию: `500`).
 
 ### client.max_table_rows
 
-This number caps the number of rendered table rows client-side to keep the UI responsive (default: `500`).
+Это число ограничивает количество отрисовываемых строк таблиц на клиенте для отзывчивости UI (по умолчанию: `500`).
 
 ### client.max_menu_items
 
-Upper bound for items shown in menus and dropdowns (default: `1000`).
+Верхняя граница элементов в меню и dropdown (по умолчанию: `1000`).
 
 ### client.alt_to_toggle
 
-Requires the user to hold the Opt/Alt key to toggle the `enabled` property of certain entities in the UI (prevents accidental clicks).
+Требует удерживать Opt/Alt для переключения свойства `enabled` у некоторых сущностей в UI (защита от случайных кликов).
 
 ### client.new_event_template
 
-Provides sensible defaults for new events (triggers, limits, actions). Used to prefill the New Event form.
+Задает разумные дефолты для новых событий (triggers, limits, actions). Используется для предзаполнения формы New Event.
 
 ### client.chart_defaults
 
-Default chart rendering options (line width, smoothing, ticks). Applied to monitor charts in the UI.
+Дефолтные параметры отрисовки графиков (толщина линии, сглаживание, тики). Применяется к графикам мониторов в UI.
 
-See [pixl-chart](https://github.com/jhuckaby/pixl-chart) for more details.
+См. [pixl-chart](https://github.com/jhuckaby/pixl-chart) для подробностей.
 
 ### client.editor_defaults
 
-Default code editor preferences (tabs, indent, line wrapping) for [CodeMirror](https://codemirror.net/5/) fields in the UI.
+Дефолтные настройки редактора кода (табы, отступы, перенос строк) для полей [CodeMirror](https://codemirror.net/5/) в UI.
 
 ### client.bucket_upload_settings
 
-Client-side limits for bucket uploads (max files/size/types). Enforced in the UI before upload, and enforced server-side.
+Клиентские лимиты для загрузки в buckets (макс. файлов/размер/типы). Проверяются в UI перед загрузкой и на сервере.
 
 ### client.ticket_upload_settings
 
-Client-side limits for ticket attachments (max files/size/types). Enforced in the UI before upload, and enforced server-side.
+Клиентские лимиты для вложений тикетов (макс. файлов/размер/типы). Проверяются в UI перед загрузкой и на сервере.
 
 ### client.job_upload_settings
 
-Client-side limits for job file uploads (max files/size/types) and default expiration for user/plugin files.
+Клиентские лимиты для загрузки файлов задач (макс. файлов/размер/типы) и дефолтный срок хранения пользовательских/плагинных файлов.
 
 
 ## Storage
 
-This section configures the backend storage subsystem used by xyOps.
+Этот раздел настраивает backend storage для xyOps.
 
-For full storage system documentation, see [pixl-server-storage](https://github.com/jhuckaby/pixl-server-storage).
+Полная документация: [pixl-server-storage](https://github.com/jhuckaby/pixl-server-storage).
 
 ### Storage.engine
 
-Selects the storage engine (e.g., Hybrid, Filesystem, SQLite, S3).  The default is `Hybrid`, which uses a combination of SQLite for JSON data records and the filesystem for binary file storage.
+Выбор storage engine (например, Hybrid, Filesystem, SQLite, S3). По умолчанию `Hybrid`, который сочетает SQLite для JSON записей и файловую систему для бинарных файлов.
 
-See [Engines](https://github.com/jhuckaby/pixl-server-storage#engines) for more details.
+См. [Engines](https://github.com/jhuckaby/pixl-server-storage#engines) для деталей.
 
 ### Storage.list_page_size
 
-Default page size for storage lists (default: `100`).
+Размер страницы по умолчанию для storage lists (по умолчанию: `100`).
 
 ### Storage.hash_page_size
 
-Default page size for storage hashes (default: `100`).
+Размер страницы по умолчанию для storage hashes (по умолчанию: `100`).
 
 ### Storage.concurrency
 
-Maximum concurrent I/O operations (default: `32`).
+Максимальная параллельность I/O (по умолчанию: `32`).
 
 ### Storage.transactions
 
-Enables transactional writes (default: `true`).
+Включает транзакционные записи (по умолчанию: `true`).
 
 ### Storage.network_transactions
 
-Enables transactions across networked backends (experimental: use with caution).
+Включает транзакции по сети (экспериментально: используйте осторожно).
 
 ### Storage.trans_auto_recover
 
-Automatically recover incomplete transactions on startup (default: `true`).
+Автоматически восстанавливает незавершенные транзакции при старте (по умолчанию: `true`).
 
 ### Storage.trans_dir
 
-Temp directory for transaction logs/journals (default: `data/_transactions`).
+Временная директория для журналов/логов транзакций (по умолчанию: `data/_transactions`).
 
 ### Storage.log_event_types
 
-Default enables logging for get/put/delete and other operations. Controls which storage events are logged.
+По умолчанию включает логирование операций get/put/delete и др. Управляет тем, какие storage события пишутся в лог.
 
 ### Storage.Hybrid
 
-Configuration for the [Hybrid](https://github.com/jhuckaby/pixl-server-storage#hybrid) storage backend.
+Конфигурация для [Hybrid](https://github.com/jhuckaby/pixl-server-storage#hybrid) backend.
 
 ### Storage.Filesystem
 
-Filesystem backend options (base directory, namespacing, raw paths, fsync, in-memory cache). See [Filesystem](https://github.com/jhuckaby/pixl-server-storage#local-filesystem) for details.
+Опции Filesystem backend (base directory, namespacing, raw paths, fsync, in-memory cache). См. [Filesystem](https://github.com/jhuckaby/pixl-server-storage#local-filesystem).
 
 ### Storage.SQLite
 
-SQLite backend options (base directory, filename, pragmas, cache, backups). See [SQLite](https://github.com/jhuckaby/pixl-server-storage#sqlite) for details.
+Опции SQLite backend (base directory, filename, pragmas, cache, backups). См. [SQLite](https://github.com/jhuckaby/pixl-server-storage#sqlite).
 
 ### Storage.AWS
 
-AWS SDK options (region/credentials) used by S3 when applicable. See [Amazon S3](https://github.com/jhuckaby/pixl-server-storage#amazon-s3) for details.
+Опции AWS SDK (region/credentials) для S3. См. [Amazon S3](https://github.com/jhuckaby/pixl-server-storage#amazon-s3).
 
 ### Storage.S3
 
-S3 backend options (timeouts, retries, bucket params, caching). See [Amazon S3](https://github.com/jhuckaby/pixl-server-storage#amazon-s3) for details.
+Опции S3 backend (timeouts, retries, bucket params, caching). См. [Amazon S3](https://github.com/jhuckaby/pixl-server-storage#amazon-s3).
 
 
 ## WebServer
 
-This section configures the web server used by xyOps.
+Этот раздел настраивает web server xyOps.
 
-For full web server configuration, see [pixl-server-web](https://github.com/jhuckaby/pixl-server-web).
+Полная документация: [pixl-server-web](https://github.com/jhuckaby/pixl-server-web).
 
 ### WebServer.port
 
-HTTP port for the built-in web server (default: `5522`).
+HTTP порт встроенного web server (по умолчанию: `5522`).
 
 ### WebServer.htdocs_dir
 
-Base directory for static assets and the web UI (default: `htdocs`).
+Базовая директория статических ассетов и web UI (по умолчанию: `htdocs`).
 
-If this is a relative path, it is computed from the xyOps base directory, which is typically `/opt/xyops`.
+Если путь относительный, он считается от базовой директории xyOps (обычно `/opt/xyops`).
 
 ### WebServer.max_upload_size
 
-Maximum accepted upload size in bytes (default: `1073741824`).
+Максимальный допустимый размер загрузки в байтах (по умолчанию: `1073741824`).
 
 ### WebServer.static_ttl
 
-Cache TTL for serving static assets (default: `31536000`).
+Cache TTL для статических ассетов (по умолчанию: `31536000`).
 
 ### WebServer.static_index
 
-Default index file for directory roots (default: `index.html`).
+Индексный файл по умолчанию для директорий (по умолчанию: `index.html`).
 
 ### WebServer.server_signature
 
-Server signature string included in headers (default: `xyOps`).
+Строка подписи сервера в заголовках (по умолчанию: `xyOps`).
 
 ### WebServer.compress_text
 
-Enables automatic gzip/deflate compression for text responses (default: `true`).
+Включает gzip/deflate компрессию для текстовых ответов (по умолчанию: `true`).
 
 ### WebServer.enable_brotli
 
-Enables Brotli compression when supported (default: `true`).
+Включает Brotli компрессию, если поддерживается (по умолчанию: `true`).
 
 ### WebServer.timeout
 
-Per-request idle timeout for incoming connections in seconds (default: `30`);
+Таймаут простоя входящих соединений на запрос, в секундах (по умолчанию: `30`);
 
 ### WebServer.regex_json
 
-Content-type regex pattern treated as JSON for response handling (default: `(text|javascript|js|json)`).
+Regex content-type, который трактуется как JSON (по умолчанию: `(text|javascript|js|json)`).
 
 ### WebServer.clean_headers
 
-Strips unsafe HTTP header characters from responses (default: `true`).
+Удаляет небезопасные символы HTTP заголовков в ответах (по умолчанию: `true`).
 
 ### WebServer.log_socket_errors
 
-Controls logging of low-level socket errors (default: `false`).
+Управляет логированием низкоуровневых socket ошибок (по умолчанию: `false`).
 
 ### WebServer.response_headers
 
-Extra headers added to all responses.  The default is to add none.
+Дополнительные заголовки, добавляемые ко всем ответам. По умолчанию ничего не добавляется.
 
 ### WebServer.keep_alives
 
-Controls HTTP keep-alive behavior (see [keep_alives](https://github.com/jhuckaby/pixl-server-web#keep_alives) for details).
+Управляет keep-alive поведением HTTP (см. [keep_alives](https://github.com/jhuckaby/pixl-server-web#keep_alives)).
 
 ### WebServer.keep_alive_timeout
 
-Idle timeout for keep-alive connections in seconds (default: `30`).
+Idle timeout для keep-alive соединений в секундах (по умолчанию: `30`).
 
 ### WebServer.max_connections
 
-Maximum concurrent socket connections allowed (default: `2048`).
+Максимальное число одновременных socket соединений (по умолчанию: `2048`).
 
 ### WebServer.max_concurrent_requests
 
-Maximum number of concurrent requests allowed (default: `256`).
+Максимальное число одновременных запросов (по умолчанию: `256`).
 
 ### WebServer.log_requests
 
-Enables per-request transaction logging (default: `false`).
+Включает per-request транзакционное логирование (по умолчанию: `false`).
 
 ### WebServer.legacy_callback_support
 
-Enables legacy JSONP/callback patterns for older clients (default: `false`).  Do not enable this on production.
+Включает legacy JSONP/callback для старых клиентов (по умолчанию: `false`). Не включайте в продакшне.
 
 ### WebServer.startup_message
 
-Emits a startup message with server URL to the console (default: `false`).  Please leave this disabled, as xyOps emits its own startup message.
+Выводит стартовое сообщение с URL сервера в консоль (по умолчанию: `false`). Оставьте выключенным, xyOps выводит свое сообщение.
 
 ### WebServer.debug_ttl
 
-Sets the default cache TTL to `0` when running in debug mode (default: `false`).
+Устанавливает дефолтный cache TTL в `0` при запуске в debug mode (по умолчанию: `false`).
 
 ### WebServer.debug_bind_local
 
-Binds to localhost only when running in debug mode (default: `true`).
+Привязывает к localhost только в debug mode (по умолчанию: `true`).
 
 ### WebServer.whitelist
 
-List of client IPs/CIDRs explicitly allowed to access the webserver (default: all).
+Список IP/CIDR, которым разрешен доступ к webserver (по умолчанию: все).
 
 ### WebServer.blacklist
 
-List of client IPs/CIDRs explicitly denied at the webserver level (default: none).
+Список IP/CIDR, которым запрещен доступ на уровне webserver (по умолчанию: нет).
 
 ### WebServer.uri_response_headers
 
-Allows mapping URI regex to custom response headers.  xyOps uses this to set CSP and security headers for HTML paths. 
+Позволяет сопоставлять URI regex с кастомными response headers. xyOps использует это для CSP и security headers для HTML путей.
 
 ### WebServer.https
 
-Enables HTTPS support (default: `true`).
+Включает поддержку HTTPS (по умолчанию: `true`).
 
 ### WebServer.https_port
 
-HTTPS listener port (default: `5523`).
+HTTPS порт (по умолчанию: `5523`).
 
 ### WebServer.https_cert_file
 
-TLS certificate file path (default: `conf/tls.crt`).
+Путь к файлу TLS сертификата (по умолчанию: `conf/tls.crt`).
 
-If this is a relative path, it is computed from the xyOps base directory, which is typically `/opt/xyops`.
+Если путь относительный, он считается от базовой директории xyOps (обычно `/opt/xyops`).
 
 ### WebServer.https_key_file
 
-TLS private key file path (default: `conf/tls.key`).
+Путь к приватному TLS ключу (по умолчанию: `conf/tls.key`).
 
-If this is a relative path, it is computed from the xyOps base directory, which is typically `/opt/xyops`.
+Если путь относительный, он считается от базовой директории xyOps (обычно `/opt/xyops`).
 
 ### WebServer.https_force
 
-Forces HTTP to redirect to HTTPS (default: `false`).
+Принудительный редирект HTTP на HTTPS (по умолчанию: `false`).
 
 ### WebServer.https_timeout
 
-Per-request idle timeout for HTTPS in seconds (default: `30`).
+Таймаут простоя HTTPS запросов в секундах (по умолчанию: `30`).
 
 ### WebServer.https_header_detect
 
-Includes common headers to detect HTTPS when behind a reverse proxy.
+Включает обработку common headers для определения HTTPS за reverse proxy.
 
 
 ## User
 
-This section configures the user management system used by xyOps.
+Этот раздел настраивает систему управления пользователями xyOps.
 
-For full user configuration, see [pixl-server-user](https://github.com/jhuckaby/pixl-server-user).
+Полная документация: [pixl-server-user](https://github.com/jhuckaby/pixl-server-user).
 
 ### User.session_expire_days
 
-Session lifetime in days before requiring login again (default: `365`).
+Срок жизни сессии в днях до повторного логина (по умолчанию: `365`).
 
 ### User.max_failed_logins_per_hour
 
-Rate limit for failed logins per user per hour (default: `5`).
+Лимит неудачных логинов на пользователя в час (по умолчанию: `5`).
 
 ### User.max_forgot_passwords_per_hour
 
-Rate limit for password reset requests per user per hour (default: `3`).
+Лимит запросов восстановления пароля на пользователя в час (по умолчанию: `3`).
 
 ### User.free_accounts
 
-Allow users to self-register without admin invitation (default: `false`).
+Разрешает пользователям саморегистрироваться без приглашения администратора (по умолчанию: `false`).
 
 ### User.sort_global_users
 
-Sort global user lists (affects admin UI ordering, default: `false`).
+Сортирует глобальные списки пользователей (влияет на порядок в admin UI, по умолчанию: `false`).
 
 ### User.use_bcrypt
 
-Use bcrypt for password hashing (default: `true`).
+Использовать bcrypt для хеширования паролей (по умолчанию: `true`).
 
 ### User.mail_logger
 
-Attach logger output to sent mail logs for diagnostics (default: `true`).
+Прикрепляет вывод логгера к логам отправки писем для диагностики (по умолчанию: `true`).
 
 ### User.valid_username_match
 
-Allowed characters for usernames (default: `^[\\w\\-\\.]+$`).
+Разрешенные символы в username (по умолчанию: `^[\\w\\-\\.]+$`).
 
 ### User.block_username_match
 
-A regex for reserved/blocked usernames (for security and namespace protection).
+Regex для зарезервированных/заблокированных usernames (для безопасности и защиты namespace).
 
 ### User.cookie_settings
 
-Sets cookie path, secure policy, httpOnly, and sameSite. Controls session cookie attributes.
+Задает cookie path, secure policy, httpOnly и sameSite. Управляет атрибутами cookie сессии.
 
 
 
 ## SSO
 
-This section configures Single Sign-On using trusted headers. See the [SSO guide](sso.md) for setup details and examples.
+Этот раздел настраивает Single Sign-On через trusted headers. См. [SSO guide](sso.md) для примеров и настройки.
 
 ### enabled
 
-This boolean enables SSO and disables local username/password login (default: `false`).
+Этот boolean включает SSO и отключает локальный логин по username/password (по умолчанию: `false`).
 
 ### whitelist
 
-This array of IPs/CIDRs limits which client addresses may send trusted headers (default allows localhost, private and link-local ranges).
+Этот массив IP/CIDR ограничивает, какие client адреса могут передавать trusted headers (по умолчанию: localhost, private и link-local диапазоны).
 
 ### header_map
 
-This object maps incoming trusted headers to xyOps user fields (`username`, `full_name`, `email`, `groups`).
+Этот объект мапит входящие trusted headers в поля пользователя xyOps (`username`, `full_name`, `email`, `groups`).
 
 ### cleanup_username
 
-This boolean cleans up the username when derived from an email (strip illegal chars, lowercase, use local-part) (default: `true`).
+Этот boolean очищает username при выводе из email (удаляет запрещенные символы, приводит к lowercase, берет local-part) (по умолчанию: `true`).
 
 ### cleanup_full_name
 
-This boolean derives a display name from an email (use local-part, replace dots with spaces, title-case) (default: `true`).
+Этот boolean строит display name из email (использует local-part, заменяет точки пробелами, title-case) (по умолчанию: `true`).
 
 ### group_role_map
 
-This object maps IdP group names to xyOps role IDs to auto-assign roles on login (default: `{}`).
+Этот объект мапит IdP группы на role IDs xyOps для автоназначения ролей при логине (по умолчанию: `{}`).
 
 ### group_privilege_map
 
-This object maps IdP group names to privilege keys to auto-assign privileges on login (default: `{}`).
+Этот объект мапит IdP группы на privilege keys для автоназначения привилегий при логине (по умолчанию: `{}`).
 
 ### replace_roles
 
-This boolean replaces all existing user roles with those from `group_role_map` on each login (default: `false`).
+Этот boolean заменяет все существующие роли на те, что в `group_role_map` при каждом логине (по умолчанию: `false`).
 
 ### replace_privileges
 
-This boolean replaces all existing user privileges with those from `group_privilege_map` on each login (default: `false`).
+Этот boolean заменяет все существующие привилегии на те, что в `group_privilege_map` при каждом логине (по умолчанию: `false`).
 
 ### admin_bootstrap
 
-This string temporarily grants full admin to the exact matching username to bootstrap initial setup; remove after configuring groups (default: empty).
+Эта строка временно дает полные права admin для точного совпадения username, чтобы выполнить первоначальную настройку; удалите после настройки групп (по умолчанию: пусто).
 
 ### logout_url
 
-This string is the URL to redirect to after xyOps clears its session, so your auth proxy/IdP can complete logout (e.g., `/oauth2/sign_out?rd=...`).
+Это строка URL для редиректа после очистки сессии xyOps, чтобы ваш auth proxy/IdP завершил logout (например, `/oauth2/sign_out?rd=...`).
 
 
 
@@ -850,10 +850,10 @@ This string is the URL to redirect to after xyOps clears its session, so your au
 
 ### Debug.enabled
 
-Enables remote server debugging via Chrome Dev Tools (default: `false`).
+Включает удаленную отладку сервера через Chrome Dev Tools (по умолчанию: `false`).
 
 
 
 ## config_overrides_file
 
-When settings are changed via the UI, overrides are saved here and applied on top of `config.json`.
+Когда настройки меняются через UI, переопределения сохраняются здесь и применяются поверх `config.json`.

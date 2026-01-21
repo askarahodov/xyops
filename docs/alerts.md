@@ -1,146 +1,146 @@
-# Alerts
+# Алерты
 
-## Overview
+## Обзор
 
-Alerts evaluate live server data and trigger actions when conditions are met. In xyOps, an alert is defined once (the "definition") and may fire many times across servers (each firing is an "invocation"). Alerts are evaluated every minute on the conductor using the most recent [ServerMonitorData](data.md#servermonitordata) collected from each server.
+Алерты анализируют живые серверные данные и запускают действия при выполнении условий. В xyOps алерт определяется один раз ("definition") и может срабатывать много раз на разных серверах (каждое срабатывание — "invocation"). Алерты вычисляются каждую минуту на conductor на основе последних [ServerMonitorData](data.md#servermonitordata), собранных с каждого сервера.
 
-Use alerts to detect system conditions (e.g., high CPU, low memory, disk full, job spikes), notify teams, attach context via snapshots, open tickets, run jobs, and optionally limit or abort jobs on affected servers.
+Используйте алерты, чтобы выявлять состояния системы (высокий CPU, нехватка памяти, заполненный диск, всплески задач), уведомлять команды, добавлять контекст через snapshots, открывать тикеты, запускать задачи и при необходимости ограничивать или прерывать задачи на затронутых серверах.
 
-## Concepts
+## Концепции
 
-- **Definition:** The configuration that specifies the trigger condition and actions.
-- **Invocation:** A single firing instance against a server. Stored in the database and visible in the Alerts view.
-- **Evaluation cadence:** Once per minute per server, alongside monitor sampling.
-- **Scope:** By server group. Leave blank to apply to all groups.
-- **Warm-up / cool-down:** Optionally require N consecutive true evaluations before firing, and N consecutive false evaluations before clearing.
-- **Actions:** Execute on alert fired and/or cleared. Actions can be defined on the alert, augmented by groups, and extended with universal defaults.
-- **Job control:** Optionally prevent new jobs from launching while active, or even abort all running jobs when the alert fires.
+- **Definition:** конфигурация, задающая условие и действия.
+- **Invocation:** единичное срабатывание на сервере. Хранится в базе и отображается в Alerts.
+- **Cadence:** раз в минуту на сервер, вместе с вычислением мониторов.
+- **Scope:** по группам серверов. Оставьте пустым, чтобы применялось ко всем.
+- **Warm-up / cool-down:** можно требовать N подряд true перед срабатыванием и N подряд false перед снятием.
+- **Actions:** выполняются при срабатывании и/или снятии. Действия могут задаваться в алерте, дополняться группами и универсальными defaults.
+- **Job control:** можно запретить запуск новых задач во время алерта или прервать все текущие задачи при срабатывании.
 
-## How Alerts Are Evaluated
+## Как вычисляются алерты
 
-Per incoming minute of server data:
+На каждый минутный блок серверных данных:
 
-1. xyOps evaluates each enabled alert definition whose group scope matches the server.
-2. The alert's expression (JavaScript format) runs against the current [ServerMonitorData](data.md#servermonitordata) snapshot.
-3. If the expression returns true, the alert's internal sample counter increments. If false and previously incremented, the counter decrements toward zero.
-4. When the counter first reaches the max samples, an invocation is created and actions run. When the counter subsequently returns to zero, the invocation is cleared and cleared actions run.
+1. xyOps вычисляет каждое включенное определение алерта, чья group scope подходит серверу.
+2. Выражение алерта (в формате JavaScript) выполняется над текущим snapshot [ServerMonitorData](data.md#servermonitordata).
+3. Если выражение true, внутренний счетчик увеличивается. Если false и был увеличен, счетчик уменьшается к нулю.
+4. Когда счетчик впервые достигает max samples, создается invocation и выполняются actions. Когда счетчик возвращается к нулю, invocation снимается и выполняются actions на снятие.
 
-Notes:
+Примечания:
 
-- Expressions compile ahead of time; syntax errors are rejected at create/update time and in the Test dialog/API.
-- The alert message is re-evaluated each minute while active, so macros reflect current server values.
-- Active invocations are kept fresh as data arrives. Stale invocations are automatically expired if no updates are seen (e.g., server goes offline).
+- Выражения компилируются заранее; синтаксические ошибки отклоняются при create/update и в Test диалоге/API.
+- Сообщение алерта переоценивается каждую минуту, пока алерт активен, поэтому макросы отражают текущие значения.
+- Активные invocation обновляются при поступлении данных. Устаревшие invocation автоматически истекают, если нет обновлений (например, сервер офлайн).
 
-## Alert Expressions
+## Выражения алертов
 
-An alert expression is evaluated using the [xyOps Expression Format](xyexp.md), with the current [ServerMonitorData](data.md#servermonitordata) as context. Common entry points include:
+Выражение алерта вычисляется в [xyOps Expression Format](xyexp.md) с контекстом [ServerMonitorData](data.md#servermonitordata). Частые точки входа:
 
-- `cpu`: CPU stats and hardware information.
-- `memory`: Total/available memory, etc.
-- `load`: 1/5/15 minute load averages.
-- `monitors`: Values from configured monitors (absolute values).
-- `deltas`: Computed deltas for counter-style monitors since the last sample (per minute by default).
-- `jobs`: Running job count for the server.
+- `cpu`: статистика CPU и железа.
+- `memory`: total/available память и т.д.
+- `load`: средние значения нагрузки 1/5/15 минут.
+- `monitors`: значения мониторов (абсолютные).
+- `deltas`: вычисленные дельты для счетчиков с прошлого измерения.
+- `jobs`: количество выполняющихся задач на сервере.
 
-Example:
+Пример:
 
 ```js
 monitors.load_avg >= (cpu.cores + 1)
 ```
 
-This fires if the 1-minute load average is greater than or equal to the number of CPU cores plus one.
+Срабатывает, если 1-минутный load average >= количество ядер CPU + 1.
 
-Delta example (for counter-style monitors):
+Пример с дельтами (для счетчиков):
 
 ```js
 deltas.os_bytes_out_sec >= 33554432
 ```
 
-Useful helper functions available in expressions and message macros:
+Полезные helper функции в выражениях и макросах сообщений:
 
 - `min(a, b)`, `max(a, b)`
 - `integer(x)`, `float(x)`
-- `bytes(x)` renders human-readable bytes
-- `number(x)` renders localized numbers
-- `pct(x)` renders a percentage
-- `stringify(obj)` JSON stringifies a value
-- `find(array, key, substr)` filters array items where `item[key]` includes `substr`
+- `bytes(x)` — человекочитаемые байты
+- `number(x)` — локализованные числа
+- `pct(x)` — проценты
+- `stringify(obj)` — JSON stringify
+- `find(array, key, substr)` — фильтрует массив по `item[key]` с `substr`
 
-See [xyOps Expression Format](xyexp.md) for more details.
+См. [xyOps Expression Format](xyexp.md) для подробностей.
 
-Tips:
+Советы:
 
-- Use `monitors.MONITORID` for absolute values and `deltas.MONITORID` for per-minute rates when the monitor represents a counter.
-- Guard against missing values with sensible defaults, e.g. `integer(monitors.foo || 0) > 10`.
+- Используйте `monitors.MONITORID` для абсолютных значений и `deltas.MONITORID` для per-minute rate, если монитор — счетчик.
+- Защищайтесь от отсутствующих значений, например `integer(monitors.foo || 0) > 10`.
 
-## Alert Messages
+## Сообщения алертов
 
-The alert message is a string with `{{ ... }}` macros evaluated against the same [ServerMonitorData](data.md#servermonitordata) context used for expressions. This lets you include formatted, contextual details in notifications, tickets and logs.
+Сообщение алерта — это строка с макросами `{{ ... }}`, вычисляемыми в том же контексте [ServerMonitorData](data.md#servermonitordata), что и выражение. Это позволяет включать форматированные, контекстные детали в уведомления, тикеты и логи.
 
-Example:
+Пример:
 
 ```
 CPU load average is too high: {{float(monitors.load_avg)}} ({{cpu.cores}} CPU cores)
 ```
 
-All helper functions listed under Alert Expressions are also available inside macros. Any object-valued macro is JSON stringified.
+Все helper функции из раздела выражений доступны и в макросах. Любой макрос с объектом превращается в JSON строку.
 
-Additional variables are injected when actions run (used mainly in templates):
+Дополнительные переменные, доступные при выполнении actions (в основном для шаблонов):
 
-- `def`: The alert definition object (`def.title`, `def.notes`, etc.).
-- `alert`: The alert invocation object (`alert.id`, `alert.message`, etc.).
-- `nice_*`: Friendly strings for host, IP, CPU, OS, memory, uptime, groups, notes, etc.
-- `links`: `server_url` and `alert_url` direct links.
+- `def`: объект определения алерта (`def.title`, `def.notes` и т.д.).
+- `alert`: объект invocation (`alert.id`, `alert.message` и т.д.).
+- `nice_*`: дружелюбные строки для host, IP, CPU, OS, memory, uptime, groups, notes и т.д.
+- `links`: `server_url` и `alert_url` прямые ссылки.
 
-## Creating and Editing Alerts
+## Создание и редактирование алертов
 
-Click on "Alert Setup" in the sidebar. Creating and editing requires appropriate privileges. The form collects:
+Нажмите "Alert Setup" в боковой панели. Для создания и редактирования нужны соответствующие привилегии. Форма включает:
 
-- **Title**: Display name for the alert.
-- **Status**: Enable/disable notifications and actions.
-- **Icon**: Optional Material Design Icon for the alert.
-- **Server Groups**: One or more groups where the alert applies. Leave blank for all groups.
-- **Expression**: Trigger condition evaluated each minute. Use the Server Data Explorer to discover paths.
-- **Message**: Text with `{{macros}}` for dynamic context. Evaluated on fire and each minute while active.
-- **Samples**: Consecutive minutes that must evaluate true to fire; also used as cool-down to clear.
-- **Overlay**: Optional monitor to overlay alert annotations on charts.
-- **Job Limit**: While active, prevent new jobs from starting on the server.
-- **Job Abort**: When fired, abort all running jobs on the server.
-- **Alert Actions**: Optional actions to run on `alert_new` and/or `alert_cleared`.
-- **Notes**: Optional text included in emails and other notifications.
+- **Title**: Название алерта.
+- **Status**: Включить/выключить уведомления и actions.
+- **Icon**: Опциональный Material Design Icon.
+- **Server Groups**: Одна или несколько групп, где действует алерт. Оставьте пустым для всех.
+- **Expression**: Условие триггера, вычисляется каждую минуту. Используйте Server Data Explorer для поиска путей.
+- **Message**: Текст с `{{macros}}` для динамического контекста. Вычисляется при срабатывании и каждую минуту пока активен.
+- **Samples**: Количество последовательных минут true для срабатывания; также используется как cool-down для снятия.
+- **Overlay**: Опциональный монитор для наложения алерт-аннотаций на графики.
+- **Job Limit**: Пока алерт активен, новые задачи не запускаются на сервере.
+- **Job Abort**: При срабатывании прервать все текущие задачи на сервере.
+- **Alert Actions**: Опциональные actions на `alert_new` и/или `alert_cleared`.
+- **Notes**: Опциональный текст, включаемый в письма и уведомления.
 
-Testing: Use the "Test..." button to evaluate the current Expression and Message against a selected live server. The dialog shows whether it would trigger right now and previews the computed message.
+Testing: используйте кнопку "Test..." для проверки Expression и Message на выбранном live сервере. Диалог показывает, сработает ли сейчас, и превью сообщения.
 
-## Actions on Fire and Clear
+## Actions при срабатывании и снятии
 
-When an alert fires (`alert_new`) and when it clears (`alert_cleared`), xyOps executes actions in parallel from three sources, deduplicated by type/target:
+Когда алерт срабатывает (`alert_new`) и когда снимается (`alert_cleared`), xyOps выполняет actions параллельно из трех источников, с дедупликацией по type/target:
 
-- **Alert actions**: Configured on the alert definition itself.
-- **Group actions**: Each matching server group can contribute actions.
-- **Universal actions**: From `config.json` → `alert_universal_actions` (defaults to a `snapshot` on `alert_new`).
+- **Alert actions**: заданные в самом алерте.
+- **Group actions**: от групп, куда входит сервер.
+- **Universal actions**: из `config.json` -> `alert_universal_actions` (по умолчанию `snapshot` на `alert_new`).
 
-Supported action types in alerts:
+Поддерживаемые типы действий в алертах:
 
-- **Email**: To specified users and/or custom addresses.
-- **Channel**: Fire a notification channel (a preset bundle like users, web hooks, etc.).
-- **Run Job**: Start a job by event with optional parameters.
-- **Create Ticket**: Open or update a ticket tied to the alert.
-- **Web Hook**: Fire a preconfigured outbound web hook with templated payload.
-- **Plugin**: Run a custom plugin with arguments.
-- **Snapshot**: Capture a point-in-time server snapshot. Note: a snapshot is included by default via universal actions.
+- **Email**: указанным пользователям и/или кастомным адресам.
+- **Channel**: запуск канала уведомлений.
+- **Run Job**: запуск задачи по событию с опциональными параметрами.
+- **Create Ticket**: создание/обновление тикета, связанного с алертом.
+- **Web Hook**: запуск заранее настроенного web hook с шаблонами payload.
+- **Plugin**: запуск кастомного плагина с аргументами.
+- **Snapshot**: создание snapshot сервера. Примечание: snapshot по умолчанию включен через universal actions.
 
-Action conditions are either `alert_new` or `alert_cleared`. You can attach multiple actions for either condition.
+Условия действий — `alert_new` или `alert_cleared`. Можно назначить несколько actions для каждого условия.
 
-## Job Control During Alerts
+## Контроль задач во время алертов
 
-- **Limit Jobs**: While the alert is active on a server, that server is excluded from job scheduling (prevents new jobs from launching there). Workflow parent jobs are exempt from this restriction.
-- **Abort Jobs**: When the alert fires, all running jobs on the affected server are aborted immediately.
+- **Limit Jobs**: пока алерт активен на сервере, этот сервер исключается из планирования задач (не допускаются новые задачи). Родительские workflow задачи не подпадают под ограничение.
+- **Abort Jobs**: когда алерт срабатывает, все текущие задачи на сервере немедленно прерываются.
 
-Both are optional, independent toggles on the alert definition.
+Обе опции независимы и включаются в определении алерта.
 
-## Examples
+## Примеры
 
-The default setup includes several alert examples:
+В дефолтной установке есть несколько примеров алертов:
 
 | Alert Title      | Expression                                 | Message |
 |------------------|--------------------------------------------|---------|
@@ -150,41 +150,41 @@ The default setup includes several alert examples:
 | Disk Full        | `monitors.disk_usage_root >= 90`           | Root filesystem is `{{pct(monitors.disk_usage_root)}}` full. |
 | High Active Jobs | `monitors.active_jobs >= 50`               | Active job count is too high: `{{number(monitors.active_jobs)}}` |
 
-## Viewing and Searching Alerts
+## Просмотр и поиск алертов
 
-- **Active alerts**: Shown in the header counter and the Alerts tab. Each includes the evaluated message, server context, snapshot link and related jobs/tickets.
-- **Timelines**: If `monitor_id` is set, alert annotations appear on the corresponding monitor chart.
-- **History search**: Search for historical alerts on the "Alerts" page.
+- **Active alerts**: отображаются в счетчике заголовка и вкладке Alerts. Каждый включает вычисленное сообщение, контекст сервера, ссылку на snapshot и связанные задачи/тикеты.
+- **Timelines**: если задан `monitor_id`, аннотации алертов отображаются на графике монитора.
+- **History search**: поиск по истории алертов на странице "Alerts".
 
 ## API Summary
 
-See [Alerts](api.md#alerts) for full details. Highlights:
+См. [Alerts](api.md#alerts) для полного описания. Основное:
 
-- `get_alerts`: List all alert definitions.
-- `get_alert`: Fetch a single definition by ID.
-- `create_alert` / `update_alert` / `delete_alert`: Manage definitions.
-- `test_alert`: Compile and evaluate an expression/message against a server.
-- `search_alerts`: Query historical and active alert invocations.
+- `get_alerts`: список всех определений алертов.
+- `get_alert`: получить одно определение по ID.
+- `create_alert` / `update_alert` / `delete_alert`: управление определениями.
+- `test_alert`: компиляция и вычисление выражения/сообщения на сервере.
+- `search_alerts`: поиск исторических и активных invocations.
 
-## Best Practices
+## Лучшие практики
 
-- Tune `samples` to balance noise and responsiveness. For spiky metrics, require multiple samples.
-- Prefer relative thresholds when available (e.g., compare load to `cpu.cores`).
-- Use `bytes()`/`pct()`/`number()` to produce readable messages in notifications.
-- Overlay alerts on monitors users already watch to provide context.
-- Use group-level alert actions for standard responses (e.g., page an on-call channel) and keep per-alert actions focused on specifics.
-- Consider limiting jobs for conditions that would degrade runtime reliability (e.g., disk full, high I/O wait).
+- Настройте `samples`, чтобы сбалансировать шум и отзывчивость. Для всплесков требуйте несколько сэмплов.
+- Предпочитайте относительные пороги (например, сравнивайте load с `cpu.cores`).
+- Используйте `bytes()`/`pct()`/`number()` для читаемых сообщений.
+- Накладывайте алерты на мониторы, которые уже смотрят пользователи, чтобы дать контекст.
+- Используйте group-level actions для стандартных реакций (например, пейджить on-call канал) и держите per-alert actions для конкретики.
+- Рассмотрите ограничение задач при условиях, снижающих надежность выполнения (например, disk full, high I/O wait).
 
-## Privileges
+## Привилегии
 
 - Create: [create_alerts](privileges.md#create_alerts)
 - Edit/Test: [edit_alerts](privileges.md#edit_alerts)
 - Delete: [delete_alerts](privileges.md#delete_alerts)
 
-Users without these privileges can still read definitions and view active alerts with a valid session or API Key.
+Пользователи без этих привилегий могут читать определения и смотреть активные алерты при наличии сессии или API Key.
 
 ## See Also
 
-- Data structures: [Alert](data.md#alert) and [AlertInvocation](data.md#alertinvocation)
+- Data structures: [Alert](data.md#alert) и [AlertInvocation](data.md#alertinvocation)
 - API: [Alerts](api.md#alerts)
 - Monitoring data context: [ServerMonitorData](data.md#servermonitordata)

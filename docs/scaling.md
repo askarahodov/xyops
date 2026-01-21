@@ -1,65 +1,65 @@
-# Scaling
+# Масштабирование
 
-## Overview
+## Обзор
 
-Running xyOps in live production with lots of servers and/or lots of running jobs? Please read these best practices for scaling your deployment. This guide complements Self-Hosting -- start there first: see [Self-Hosting](hosting.md).
+Запускаете xyOps в бою с большим количеством серверов и/или задач? Ознакомьтесь с этими практиками масштабирования. Это руководство дополняет Self-Hosting — сначала прочитайте его: [Self-Hosting](hosting.md).
 
-## Upgrade Hardware
+## Обновление оборудования
 
-- CPU cores: xyOps is multi-process and highly concurrent. More cores help the scheduler, web server, storage I/O, and log compression run smoothly under load.
-- RAM: Add headroom for the Node.js heap, in-process caches, storage engine caches, and OS page cache. RAM directly improves cache hit rates and reduces disk/remote I/O.
-- Storage: Prefer fast SSD/NVMe for local Filesystem/SQLite and log archives. Ensure enough IOPS for parallel job logs, snapshots, and uploads.
-- Network: For large fleets, ensure good NIC throughput and low latency between conductors and workers. If using external storage (S3, Redis, MinIO), place conductors close to it.
-- OS limits: Increase file descriptor and process limits for busy nodes (e.g. `ulimit -n`, systemd Limits). Ensure swap is configured conservatively to avoid heap thrash.
+- CPU: xyOps многопроцессный и высокопараллельный. Больше ядер помогает планировщику, веб-серверу, I/O хранилища и сжатию логов работать стабильно под нагрузкой.
+- RAM: Оставьте запас для heap Node.js, внутрипроцессных кэшей, кэшей движков хранилища и page cache ОС. ОЗУ напрямую улучшает hit rate кэша и снижает дисковый/сетевой I/O.
+- Storage: Предпочитайте быстрые SSD/NVMe для локальных Filesystem/SQLite и архивов логов. Обеспечьте достаточный IOPS для параллельных логов задач, снимков и загрузок.
+- Network: Для больших парков обеспечьте хорошую пропускную способность и низкую задержку между conductors и workers. Если используете внешнее хранилище (S3, Redis, MinIO), размещайте conductors ближе к нему.
+- OS limits: Увеличьте лимиты файловых дескрипторов и процессов на загруженных узлах (например, `ulimit -n`, systemd Limits). Настройте swap консервативно, чтобы избежать thrash heap.
 
-## Increase Node.js Memory
+## Увеличение памяти Node.js
 
-xyOps honors the `NODE_MAX_MEMORY` environment variable to set Node's old-space heap size (default 4096 MB).
+xyOps учитывает переменную окружения `NODE_MAX_MEMORY` для установки размера old-space heap Node (по умолчанию 4096 MB).
 
-- Example: `export NODE_MAX_MEMORY=8192` before starting xyOps (or `-e NODE_MAX_MEMORY=8192` for Docker).
-- Leave headroom for the OS, filesystem cache, and any external daemons. On an instance with 16 GB RAM, an 8-12 GB heap is typical depending on other workloads.
-- Monitor RSS vs. heap usage over time and adjust conservatively to avoid swapping.
+- Пример: `export NODE_MAX_MEMORY=8192` перед запуском xyOps (или `-e NODE_MAX_MEMORY=8192` для Docker).
+- Оставьте запас для ОС, файлового кэша и внешних демонов. На сервере с 16 GB RAM типичный heap — 8–12 GB, в зависимости от других нагрузок.
+- Мониторьте RSS и heap usage со временем и корректируйте аккуратно, чтобы избежать swap.
 
-## Increase Storage RAM Cache
+## Увеличение RAM-кэша хранилища
 
-xyOps uses [pixl-server-storage](https://github.com/jhuckaby/pixl-server-storage) and most engines support an in-memory cache for JSON records. Larger caches reduce round-trips to disk or network backends.
+xyOps использует [pixl-server-storage](https://github.com/jhuckaby/pixl-server-storage), и большинство движков поддерживают кэш в памяти для JSON записей. Большие кэши уменьшают количество обращений к диску или удаленным бекендам.
 
-- Defaults: The sample config enables caches with `maxBytes` ≈ 100 MB and `maxItems` ≈ 100k for Filesystem and SQLite.
-- Recommendation: For large production installs, consider increasing 5-10× if you have RAM available, and then tune based on hit ratio and latency.
-- Where to set:
+- По умолчанию: в sample config включены кэши с `maxBytes` порядка 100 MB и `maxItems` порядка 100k для Filesystem и SQLite.
+- Рекомендация: для крупных продакшн-инсталляций увеличьте в 5–10 раз при наличии RAM, затем настройте по hit ratio и latency.
+- Где настраивать:
   - SQLite: `Storage.SQLite.cache.enabled`, `Storage.SQLite.cache.maxBytes`, `Storage.SQLite.cache.maxItems`.
   - Filesystem: `Storage.Filesystem.cache.enabled`, `...maxBytes`, `...maxItems`.
-  - S3: `Storage.S3.cache.enabled`, `...maxBytes`, `...maxItems` (useful to reduce S3 GETs).
-- See [Storage Engines](https://github.com/jhuckaby/pixl-server-storage#engines) for engine-specific details and considerations (e.g., what is cached, eviction policy, binary vs JSON behavior).
+  - S3: `Storage.S3.cache.enabled`, `...maxBytes`, `...maxItems` (полезно уменьшить S3 GET).
+- См. [Storage Engines](https://github.com/jhuckaby/pixl-server-storage#engines) для деталей по движкам (что кэшируется, политика вытеснения, binary vs JSON и т.д.).
 
-## Disable QuickMon
+## Отключение QuickMon
 
-QuickMon sends lightweight metrics every second from all satellites. At large scale, per-second telemetry can add up. To reduce ingestion and WebSocket traffic, disable it:
+QuickMon отправляет легковесные метрики каждую секунду со всех satellite. В большом масштабе такие метрики сильно нагружают канал и WebSocket трафик. Чтобы снизить нагрузку:
 
-- Set `satellite.config.quickmon_enabled` to `false` in your config. The setting is distributed to all servers automatically when they connect.
-- Minute-level monitoring remains enabled via `satellite.config.monitoring_enabled`.
+- Установите `satellite.config.quickmon_enabled` в `false` в конфиге. Настройка автоматически распределяется на все сервера при подключении.
+- Мониторинг с минутной частотой остается включенным через `satellite.config.monitoring_enabled`.
 
-## Multi-Conductor Setups
+## Multi-Conductor установки
 
-Multi-conductor requires external shared storage so all conductors see the same state. See [Multi-Conductor with Nginx](hosting.md#multi-conductor-with-nginx).
+Для multi-conductor нужно внешнее общее хранилище, чтобы все conductors видели одно состояние. См. [Multi-Conductor with Nginx](hosting.md#multi-conductor-with-nginx).
 
-- Use an external storage backend: [S3](https://github.com/jhuckaby/pixl-server-storage#amazon-s3), [MinIO](https://github.com/jhuckaby/pixl-server-storage#s3-compatible-services), [NFS](https://github.com/jhuckaby/pixl-server-storage#local-filesystem), [Redis](https://github.com/jhuckaby/pixl-server-storage#redis), or a combination. S3 works but has higher latency; MinIO (self-hosted S3) performs better on-prem.
-- [Hybrid](https://github.com/jhuckaby/pixl-server-storage#hybrid) engine: You can mix engines for documents vs. files. A common pattern is a fast key/value store for JSON documents, and an object store for binaries:
-  - Example: `Hybrid.docEngine = Redis` (JSON/doc store) and `Hybrid.binaryEngine = S3` (files and large artifacts).
-  - Configure each sub-engine alongside [Hybrid](https://github.com/jhuckaby/pixl-server-storage#hybrid). Ensure Redis persistence (RDB/AOF) is enabled for durability.
-- If you choose a shared filesystem (NFS) for [Filesystem](https://github.com/jhuckaby/pixl-server-storage#local-filesystem), ensure low latency, adequate throughput, and robust locking semantics.
-- [SQLite](https://github.com/jhuckaby/pixl-server-storage#sqlite) is great for single-conductor, but for multi-conductor you must switch to a shared backend.
+- Используйте внешний storage backend: [S3](https://github.com/jhuckaby/pixl-server-storage#amazon-s3), [MinIO](https://github.com/jhuckaby/pixl-server-storage#s3-compatible-services), [NFS](https://github.com/jhuckaby/pixl-server-storage#local-filesystem), [Redis](https://github.com/jhuckaby/pixl-server-storage#redis) или комбинацию. S3 работает, но с большей задержкой; MinIO (self-hosted S3) быстрее on-prem.
+- Движок [Hybrid](https://github.com/jhuckaby/pixl-server-storage#hybrid): можно смешивать движки для документов и файлов. Типичный паттерн — быстрый key/value для JSON документов и объектное хранилище для бинарных артефактов:
+  - Пример: `Hybrid.docEngine = Redis` (JSON/doc) и `Hybrid.binaryEngine = S3` (файлы и крупные артефакты).
+  - Настраивайте каждый sub-engine рядом с [Hybrid](https://github.com/jhuckaby/pixl-server-storage#hybrid). Убедитесь, что persistence Redis (RDB/AOF) включен для долговечности.
+- Если выбираете общий Filesystem (NFS), убедитесь в низкой задержке, достаточной пропускной способности и корректной семантике блокировок.
+- [SQLite](https://github.com/jhuckaby/pixl-server-storage#sqlite) отлично подходит для одного conductor, но для multi-conductor обязательно переходите на общий backend.
 
-**Tip**: Keep conductors in the same region/AZ as your storage to minimize cross-zone latency. For HTTP ingress, front conductors with Nginx that tracks the active primary.
+**Совет**: Держите conductors в том же регионе/AZ, что и хранилище, чтобы минимизировать cross-zone latency. Для HTTP входа поставьте Nginx, который отслеживает активный primary.
 
-## Automated Backups
+## Автоматизированные бэкапы
 
-- Use the nightly API export for critical data as described in [Self-Hosting: Daily Backups](hosting.md#daily-backups). Schedule via cron and store off-host.
-- SQLite engine: It can perform its own daily DB file backups during maintenance. Configure in `Storage.SQLite.backups` (defaults keep the most recent 7). Note backups lock the DB briefly while copying.
+- Используйте ночной API экспорт критичных данных, как описано в [Self-Hosting: Daily Backups](hosting.md#daily-backups). Планируйте через cron и храните вне хоста.
+- Для SQLite: он может делать собственные ежедневные бэкапы файла БД во время обслуживания. Настраивается в `Storage.SQLite.backups` (по умолчанию хранит последние 7). Бэкап кратковременно блокирует БД на время копирования.
 
-## Critical Errors
+## Критические ошибки
 
-For critical errors (i.e. crashes and failed upgrades) you can configure a global [System Hook](syshooks.md) to send out an automated email for each one.  Set this in your `config.json` file, in the [hooks](config.md#hooks) object:
+Для критических ошибок (краши и неудачные обновления) можно настроить глобальный [System Hook](syshooks.md) для автоматической отправки email по каждой ошибке. Установите это в `config.json`, в объекте [hooks](config.md#hooks):
 
 ```json
 "hooks": {
@@ -69,7 +69,7 @@ For critical errors (i.e. crashes and failed upgrades) you can configure a globa
 }
 ```
 
-Or you can configure the hook to create a ticket (which in turn will email all the assignees):
+Или можно настроить hook на создание тикета (который отправит email всем назначенным):
 
 ```json
 "hooks": {
@@ -82,17 +82,17 @@ Or you can configure the hook to create a ticket (which in turn will email all t
 }
 ```
 
-See [System Hooks](syshooks.md) for more details.
+См. [System Hooks](syshooks.md) для подробностей.
 
-## Monitoring Alert Emails
+## Email для мониторинговых алертов
 
-For server monitor alerts, you may want to send out emails.  This can be set up at three different levels:
+Для алертов мониторинга серверов можно настроить отправку писем. Это можно сделать на трех уровнях:
 
-- At the alert level: You can edit individual alert definitions, and configure an email action for the important ones (e.g. "Low Memory" is a good one).
-- At the server group level: You can set default alert actions for all alerts in specific server groups (e.g. "Production Databases").
-- At the global configuration level.  See below...
+- На уровне алерта: редактируйте отдельные alert definitions и настраивайте email action для важных (например, "Low Memory").
+- На уровне группы серверов: задайте default alert actions для всех алертов в определенных группах (например, "Production Databases").
+- На уровне глобальной конфигурации (см. ниже).
 
-You can add global "universal" alert actions in the [alert_universal_actions](config.md#alert_universal_actions) configuration object.  These will fire for **all** alerts.  Example:
+Можно добавить глобальные "universal" alert actions в объект [alert_universal_actions](config.md#alert_universal_actions). Они срабатывают для **всех** алертов. Пример:
 
 ```json
 "alert_universal_actions": [
@@ -113,44 +113,44 @@ You can add global "universal" alert actions in the [alert_universal_actions](co
 
 ## Security Checklist
 
-Harden your web entry point and xyOps config before going live:
+Перед запуском в продакшене укрепите входную точку и конфиг xyOps:
 
-- Restrict inbound IPs using [WebServer.whitelist](https://github.com/jhuckaby/pixl-server-web#whitelist) (supports CIDR). Only allow your corporate ranges and load balancers.
-- Limit valid Host headers/SNI via [WebServer.allow_hosts](https://github.com/jhuckaby/pixl-server-web#allow_hosts) to your production domains (e.g. `xyops.yourcompany.com`).
-- HTTPS: Enable [WebServer.https](https://github.com/jhuckaby/pixl-server-web#https), set cert/key paths, and consider [WebServer.https_force](https://github.com/jhuckaby/pixl-server-web#https_force) so HTTP redirects to HTTPS. If terminating TLS upstream, configure [WebServer.https_header_detect](https://github.com/jhuckaby/pixl-server-web#https_header_detect).
-- Upload limits: Reduce [WebServer.max_upload_size](https://github.com/jhuckaby/pixl-server-web#max_upload_size) from the default 1 GB to your expected maximums (also adjust per-feature limits in `client.*_upload_settings`).
-- Connection limits: Tune [WebServer.max_connections](https://github.com/jhuckaby/pixl-server-web#max_connections) and [WebServer.max_concurrent_requests](https://github.com/jhuckaby/pixl-server-web#max_concurrent_requests) to match instance capacity. Optionally set [WebServer.max_queue_length](https://github.com/jhuckaby/pixl-server-web#max_queue_length) and [WebServer.max_queue_active](https://github.com/jhuckaby/pixl-server-web#max_queue_active) to cap overload.
-- Timeouts: Consider [WebServer.socket_prelim_timeout](https://github.com/jhuckaby/pixl-server-web#socket_prelim_timeout), [WebServer.timeout](https://github.com/jhuckaby/pixl-server-web#timeout), [WebServer.request_timeout](https://github.com/jhuckaby/pixl-server-web#request_timeout), and [WebServer.keep_alive_timeout](https://github.com/jhuckaby/pixl-server-web#keep_alive_timeout) to mitigate slow-loris patterns and bound request durations.
-- Bind address: If running behind a proxy, set [WebServer.bind_address](https://github.com/jhuckaby/pixl-server-web#bind_address) appropriately and configure [WebServer.public_ip_offset](https://github.com/jhuckaby/pixl-server-web#public_ip_offset) to select the correct client IP from proxy headers.
-- Headers/CSP: Use [WebServer.uri_response_headers](https://github.com/jhuckaby/pixl-server-web#uri_response_headers) to enforce CSP, HSTS, and other security headers for HTML routes. 
-- Access control: Use [WebServer.default_acl](https://github.com/jhuckaby/pixl-server-web#default_acl) for private handlers and verify API keys/SSO policies. Lock down admin endpoints behind SSO where applicable.
-- Rotate your secret key every few months.  See [Secret Key Rotation](hosting.md#secret-key-rotation) for details.
+- Ограничьте входящие IP с помощью [WebServer.whitelist](https://github.com/jhuckaby/pixl-server-web#whitelist) (поддерживает CIDR). Разрешайте только корпоративные диапазоны и балансировщики.
+- Ограничьте допустимые Host headers/SNI через [WebServer.allow_hosts](https://github.com/jhuckaby/pixl-server-web#allow_hosts) до ваших продакшн-доменов (например, `xyops.yourcompany.com`).
+- HTTPS: включите [WebServer.https](https://github.com/jhuckaby/pixl-server-web#https), задайте пути к cert/key и рассмотрите [WebServer.https_force](https://github.com/jhuckaby/pixl-server-web#https_force), чтобы HTTP редиректился на HTTPS. Если TLS терминируется выше, настройте [WebServer.https_header_detect](https://github.com/jhuckaby/pixl-server-web#https_header_detect).
+- Лимиты загрузок: уменьшите [WebServer.max_upload_size](https://github.com/jhuckaby/pixl-server-web#max_upload_size) с дефолтных 1 GB до ожидаемых значений (также настройте per-feature лимиты в `client.*_upload_settings`).
+- Лимиты соединений: настройте [WebServer.max_connections](https://github.com/jhuckaby/pixl-server-web#max_connections) и [WebServer.max_concurrent_requests](https://github.com/jhuckaby/pixl-server-web#max_concurrent_requests) под мощность инстанса. При необходимости задайте [WebServer.max_queue_length](https://github.com/jhuckaby/pixl-server-web#max_queue_length) и [WebServer.max_queue_active](https://github.com/jhuckaby/pixl-server-web#max_queue_active) для ограничения перегрузки.
+- Таймауты: используйте [WebServer.socket_prelim_timeout](https://github.com/jhuckaby/pixl-server-web#socket_prelim_timeout), [WebServer.timeout](https://github.com/jhuckaby/pixl-server-web#timeout), [WebServer.request_timeout](https://github.com/jhuckaby/pixl-server-web#request_timeout) и [WebServer.keep_alive_timeout](https://github.com/jhuckaby/pixl-server-web#keep_alive_timeout) для защиты от slow-loris и ограничения длительности запросов.
+- Bind адрес: если работаете за прокси, задайте [WebServer.bind_address](https://github.com/jhuckaby/pixl-server-web#bind_address) и настройте [WebServer.public_ip_offset](https://github.com/jhuckaby/pixl-server-web#public_ip_offset), чтобы выбрать правильный client IP из заголовков прокси.
+- Headers/CSP: используйте [WebServer.uri_response_headers](https://github.com/jhuckaby/pixl-server-web#uri_response_headers), чтобы задать CSP, HSTS и другие security headers для HTML маршрутов.
+- Контроль доступа: используйте [WebServer.default_acl](https://github.com/jhuckaby/pixl-server-web#default_acl) для private handlers и проверяйте API keys/SSO политики. Защитите админские эндпойнты через SSO где возможно.
+- Ротируйте secret key каждые несколько месяцев. См. [Secret Key Rotation](hosting.md#secret-key-rotation).
 
 ## Rate Limiting
 
-If you are using our [Multi-Conductor with Nginx](hosting.md#multi-conductor-with-nginx) or [Multi-Conductor with OAuth2-Proxy and TLS with Nginx](sso.md#multi-conductor-with-oauth2-proxy-and-tls-with-nginx) setups, consider adding on a rate limiting configuration.  To do this, add a new volume bind to the Nginx Docker container:
+Если вы используете схемы [Multi-Conductor with Nginx](hosting.md#multi-conductor-with-nginx) или [Multi-Conductor with OAuth2-Proxy and TLS with Nginx](sso.md#multi-conductor-with-oauth2-proxy-and-tls-with-nginx), рассмотрите настройку rate limiting. Для этого добавьте volume bind в Nginx контейнер:
 
 ```
 -v ./limits.conf:/etc/nginx/conf.d/limits.conf:ro
 ```
 
-And in the `limits.conf` file on the host side, add a Nginx configuration like this:
+А в `limits.conf` на хосте добавьте конфигурацию Nginx:
 
 ```
 limit_req_zone $binary_remote_addr zone=req_per_ip:20m rate=100r/s;
 limit_req_status 429;
 ```
 
-This would limit traffic to 100 requests/sec per IP, utilizing up to 20MB of IP cache (around 300K IPs).  For more details see the [ngx_http_limit_req_module](https://nginx.org/en/docs/http/ngx_http_limit_req_module.html).
+Это ограничит трафик до 100 запросов/сек на IP, используя до 20MB IP кэша (примерно 300K IP). Подробнее см. [ngx_http_limit_req_module](https://nginx.org/en/docs/http/ngx_http_limit_req_module.html).
 
-## Additional Tuning Ideas
+## Дополнительные идеи тюнинга
 
-- Job throughput: Increase [max_jobs_per_min](config.md#max_jobs_per_min) prudently and monitor worker CPU/RAM. Align with your per-category limits and workflow constraints.
-- Data retention: Cap history sizes to prevent unbounded growth via the [db_maint](config.md#db_maint) `*.max_rows` properties (jobs, alerts, snapshots, activity, servers). Adjust to fit your storage budget.
-- Search concurrency: If you run frequent file searches, consider increasing [search_file_threads](config.md#search_file_threads) carefully (I/O bound; test first).
-- Logging: Disable verbose request or storage event logs in production unless actively debugging (`WebServer.log_requests`, `Storage.log_event_types`).
+- Пропускная способность задач: увеличивайте [max_jobs_per_min](config.md#max_jobs_per_min) осторожно и мониторьте CPU/RAM worker'ов. Согласуйте с per-category limits и ограничениями workflow.
+- Хранение данных: ограничьте размеры истории через свойства [db_maint](config.md#db_maint) `*.max_rows` (jobs, alerts, snapshots, activity, servers). Настройте под ваш бюджет хранения.
+- Параллельность поиска: если часто выполняете поиск файлов, аккуратно увеличьте [search_file_threads](config.md#search_file_threads) (I/O bound; сначала протестируйте).
+- Логи: отключайте подробное логирование запросов или storage событий в продакшене, если не отлаживаете (`WebServer.log_requests`, `Storage.log_event_types`).
 
-## References
+## Ссылки
 
 - [xyOps Self-Hosting Guide](hosting.md)
 - [Storage engines and Hybrid](https://github.com/jhuckaby/pixl-server-storage#engines)

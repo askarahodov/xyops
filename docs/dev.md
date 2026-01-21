@@ -1,64 +1,64 @@
-# Development
+# Разработка
 
-## Overview
+## Обзор
 
-xyOps runs as a component in the [pixl-server](https://github.com/jhuckaby/pixl-server) framework.  It is highly recommended to read and understand that module and its component system before attempting to work on xyOps.  The following server components are also used:
-
-| Module Name | Description | License |
-|-------------|-------------|---------|
-| [pixl-server-api](https://github.com/jhuckaby/pixl-server-api) | A REST API component for the pixl-server framework. | MIT |
-| [pixl-server-debug](https://github.com/jhuckaby/pixl-server-debug) | An easy way to debug your pixl-server app using Chrome Dev Tools. | MIT |
-| [pixl-server-storage](https://github.com/jhuckaby/pixl-server-storage) | A key/value/list storage component for the pixl-server framework. | MIT |
-| [pixl-server-user](https://github.com/jhuckaby/pixl-server-user) | A basic user login system for the pixl-server framework. | MIT |
-| [pixl-server-web](https://github.com/jhuckaby/pixl-server-web) | A web server component for the pixl-server framework. | MIT |
-| [pixl-server-unbase](https://github.com/jhuckaby/pixl-server-unbase) | A database component for the pixl-server framework. | MIT |
-
-In addition, xyOps uses the following server-side PixlCore utility modules:
+xyOps работает как компонент в фреймворке [pixl-server](https://github.com/jhuckaby/pixl-server). Настоятельно рекомендуется изучить этот модуль и его компонентную систему перед работой с xyOps. Также используются следующие серверные компоненты:
 
 | Module Name | Description | License |
 |-------------|-------------|---------|
-| [pixl-acl](https://github.com/jhuckaby/pixl-acl) | A simple but fast implementation of IPv4 and IPv6 ACL filtering. | MIT |
-| [pixl-args](https://github.com/jhuckaby/pixl-args) | A simple module for parsing command line arguments. | MIT |
-| [pixl-boot](https://github.com/jhuckaby/pixl-boot) | Register your service to launch on server startup (Linux / macOS). | MIT |
-| [pixl-chart](https://github.com/jhuckaby/pixl-chart) | A simple time series chart renderer using HTML5 Canvas. | MIT |
-| [pixl-class-util](https://github.com/pixlcore/class-util) | Helper functions for extending classes with mixins and more. | MIT |
-| [pixl-cli](https://github.com/jhuckaby/pixl-cli) | Tools for building command-line apps for Node.js. | MIT |
-| [pixl-config](https://github.com/jhuckaby/pixl-config) | A simple JSON configuration loader. | MIT |
-| [pixl-json-stream](https://github.com/jhuckaby/pixl-json-stream) | Provides an easy API for sending and receiving JSON records over standard streams (pipes or sockets). | MIT |
-| [pixl-logger](https://github.com/jhuckaby/pixl-logger) | A simple logging class which generates bracket delimited log columns. | MIT |
-| [pixl-mail](https://github.com/jhuckaby/pixl-mail) | A very simple class for sending e-mail via SMTP. | MIT |
-| [pixl-perf](https://github.com/jhuckaby/pixl-perf) | A simple, high precision performance tracking system. | MIT |
-| [pixl-request](https://github.com/jhuckaby/pixl-request) | A very simple module for making HTTP requests. | MIT |
-| [pixl-tools](https://github.com/jhuckaby/pixl-tools) | A set of miscellaneous utility functions for Node.js. | MIT |
-| [pixl-unit](https://github.com/jhuckaby/pixl-unit) | A very simple unit test runner for Node.js. | MIT |
+| [pixl-server-api](https://github.com/jhuckaby/pixl-server-api) | Компонент REST API для фреймворка pixl-server. | MIT |
+| [pixl-server-debug](https://github.com/jhuckaby/pixl-server-debug) | Удобная отладка pixl-server приложения через Chrome Dev Tools. | MIT |
+| [pixl-server-storage](https://github.com/jhuckaby/pixl-server-storage) | Компонент key/value/list хранилища для pixl-server. | MIT |
+| [pixl-server-user](https://github.com/jhuckaby/pixl-server-user) | Базовая система логина пользователей для pixl-server. | MIT |
+| [pixl-server-web](https://github.com/jhuckaby/pixl-server-web) | Компонент веб-сервера для pixl-server. | MIT |
+| [pixl-server-unbase](https://github.com/jhuckaby/pixl-server-unbase) | Компонент базы данных для pixl-server. | MIT |
 
-For the client-side, the xyOps web application is built on the [pixl-xyapp](https://github.com/pixlcore/pixl-xyapp) HTML5/CSS/JavaScript framework:
+Дополнительно xyOps использует следующие серверные утилиты PixlCore:
 
 | Module Name | Description | License |
 |-------------|-------------|---------|
-| [pixl-xyapp](https://github.com/pixlcore/pixl-xyapp) | A client-side JavaScript framework, designed to be a base for web applications. | MIT |
+| [pixl-acl](https://github.com/jhuckaby/pixl-acl) | Простая и быстрая реализация ACL фильтрации IPv4 и IPv6. | MIT |
+| [pixl-args](https://github.com/jhuckaby/pixl-args) | Простой модуль для разбора аргументов командной строки. | MIT |
+| [pixl-boot](https://github.com/jhuckaby/pixl-boot) | Регистрация сервиса для автозапуска (Linux / macOS). | MIT |
+| [pixl-chart](https://github.com/jhuckaby/pixl-chart) | Простой рендерер time series графиков на HTML5 Canvas. | MIT |
+| [pixl-class-util](https://github.com/pixlcore/class-util) | Вспомогательные функции для расширения классов миксинами и др. | MIT |
+| [pixl-cli](https://github.com/jhuckaby/pixl-cli) | Инструменты для построения CLI приложений на Node.js. | MIT |
+| [pixl-config](https://github.com/jhuckaby/pixl-config) | Простой загрузчик JSON конфигурации. | MIT |
+| [pixl-json-stream](https://github.com/jhuckaby/pixl-json-stream) | API для отправки/получения JSON записей поверх стандартных потоков (pipes или sockets). | MIT |
+| [pixl-logger](https://github.com/jhuckaby/pixl-logger) | Логгер, формирующий колонки в bracket-delimited формате. | MIT |
+| [pixl-mail](https://github.com/jhuckaby/pixl-mail) | Простой класс для отправки email через SMTP. | MIT |
+| [pixl-perf](https://github.com/jhuckaby/pixl-perf) | Высокоточная система трекинга производительности. | MIT |
+| [pixl-request](https://github.com/jhuckaby/pixl-request) | Простой модуль для HTTP запросов. | MIT |
+| [pixl-tools](https://github.com/jhuckaby/pixl-tools) | Набор вспомогательных утилит для Node.js. | MIT |
+| [pixl-unit](https://github.com/jhuckaby/pixl-unit) | Очень простой unit test runner для Node.js. | MIT |
 
-## Installing Dev Tools
+Для клиентской части веб-приложение xyOps построено на фреймворке [pixl-xyapp](https://github.com/pixlcore/pixl-xyapp) HTML5/CSS/JavaScript:
 
-xyOps contains some compiled binary dependencies (namely [sqlite3](https://npmjs.com/package/sqlite3)), so if a precompiled binary cannot be found by for your exact arch, it may need to be compiled from source.  To that end, you may need:
+| Module Name | Description | License |
+|-------------|-------------|---------|
+| [pixl-xyapp](https://github.com/pixlcore/pixl-xyapp) | Клиентский JavaScript фреймворк, предназначенный как основа для веб-приложений. | MIT |
 
-For Debian (Ubuntu) OSes:
+## Установка dev tools
+
+xyOps содержит некоторые бинарные зависимости (в частности [sqlite3](https://npmjs.com/package/sqlite3)), поэтому если предсобранный бинарник не найден для вашей архитектуры, может потребоваться сборка из исходников. Для этого может понадобиться:
+
+Для Debian (Ubuntu):
 
 ```sh
 apt-get install build-essential python3-setuptools
 ```
 
-For RedHat (Fedora / CentOS):
+Для RedHat (Fedora / CentOS):
 
 ```sh
 yum install gcc-c++ make
 ```
 
-For macOS, download [Apple's Xcode](https://developer.apple.com/xcode/download/), and then install the [command-line tools](https://developer.apple.com/downloads/).
+Для macOS загрузите [Apple Xcode](https://developer.apple.com/xcode/download/), затем установите [command-line tools](https://developer.apple.com/downloads/).
 
-## Manual Installation
+## Ручная установка
 
-Here is how you can download the very latest xyOps dev build and install it manually (may contain bugs!):
+Вот как скачать последнюю dev сборку xyOps и установить вручную (может содержать баги):
 
 ```sh
 git clone https://github.com/pixlcore/xyops.git
@@ -67,9 +67,9 @@ npm install
 node bin/build.js dev
 ```
 
-Passing `dev` to the build script means it will keep all JS and CSS unobfuscated (original source served as separate files).
+Передача `dev` в build скрипт означает, что все JS и CSS останутся не обфусцированными (исходники будут отдаваться отдельными файлами).
 
-I highly recommend placing the following `.gitignore` file at the base of the project, if you plan on committing changes and sending pull requests:
+Если вы планируете коммитить изменения и отправлять pull requests, настоятельно рекомендуется добавить следующий `.gitignore` в корень проекта:
 
 ```
 .gitignore
@@ -94,60 +94,60 @@ htdocs/codemirror
 sample_conf/masters.json
 ```
 
-## Starting in Debug Mode
+## Запуск в debug mode
 
-To start xyOps in debug mode, issue the following command:
+Чтобы запустить xyOps в режиме отладки, выполните:
 
 ```
 ./bin/debug.sh
 ```
 
-This will launch the service without forking a daemon process, and echo the entire debug log contents to the console.  This is great for debugging server-side issues.  Beware of file permissions if you run as a non-root user.  Hit Ctrl-C twice to shut down the service when in this mode.
+Сервис запустится без форка в демона и будет выводить весь debug лог в консоль. Это удобно для отладки серверных проблем. Учитывайте права файлов, если запускаете не от root. Чтобы завершить работу в этом режиме, нажмите Ctrl-C дважды.
 
-Also, you can customize which log categories are echoed by specifying a space-separated list as a single CLI argument, like this:
+Можно настроить, какие категории логов выводить, указав список через пробел одним аргументом CLI:
 
 ```sh
 ./bin/debug.sh "xyOps Transaction Error API Unbase Action Comm Job Workflow Maint Multi Scheduler SSO"
 ```
 
-This is useful for muting extremely loud components like `Storage` and `WebServer`.
+Это полезно, чтобы заглушить очень шумные компоненты, такие как `Storage` и `WebServer`.
 
 ## REPL
 
-By default the xyOps `debug.sh` script starts a [REPL](https://nodejs.org/api/repl.html) in the console, so you can type in live JavaScript and have it execute inside the xyOps process.  You also have access to the following globals:
+По умолчанию скрипт `debug.sh` запускает [REPL](https://nodejs.org/api/repl.html) в консоли, и вы можете выполнять JS прямо внутри процесса xyOps. Доступны следующие глобалы:
 
 | Global | Description |
 |--------|-------------|
-| `server` | The current global [pixl-server](https://github.com/jhuckaby/pixl-server) instance. |
-| `cli` | The [pixl-cli](https://github.com/jhuckaby/pixl-cli) global, which contains a variety of utility functions. |
-| `xyOps` | The main xyOps server component.  This is also aliased to `xy`. |
-| `Storage` | The [pixl-server-storage](https://github.com/jhuckaby/pixl-server-storage) server component. |
-| `Unbase` | The [pixl-server-unbase](https://github.com/jhuckaby/pixl-server-unbase) server component. |
-| `WebServer` | The [pixl-server-web](https://github.com/jhuckaby/pixl-server-web) server component. |
-| `API` | The [pixl-server-api](https://github.com/jhuckaby/pixl-server-api) server component. |
-| `User` | The [pixl-server-user](https://github.com/jhuckaby/pixl-server-user) server component. |
-| `Debug` | The [pixl-server-debug](https://github.com/jhuckaby/pixl-server-debug) server component. |
+| `server` | Текущий глобальный инстанс [pixl-server](https://github.com/jhuckaby/pixl-server). |
+| `cli` | Глобальный [pixl-cli](https://github.com/jhuckaby/pixl-cli), содержащий набор утилит. |
+| `xyOps` | Главный компонент сервера xyOps. Также доступен как `xy`. |
+| `Storage` | Компонент сервера [pixl-server-storage](https://github.com/jhuckaby/pixl-server-storage). |
+| `Unbase` | Компонент сервера [pixl-server-unbase](https://github.com/jhuckaby/pixl-server-unbase). |
+| `WebServer` | Компонент сервера [pixl-server-web](https://github.com/jhuckaby/pixl-server-web). |
+| `API` | Компонент сервера [pixl-server-api](https://github.com/jhuckaby/pixl-server-api). |
+| `User` | Компонент сервера [pixl-server-user](https://github.com/jhuckaby/pixl-server-user). |
+| `Debug` | Компонент сервера [pixl-server-debug](https://github.com/jhuckaby/pixl-server-debug). |
 
-You also have access to the following REPL commands (use a leading dot to activate):
+Также доступны REPL команды (используйте точку перед командой):
 
 | Command | Description |
 |---------|-------------|
-| `.echo` | Add or remove echo categories, e.g. `.echo add Storage WebServer`. |
-| `.notify` | Send a notification to all users, e.g. `.notify HI THERE`.  Includes a random sound effect! |
+| `.echo` | Добавить или удалить категории, например `.echo add Storage WebServer`. |
+| `.notify` | Отправить уведомление всем пользователям, например `.notify HI THERE`. Включает случайный sound effect. |
 
-## Running Unit Tests
+## Запуск unit тестов
 
-xyOps comes with a full unit test suite, which runs via the [pixl-unit](https://github.com/jhuckaby/pixl-unit) module (which should be installed automatically).  To run the unit tests, make sure xyOps isn't already running, and type:
+В xyOps есть полный набор unit тестов, запускаемых через [pixl-unit](https://github.com/jhuckaby/pixl-unit) (обычно устанавливается автоматически). Чтобы запустить тесты, убедитесь, что xyOps не запущен, и выполните:
 
 ```
 npm test
 ```
 
-If any tests fail, please open a [GitHub Issue](https://github.com/pixlcore/xyops/issues) and include any relevant unit test logs, which can be found in `./test/logs/`.
+Если какие-то тесты упали, пожалуйста, создайте [GitHub Issue](https://github.com/pixlcore/xyops/issues) и приложите логи тестов из `./test/logs/`.
 
-## Self-Signed Certificates
+## Self-Signed сертификаты
 
-Here is how to create a self-signed and trusted TLS certificate you can use with xyOps for developing locally.  First, create a temporary config file (`san.cnf`):
+Вот как создать самоподписанный TLS сертификат для локальной разработки. Сначала создайте временный конфиг (`san.cnf`):
 
 ```
 [req]
@@ -167,37 +167,37 @@ subjectAltName = @alt_names
 DNS.1 = localhost
 ```
 
-Then run this command:
+Затем выполните команду:
 
 ```sh
 openssl req -x509 -newkey rsa:2048 -nodes -keyout tls.key -out tls.crt -days 365 -config san.cnf
 ```
 
-Then, follow the instructions below for your development platform.
+Далее следуйте инструкции для вашей платформы.
 
-### Windows Cert Trust
+### Windows: доверие сертификату
 
-1. Press Windows + R, type `certmgr.msc`, and press Enter.
-2. In the left panel, expand: **Trusted Root Certification Authorities** → **Certificates**.
-3. Right-click **Certificates**, then choose: **All Tasks → Import...**
-4. Browse to your `tls.crt` file.
-5. Choose "Place all certificates in the following store" → make sure it's set to **Trusted Root Certification Authorities**.
-6. Finish and confirm any security prompt.
+1. Нажмите Windows + R, введите `certmgr.msc` и нажмите Enter.
+2. В левой панели раскройте: **Trusted Root Certification Authorities** -> **Certificates**.
+3. Кликните правой кнопкой **Certificates**, затем **All Tasks** -> **Import...**.
+4. Выберите файл `tls.crt`.
+5. Выберите "Place all certificates in the following store" -> **Trusted Root Certification Authorities**.
+6. Завершите мастер и подтвердите запросы безопасности.
 
-### macOS Cert Trust
+### macOS: доверие сертификату
 
-1. Open the **Keychain Access** app.
-2. In the left sidebar, select **System** under **Keychains**.
-3. Select **Certificates** under **Category**.
-4. From the top menu, choose **File → Import Items...**
-5. Select your `tls.crt` file, confirm import into the System keychain.
-6. You will be prompted for your macOS password to authorize the change.
-7. After importing, double-click the certificate entry.
-8. In the popup window, expand the **Trust** section.
-9. Set "When using this certificate" to **Always Trust**.
-10. Close the window, and enter your password again if prompted.
+1. Откройте **Keychain Access**.
+2. В левой панели выберите **System** в разделе **Keychains**.
+3. Выберите **Certificates** в разделе **Category**.
+4. В верхнем меню выберите **File** -> **Import Items...**.
+5. Выберите `tls.crt` и подтвердите импорт в System keychain.
+6. Введите пароль macOS для подтверждения.
+7. Дважды кликните по сертификату.
+8. В окне разверните раздел **Trust**.
+9. Установите "When using this certificate" в **Always Trust**.
+10. Закройте окно и снова введите пароль, если потребуется.
 
-### Linux Cert Trust
+### Linux: доверие сертификату
 
 **Debian/Ubuntu:**
 
@@ -209,15 +209,15 @@ Then, follow the instructions below for your development platform.
 1. `sudo cp tls.crt /etc/pki/ca-trust/source/anchors/xyops.crt`
 2. `sudo update-ca-trust extract`
 
-**Note:** This does not affect Firefox unless it's configured to use system trust (by default it has its own CA store).
+**Примечание:** Это не влияет на Firefox, если он использует собственное хранилище CA (по умолчанию так и есть).
 
-### Move to xyOps
+### Перенос в xyOps
 
-Move the cert files to this location for xyOps to use:
+Переместите файлы сертификатов в следующий каталог, чтобы xyOps мог их использовать:
 
 ```sh
 mv tls.crt /opt/xyops/conf/
 mv tls.key /opt/xyops/conf/
 ```
 
-You can now delete the `san.cnf` file.  It is only used temporarily during the cert creation process.
+Теперь можно удалить файл `san.cnf` — он нужен только на время создания сертификата.

@@ -1,79 +1,79 @@
-# Documentation Index
+# Указатель документации
 
-## Overview
+## Обзор
 
-Welcome to the xyOps documentation. xyOps is a job scheduler, workflow engine, and server monitoring platform with a built-in web UI and REST API. This index organizes the docs into logical sections with short summaries to help you find what you need quickly. If you are deploying xyOps, start with Self-Hosting.
+Добро пожаловать в документацию xyOps. xyOps - это планировщик задач, движок рабочих процессов и платформа мониторинга серверов со встроенным веб-интерфейсом и REST API. Этот указатель группирует документы по разделам и дает короткие описания, чтобы вы быстрее находили нужное. Если вы разворачиваете xyOps, начните с "Self-Hosting".
 
-## Getting Started
+## Начало работы
 
-- **[Welcome to xyOps](welcome.md)**: Introduces xyOps and provides some tips for beginners.  Shown on first login.
-- **[Self-Hosting](hosting.md)**: Install xyOps with Docker, add workers, configure TLS, storage, and production settings.
-- **[Configuration](config.md)**: All server configuration options, override layers, and where settings live on disk.
-- **[Scaling](scaling.md)**: Best practices for running at scale, hardware sizing, caching, and multi-conductor.
-- **[Command Line](cli.md)**: Service control commands and admin utilities available via `bin/control.sh`.
-- **[Cronicle](cronicle.md)**: Migrate from Cronicle, enable compatibility mode, and optional UI white-labeling.
-- **[Recipes](recipes.md)**: Practical patterns like continuous jobs and error handling you can copy and adapt.
+- **[Welcome to xyOps](welcome.md)**: Введение в xyOps и советы для новичков. Показывается при первом входе.
+- **[Self-Hosting](hosting.md)**: Установка xyOps через Docker, добавление воркеров, настройка TLS, хранилища и продакшн-параметров.
+- **[Configuration](config.md)**: Все параметры конфигурации сервера, слои переопределения и расположение настроек на диске.
+- **[Scaling](scaling.md)**: Лучшие практики масштабирования, подбор железа, кеширование и multi-conductor.
+- **[Command Line](cli.md)**: Команды управления сервисом и административные утилиты через `bin/control.sh`.
+- **[Cronicle](cronicle.md)**: Миграция с Cronicle, включение режима совместимости и опциональный white-label UI.
+- **[Recipes](recipes.md)**: Практические шаблоны вроде непрерывных задач и обработки ошибок, которые можно копировать и адаптировать.
 
-## Core Concepts
+## Ключевые понятия
 
-- **[Events](events.md)**: Define what to run, where, when, and how; the foundation that launches jobs.
-- **[Workflows](workflows.md)**: Visual graphs that orchestrate multiple jobs with control flow, fan-out/in, and limits.
-- **[Triggers](triggers.md)**: Schedules, intervals, single-shot, manual, ranges, blackout windows, and precision options.
-- **[Limits](limits.md)**: Self-imposed runtime constraints (time, output, CPU, memory) and retry/queue controls.
-- **[Actions](actions.md)**: Reactions to job outcomes and alert state changes (email, web hook, run job, ticket, snapshot, channel).
-- **[Channels](channels.md)**: Reusable bundles of notifications and follow-up actions referenced from actions.
-- **[Categories](categories.md)**: Organize events/workflows, apply default actions/limits, and control visibility.
-- **[Tags](tags.md)**: Labels for events/jobs for search, filtering, limits, and conditional actions.
-- **[Buckets](buckets.md)**: Durable JSON + files storage for sharing data and artifacts between jobs and workflows.
-- **[Secrets](secrets.md)**: Encrypted variables for jobs, plugins, and web hooks; assignment and runtime delivery.
+- **[Events](events.md)**: Определяют что запускать, где, когда и как - основа запуска задач.
+- **[Workflows](workflows.md)**: Визуальные графы, которые оркестрируют несколько задач с управлением потоком, fan-out/in и лимитами.
+- **[Triggers](triggers.md)**: Расписания, интервалы, разовые запуски, ручной запуск, диапазоны, окна простоя и точность.
+- **[Limits](limits.md)**: Самоназначаемые ограничения выполнения (время, вывод, CPU, память) и управление повтором/очередью.
+- **[Actions](actions.md)**: Реакции на результат задач и изменение состояния алертов (email, web hook, запуск задачи, тикет, снимок, канал).
+- **[Channels](channels.md)**: Переиспользуемые пакеты уведомлений и последующих действий, вызываемые из actions.
+- **[Categories](categories.md)**: Организация событий/воркфлоу, применение дефолтных actions/limits и контроль видимости.
+- **[Tags](tags.md)**: Метки для событий/задач для поиска, фильтрации, лимитов и условных действий.
+- **[Buckets](buckets.md)**: Надежное хранилище JSON + файлов для обмена данными и артефактами между задачами и воркфлоу.
+- **[Secrets](secrets.md)**: Шифрованные переменные для задач, плагинов и web hooks; назначение и доставка во время выполнения.
 
-## Monitoring & Operations
+## Мониторинг и эксплуатация
 
-- **[Servers](servers.md)**: Worker nodes (xySat) that execute jobs, stream metrics, and participate in failover.
-- **[Groups](groups.md)**: Logical sets of servers for targeting, default alert actions, and group-level views.
-- **[Monitors](monitors.md)**: Minute-level time-series metrics defined by expressions, used for graphs and alerts.
-- **[Alerts](alerts.md)**: Evaluate live data per server and trigger actions when expressions match.
-- **[Snapshots](snapshots.md)**: Point-in-time captures of server or group state for forensics and comparisons.
-- **[Tickets](tickets.md)**: Lightweight issues/runbooks integrated with jobs, alerts, files, and automation.
+- **[Servers](servers.md)**: Воркеры (xySat), которые выполняют задачи, стримят метрики и участвуют в failover.
+- **[Groups](groups.md)**: Логические группы серверов для таргетинга, дефолтных алертов и групповых представлений.
+- **[Monitors](monitors.md)**: Минутные метрики временных рядов, заданные выражениями, используются для графиков и алертов.
+- **[Alerts](alerts.md)**: Оценивают живые данные по серверу и запускают действия при совпадении выражений.
+- **[Snapshots](snapshots.md)**: Снимки состояния сервера или группы на момент времени для форензики и сравнений.
+- **[Tickets](tickets.md)**: Легковесные тикеты/ранбуки, интегрированные с задачами, алертами, файлами и автоматизацией.
 
-## Plugins & Integrations
+## Плагины и интеграции
 
-- **[Plugins](plugins.md)**: Extend xyOps in any language; event and monitor plugin APIs, parameters, and I/O.
-- **[Marketplace](marketplace.md)**: Publish and discover plugins; packaging, hosting, and requirements.
-- **[Web Hooks](webhooks.md)**: Outbound HTTP requests from jobs and alerts with templated headers and bodies.
-- **[System Hooks](syshooks.md)**: Run custom actions in response to global activity across xyOps.
+- **[Plugins](plugins.md)**: Расширение xyOps на любом языке; API плагинов для событий и мониторов, параметры и ввод/вывод.
+- **[Marketplace](marketplace.md)**: Публикация и поиск плагинов; упаковка, хостинг и требования.
+- **[Web Hooks](webhooks.md)**: Исходящие HTTP-запросы из задач и алертов с шаблонами заголовков и тел.
+- **[System Hooks](syshooks.md)**: Запуск кастомных действий в ответ на глобальную активность xyOps.
 
-## API & Data
+## API и данные
 
-- **[REST API](api.md)**: REST API endpoints, API keys, authentication, and standard response format.
-- **[Data Structures](data.md)**: Complete schemas for all xyOps objects (jobs, events, users, servers, alerts, etc.).
-- **[Database Tables](db.md)**: A list of all the internal xyOps database tables and column indexes.
+- **[REST API](api.md)**: Эндпойнты REST API, ключи API, аутентификация и стандартный формат ответа.
+- **[Data Structures](data.md)**: Полные схемы всех объектов xyOps (задачи, события, пользователи, серверы, алерты и т.д.).
+- **[Database Tables](db.md)**: Список всех внутренних таблиц базы данных xyOps и индексов колонок.
 
-## Access & Identity
+## Доступ и идентификация
 
-- **[Users and Roles](users.md)**: Account model, roles, resource restrictions, preferences, and avatars.
-- **[Privileges](privileges.md)**: Full list of privileges and what each grants across the application.
-- **[SSO Setup](sso.md)**: Single Sign-On integration and external identity provider setup.
+- **[Users and Roles](users.md)**: Модель аккаунтов, роли, ограничения ресурсов, предпочтения и аватары.
+- **[Privileges](privileges.md)**: Полный список привилегий и что каждая из них дает в приложении.
+- **[SSO Setup](sso.md)**: Интеграция Single Sign-On и настройка внешнего провайдера идентификации.
 
-## File Formats and Protocols
+## Форматы файлов и протоколы
 
-- **[xyOps Expression Format](xyexp.md)**: JEXL-based expressions and helper functions used across the system.
-- **[xyOps Portable Data Format](xypdf.md)**: Transfer format (XYPDF) for moving objects between systems.
-- **[xyOps Backup Format](xybk.md)**: NDJSON-based bulk export/import format used by the admin tools.
-- **[xyOps Wire Protocol](xywp.md)**: JSON over STDIO contract for plugins communicating with xyOps/xySat.
+- **[xyOps Expression Format](xyexp.md)**: Выражения на базе JEXL и вспомогательные функции, используемые в системе.
+- **[xyOps Portable Data Format](xypdf.md)**: Формат переноса (XYPDF) для передачи объектов между системами.
+- **[xyOps Backup Format](xybk.md)**: Формат массового экспорта/импорта на основе NDJSON, используемый админ-инструментами.
+- **[xyOps Wire Protocol](xywp.md)**: Контракт JSON поверх STDIO для общения плагинов с xyOps/xySat.
 
-## Developer Guides
+## Руководства для разработчиков
 
-- **[Development](dev.md)**: Architecture overview, component list, client framework, and local dev setup.
-- **[Logging](logging.md)**: A list of all xyOps log files including descriptions and example rows.
-- **[Security](security.md)**: How to report xyOps vulnerabilities responsibly.
+- **[Development](dev.md)**: Обзор архитектуры, список компонентов, клиентский фреймворк и локальная разработка.
+- **[Logging](logging.md)**: Список всех логов xyOps с описаниями и примерами строк.
+- **[Security](security.md)**: Как корректно сообщать об уязвимостях xyOps.
 
-## Meta
+## Прочее
 
-- **[GitHub Project](https://github.com/pixlcore/xyops/blob/main/README.md)**: Home of the xyOps open source repository.
-- **[Code of Conduct](https://github.com/pixlcore/xyops/blob/main/CODE_OF_CONDUCT.md)**: Contributor Covenant Code of Conduct.
-- **[License](https://github.com/pixlcore/xyops/blob/main/LICENSE.md)**: Open source BSD 3-Clause license (OSI-approved).
-- **[Trademarks](https://github.com/pixlcore/xyops/blob/main/TRADEMARKS.md)**: xyOps™, xySat™ and PixlCore™ are trademarks.
-- **[Longevity](https://github.com/pixlcore/xyops/blob/main/LONGEVITY.md)**: Project longevity and forever license pledge.
-- **[Governance](governance.md)**: Project governance, contribution expectations, and decision-making.
-- **[Colophon](colophon.md)**: We stand on the shoulders of these particular giants.
+- **[GitHub Project](https://github.com/pixlcore/xyops/blob/main/README.md)**: Домашняя страница open source репозитория xyOps.
+- **[Code of Conduct](https://github.com/pixlcore/xyops/blob/main/CODE_OF_CONDUCT.md)**: Кодекс поведения Contributor Covenant.
+- **[License](https://github.com/pixlcore/xyops/blob/main/LICENSE.md)**: Лицензия BSD 3-Clause (OSI-approved).
+- **[Trademarks](https://github.com/pixlcore/xyops/blob/main/TRADEMARKS.md)**: xyOpsT, xySatT и PixlCoreT являются товарными знаками.
+- **[Longevity](https://github.com/pixlcore/xyops/blob/main/LONGEVITY.md)**: Долговечность проекта и обещание вечной лицензии.
+- **[Governance](governance.md)**: Управление проектом, ожидания по контрибьюциям и принятие решений.
+- **[Colophon](colophon.md)**: Мы стоим на плечах именно этих гигантов.

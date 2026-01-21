@@ -1,164 +1,164 @@
-# Servers
+# Серверы
 
-## Overview
+## Обзор
 
-Servers are the worker nodes in a xyOps cluster. Each server runs our lightweight satellite agent (xySat), maintains a persistent WebSocket connection to the conductor, collects monitoring metrics, and executes jobs on demand. A server may be a physical host, virtual machine, or container, and can run Linux, macOS, or Windows.
+Серверы — это worker-узлы кластера xyOps. Каждый сервер запускает легковесный агент (xySat), поддерживает постоянное WebSocket соединение с conductor, собирает мониторинговые метрики и выполняет задачи по запросу. Сервер может быть физическим хостом, VM или контейнером и работать на Linux, macOS или Windows.
 
-This document explains how servers fit into xyOps, how to add and organize them, how events target servers, what you can see on each server's UI page, and how the system scales to large fleets.
+Этот документ объясняет роль серверов в xyOps, как их добавлять и организовывать, как события таргетируют сервера, что видно на странице сервера в UI и как система масштабируется до больших парков.
 
-## Key Points
+## Ключевые моменты
 
-- Servers run xySat and act as job runners and metrics collectors.
-- Conductors run the full xyOps stack and coordinate scheduling, routing, storage, and UI.
-- You can add any number of servers and conductors to a cluster; agents maintain live connections and auto-failover across conductors.
-- Servers collect "quick" metrics every second (CPU/Mem/Disk/Net) and minute-level metrics via user-defined monitor plugins. Some metrics are not available on Windows.
+- Серверы запускают xySat и выступают job runners и сборщиками метрик.
+- Conductors запускают полный стек xyOps и координируют расписание, маршрутизацию, storage и UI.
+- В кластер можно добавить любое количество серверов и conductors; агенты поддерживают живые соединения и auto-failover между conductors.
+- Серверы собирают "быстрые" метрики каждую секунду (CPU/Mem/Disk/Net) и минутные метрики через пользовательские monitor plugins. Некоторые метрики недоступны на Windows.
 
-## Servers vs. Conductors
+## Серверы и conductors
 
-- **Server**: A worker node running xySat. It reports host details and metrics, and executes jobs sent by a conductor. Servers may be grouped and targeted by events.
-- **Conductor**: A full xyOps instance (primary or hot standby) that manages the schedule, routes jobs to servers, stores data, and serves the UI/API. A cluster can have multiple conductors for redundancy; one is primary at any time.
+- **Server**: worker-узел с xySat. Он отправляет данные хоста и метрики, и выполняет задачи от conductor. Серверы можно группировать и таргетировать событиями.
+- **Conductor**: полноценный инстанс xyOps (primary или hot standby), который управляет расписанием, маршрутизирует задачи, хранит данные и обслуживает UI/API. В кластере может быть несколько conductors для отказоустойчивости; в каждый момент времени один — primary.
 
-xySat keeps an up-to-date list of all conductors. If a server loses its primary connection, it automatically fails over to a backup and then reconnects to the new primary after election.
+xySat хранит актуальный список conductors. Если сервер теряет primary соединение, он автоматически переключается на backup и после выборов переподключается к новому primary.
 
-## Adding Servers
+## Добавление серверов
 
-You can add servers in three ways:
+Есть три способа добавить сервер:
 
-1. **Via the UI** (one-line installer)
-	- Go to the Servers tab and click "Add Server…".
-	- Optionally set a label, icon, enabled state, and pick groups (or leave automatic grouping on).
-	- Copy the pre-configured one-line install command for Docker, Linux, macOS or Windows and run it on the target host.
-	- The installer authenticates, installs xySat as a startup service (systemd/launchd/Windows Service), writes the config, and starts the agent.
-	- The server appears immediately in the cluster, begins streaming metrics, and can run jobs.
-2. **Automated bootstrap** (API Key)
-	- For autoscaling or ephemeral hosts, generate an API Key and use your provisioning to call the bootstrap endpoint to fetch a server token and installer command during first boot.
-	- See below for details. You can include this in cloud-init, AMIs, Packer templates, or custom init scripts.
-3. **Manual install**
-	- Install xySat on the host and configure it with your cluster URL and secret key. The secret key is used to generate an auth token. Start the service to join the cluster.
-	- This method is typically only used for development, testing and home labs.
+1. **Через UI** (one-line installer)
+	- Откройте вкладку Servers и нажмите "Add Server:".
+	- При желании задайте label, icon, enabled и выберите groups (или оставьте авто-группировку).
+	- Скопируйте готовую однострочную команду установки для Docker, Linux, macOS или Windows и выполните ее на целевом хосте.
+	- Инсталлятор аутентифицируется, устанавливает xySat как сервис автозапуска (systemd/launchd/Windows Service), пишет конфиг и запускает агент.
+	- Сервер сразу появляется в кластере, начинает стримить метрики и готов выполнять задачи.
+2. **Автоматический bootstrap** (API Key)
+	- Для autoscaling или эфемерных хостов создайте API Key и используйте провижининг, чтобы вызвать bootstrap endpoint и получить server token и команду установки при первом запуске.
+	- См. подробности ниже. Можно включить это в cloud-init, AMI, Packer templates или кастомные init скрипты.
+3. **Ручная установка**
+	- Установите xySat на хост и настройте его на URL кластера и secret key. Secret key используется для генерации auth token. Запустите сервис, чтобы подключиться к кластеру.
+	- Обычно используется только для разработки, тестов и домашних лабораторий.
 
-Notes:
+Примечания:
 
-- Server auth tokens do not expire. You can, however, [rotate your secret key](hosting.md#secret-key-rotation) (which regenerates all tokens) from the UI if needed.
-- Software upgrades for xySat are orchestrated from the UI and are designed to avoid interrupting running jobs.
+- Auth токены сервера не истекают. При необходимости можно [провернуть секретный ключ](hosting.md#secret-key-rotation) (это перегенерирует все токены) из UI.
+- Обновления xySat оркестрируются из UI и спроектированы так, чтобы не прерывать выполняющиеся задачи.
 
-### Automated Server Bootstrap
+### Автоматический bootstrap сервера
 
-To automate adding new ephemeral servers to your cluster, follow these steps:
+Для автоматизации добавления новых эфемерных серверов в кластер выполните следующие шаги:
 
-First, create a new [API Key](api.md#api-keys) in the UI, and assign it the [add_servers](privileges.md#add_servers) privilege only (remove all the default privileges).  Next, click "Add Server" in the UI and copy the Linux installation command.  Do not enter any server options like label, icon or group.
+Сначала создайте [API Key](api.md#api-keys) в UI и назначьте ему только привилегию [add_servers](privileges.md#add_servers) (удалите все дефолтные). Затем нажмите "Add Server" в UI и скопируйте команду установки для Linux. Не вводите параметры сервера вроде label, icon или group.
 
-Replace the auth token value (which expires after 24 hours) with your new API Key (which won't expire).  The token is the value of the `t` query string parameter in the URL.  Example:
+Замените auth token (он истекает через 24 часа) на ваш новый API Key (он не истекает). Токен — значение параметра `t` в query string URL. Пример:
 
 ```sh
 curl -s "https://xyops01.mycompany.com/api/app/satellite/install?t=API_KEY_HERE" | sudo sh
 ```
 
-Finally, paste the new command into your server provisioning script, specifically in the first-boot sequence, so it runs on initial startup.
+Затем вставьте новую команду в ваш скрипт провижининга, именно в этапе first-boot.
 
-Notes:
+Примечания:
 
-- Make sure the new server's networking stack is up before running the bootstrap command.
-- After initial download, xySat will install from a local cache and not have to hit the internet for anything (or just use [Air-Gapped Mode](hosting.md#air-gapped-mode)).
-- Make sure your servers have `curl` preinstalled.  Alternatively, you can rewrite the command to use `wget`.
-- In automated mode your server's hostname will dictate which server groups it gets added to.
+- Убедитесь, что сетевой стек сервера поднят до запуска bootstrap команды.
+- После первого скачивания xySat будет устанавливать из локального кэша и не будет выходить в интернет (либо используйте [Air-Gapped Mode](hosting.md#air-gapped-mode)).
+- Убедитесь, что на серверах установлен `curl`. Иначе перепишите команду на `wget`.
+- В автоматическом режиме hostname сервера определяет, в какие группы он попадет.
 
-## Groups and Auto-Assignment
+## Группы и авто-назначение
 
-Servers can belong to one or more groups. Groups are used for organizing the fleet, scoping monitors/alerts, and targeting events.
+Серверы могут входить в одну или несколько групп. Группы используются для организации парка, ограничения мониторов/алертов и таргетинга событий.
 
-- **Auto-assignment**: Groups can declare a hostname regular expression. When a server comes online (or when its hostname changes), matching groups are applied automatically.
-- **Multiple groups**: Servers can match and join multiple groups.
-- **Manual assignment**: If you manually assign groups to a server, automatic hostname-based matching is disabled for that server. You can re-enable auto-assignment by clearing the manual groups.
-- **Re-evaluation**: Group matches are re-evaluated if a server's hostname changes.
+- **Auto-assignment**: группы могут задать regex для hostname. Когда сервер появляется (или меняет hostname), совпавшие группы назначаются автоматически.
+- **Multiple groups**: сервер может подходить под несколько групп.
+- **Manual assignment**: если вы вручную назначили группы для сервера, авто-назначение по hostname отключается. Его можно вернуть, очистив список групп вручную.
+- **Re-evaluation**: совпадения пересчитываются при изменении hostname сервера.
 
-See [Server Groups](groups.md) for more details on server groups.
+См. [Server Groups](groups.md) для подробностей.
 
-## Targeting Events at Servers
+## Таргетинг событий на серверы
 
-Events specify targets as a list containing server IDs and/or group IDs. At run time, the scheduler resolves these into the set of currently online, enabled servers, then picks one using the event's selection algorithm (random, round_robin, least_cpu, least_mem, or a monitor-based policy). See [Event.targets](data.md#event-targets) and [Event.algo](data.md#event-algo).
+События задают targets как список ID серверов и/или ID групп. Во время запуска планировщик разворачивает их в набор текущих онлайн и включенных серверов и выбирает один по алгоритму события (random, round_robin, least_cpu, least_mem или monitor-based). См. [Event.targets](data.md#event-targets) и [Event.algo](data.md#event-algo).
 
-Behavior when servers are offline:
+Поведение при офлайне серверов:
 
-- **Single-server target**: If the target server is offline, behavior is user-configurable via limits: add a Queue limit to allow queuing; without one, the job fails immediately.
-- **Group target**: Offline servers are ignored; alternate online servers from the group are selected.
+- **Single-server target**: если целевой сервер офлайн, поведение настраивается limits: добавьте Queue limit, чтобы поставить в очередь; без него задача падает сразу.
+- **Group target**: офлайн сервера игнорируются; выбираются другие онлайн сервера из группы.
 
-Alerts can optionally suppress job launches on a specific server, so a server under alert may be excluded from selection until it clears.  This feature is configured at the alert level (see [Alerts](alerts.md) for more details).
+Алерты могут подавлять запуск задач на конкретном сервере, поэтому сервер с активным алертом может быть исключен из выбора до снятия алерта. Эта функция настраивается на уровне алерта (см. [Alerts](alerts.md)).
 
-## Server UI
+## UI сервера
 
-Each server has a dedicated page in the xyOps UI showing live and historical state:
+У каждого сервера есть отдельная страница в UI, показывающая текущее и историческое состояние:
 
-- **Status**: Online/offline badge, label/hostname, IP, OS/arch, CPU details, memory, virtualization, agent version, uptime, and groups.
-- **Quick metrics** (per second): Small rolling graphs for CPU, memory, disk, and network over the last 60 seconds.
-- **Monitors** (per minute): Charts for all user-defined monitors and deltas, with alert overlays.
-- **Processes**: Current process table showing PID / parent / CPU / memory / network, and other metrics for each process.
-- **Connections**: Current network connections showing state, source and dest IPs, and transfer metrics.
-- **Running jobs**: Live jobs executing on the server, including workflow parents/children.
-- **Upcoming jobs**: Predicted jobs scheduled to land on this server (based on event targets and schedule).
-- **Alerts**: Active alerts affecting this server, with links to history.
-- **User Actions**: Take a snapshot, set a watch, edit server details (label, enable/disable, icon, groups), or delete the server.
+- **Status**: Online/offline, label/hostname, IP, OS/arch, детали CPU, память, виртуализация, версия агента, uptime и группы.
+- **Quick metrics** (каждую секунду): маленькие rolling графики CPU, памяти, диска и сети за последние 60 секунд.
+- **Monitors** (каждую минуту): графики всех пользовательских monitors и deltas, с наложением алертов.
+- **Processes**: текущая таблица процессов с PID/parent/CPU/memory/network и другими метриками.
+- **Connections**: текущие сетевые соединения со статусом, source/dest IP и метриками передачи.
+- **Running jobs**: активные задачи, выполняющиеся на сервере, включая workflow parents/children.
+- **Upcoming jobs**: прогнозируемые задачи, которые должны попасть на этот сервер (по targets и расписанию событий).
+- **Alerts**: активные алерты, затрагивающие этот сервер, со ссылками на историю.
+- **User Actions**: сделать snapshot, поставить watch, редактировать данные сервера (label, enabled/disabled, icon, groups) или удалить сервер.
 
-Search the fleet and history from Servers → Search. You can filter by group, OS platform/distro/release/arch, CPU brand/cores, and created/modified ranges.
+Search по парку и истории доступен в Servers -> Search. Можно фильтровать по группе, OS platform/distro/release/arch, CPU brand/cores и диапазонам created/modified.
 
-## Snapshots and Watches
+## Snapshots и Watches
 
-Snapshots capture the current state of a server and save it for later inspection and comparison. They're available on the Snapshots area, and when linked from actions or alerts.
+Snapshots сохраняют текущее состояние сервера для последующего анализа и сравнения. Они доступны в Snapshots и через действия/алерты.
 
-What a snapshot contains:
+Что содержит snapshot:
 
-- Full process list (ps -ef equivalent), network connections (including listeners), disk mounts, network devices.
-- Host facts: CPU type, core count, max RAM, OS platform/distro/release, uptime, load, etc.
-- The last 60 seconds of "quick" metrics (per-second CPU/Mem/Disk/Net).
-- References to active jobs and relevant alerts at capture time.
+- Полный список процессов (аналог `ps -ef`), сетевые соединения (включая listeners), disk mounts, network devices.
+- Факты хоста: тип CPU, количество ядер, max RAM, OS platform/distro/release, uptime, load и т.д.
+- Последние 60 секунд "быстрых" метрик (CPU/Mem/Disk/Net).
+- Ссылки на активные задачи и релевантные алерты на момент снимка.
 
-How snapshots are created:
+Как создаются snapshots:
 
-- Manually: Click "Create Snapshot" on a server page.
-- Actions: Add a Snapshot action to a job or alert; the system can take snapshots when conditions are met.
-- Watch: Start a watch on a server to take a snapshot every minute for a duration (default 5 minutes).
+- Вручную: "Create Snapshot" на странице сервера.
+- Actions: добавить Snapshot action в задачу или алерт.
+- Watch: запустить watch на сервере для снимка каждую минуту заданное время (по умолчанию 5 минут).
 
-Retention:
+Хранение:
 
-- Snapshots are retained up to a global cap (default 100,000 snaps) and pruned nightly.
+- Snapshots хранятся до глобального лимита (по умолчанию 100,000) и чистятся ночью.
 
-See [Snapshots](snapshots.md) for more details.
+См. [Snapshots](snapshots.md) для деталей.
 
-## Metrics and Sampling
+## Метрики и частота
 
-- Per second ("quick"): CPU, memory, disk, and network; retained in a rolling 60-second in-memory buffer for UI.
-- Per minute (monitors): User-defined monitor plugins run each minute on servers to produce numeric values (or deltas). These feed charts, alerts, and dashboards. See [Monitors](monitors.md).
-- OS differences: Some metrics are not available on Windows.
+- Каждую секунду (quick): CPU, memory, disk и network; последние 60 секунд хранятся в памяти для UI.
+- Каждую минуту (monitors): пользовательские monitor plugins запускаются каждую минуту и возвращают числовые значения (или deltas). Эти данные используются для графиков, алертов и дашбордов. См. [Monitors](monitors.md).
+- Отличия ОС: некоторые метрики недоступны на Windows.
 
-To avoid thundering herd effects on conductors, each server deterministically staggers its minute collection offset using a hash of its Server ID plus a dynamically computed offset. This spreads submissions evenly across N seconds, which is based on the total number of servers in the cluster.  The quick second metrics also do this, but stagger in milliseconds.
+Чтобы избежать эффекта thundering herd на conductors, каждый сервер детерминированно смещает минутный сбор данных, используя хэш Server ID и динамически вычисляемый offset. Это равномерно распределяет отправку по N секундам, в зависимости от размера кластера. Быстрые секундные метрики делают то же, но смещают на миллисекунды.
 
-## Lifecycle and Health
+## Жизненный цикл и здоровье
 
-- **Online/offline**: A server is online while its xySat WebSocket is connected. If the socket drops, the server is immediately marked offline. The UI updates in real time.
-- **Running jobs**: Jobs are not aborted immediately when a server goes offline. Instead, conductors wait for `dead_job_timeout` before declaring the job dead and aborting it (default: 120 seconds). See [Configuration](config.md#dead_job_timeout).
-- **Enable/disable**: Disabling a server removes it from job selection but it can remain online and continue reporting metrics.
+- **Online/offline**: сервер онлайн, пока его WebSocket соединение xySat активно. Если сокет падает, сервер сразу отмечается offline. UI обновляется в реальном времени.
+- **Running jobs**: задачи не прерываются сразу при offline сервера. Conductors ждут `dead_job_timeout`, прежде чем считать задачу мертвой и прервать ее (по умолчанию 120 секунд). См. [Configuration](config.md#dead_job_timeout).
+- **Enable/disable**: отключение сервера убирает его из выбора задач, но он может оставаться online и продолжать отправлять метрики.
 
-## Scalability
+## Масштабируемость
 
-xyOps is designed for large fleets and has been tested up to hundreds of servers per cluster. For larger clusters:
+xyOps рассчитан на большие парки и тестировался до сотен серверов в кластере. Для крупных кластеров:
 
-- Deterministic staggering ensures not all servers submit minute and second samples at once; load is spread evenly over a dynamic time window.
-- Conductors should run on strong hardware (CPU/RAM/SSD) for best performance when ingesting and aggregating data, running elections, and serving the UI/API.
-- You can operate multiple conductors (primary + hot standby peers). Agents auto-failover between them; the cluster performs election to select a new primary as needed.
+- Детерминированное распределение не дает всем серверам отправлять минутные/секундные метрики одновременно; нагрузка равномерно распределяется.
+- Conductors должны работать на мощном железе (CPU/RAM/SSD) для стабильной обработки данных, выборов и обслуживания UI/API.
+- Можно использовать несколько conductors (primary + hot standby). Агенты авто-failover'ят между ними; кластер проводит выборы нового primary по необходимости.
 
-Also see the [Scaling](scaling.md) guide.
+См. также [Scaling](scaling.md).
 
-## Decommissioning Servers
+## Вывод серверов из эксплуатации
 
-To retire a server, open its detail page and click the trash can icon:
+Чтобы вывести сервер из эксплуатации, откройте его страницу и нажмите иконку корзины:
 
-- **Online**: The conductor sends an uninstall command to the agent, which shuts down and removes xySat. You can also optionally delete historical data (server record, metrics, snapshots).
-- **Offline**: You can still delete the server but must opt to delete history, as uninstall requires an active connection.
+- **Online**: conductor отправит агенту команду uninstall, которая остановит и удалит xySat. Можно дополнительно удалить исторические данные (запись сервера, метрики, snapshots).
+- **Offline**: сервер можно удалить, но нужно явно удалить историю, так как uninstall требует активного соединения.
 
-Deletions are permanent and cannot be undone.
+Удаление необратимо.
 
-## Related Data and APIs
+## Связанные данные и API
 
 - Data: [Server](data.md#server), [ServerMonitorData](data.md#servermonitordata), [Snapshot](data.md#snapshot), [Group](data.md#group).
 - Servers API: [get_active_servers](api.md#get_active_servers), [get_active_server](api.md#get_active_server), [get_server](api.md#get_server), [update_server](api.md#update_server), [delete_server](api.md#delete_server), [watch_server](api.md#watch_server), [create_snapshot](api.md#create_snapshot).
-- Search: [search_servers](api.md#search_servers), server summaries, and snapshots search.
+- Search: [search_servers](api.md#search_servers), server summaries и поиск по snapshots.

@@ -1,147 +1,147 @@
-# Monitors
+# Мониторы
 
-## Overview
+## Обзор
 
-Monitors track a single numeric server metric over time. Each monitor points to one value in the live server data, casts it to a specific data type (integer, float, bytes, seconds, or milliseconds), and xyOps stores the samples in a time-series database. Monitors power the per-server and per-group graphs, and they can be used to trigger alerts.
+Мониторы отслеживают одно числовое значение метрики сервера во времени. Каждый монитор указывает на одно значение в живых данных сервера, приводит его к заданному типу (integer, float, bytes, seconds или milliseconds), и xyOps сохраняет выборки в time-series БД. Мониторы питают графики на уровне серверов и групп и могут использоваться для алертов.
 
-- A monitor evaluates its expression once per minute on each matching server.
-- Results are stored and graphed at multiple resolutions (hourly, daily, monthly, yearly).
-- Alerts can reference monitor values and their computed deltas when needed.
-- Several stock monitors ship with xyOps, and you can define your own.
+- Монитор вычисляет выражение раз в минуту на каждом подходящем сервере.
+- Результаты сохраняются и рисуются на нескольких разрешениях (hourly, daily, monthly, yearly).
+- Алерты могут ссылаться на значения мониторов и вычисленные дельты при необходимости.
+- В xyOps есть стандартные мониторы, и вы можете создавать свои.
 
-See also:
+См. также:
 
-- Data model: [Monitor](data.md#monitor) and [ServerMonitorData](data.md#servermonitordata)
+- Data model: [Monitor](data.md#monitor) и [ServerMonitorData](data.md#servermonitordata)
 - Plugins: [Monitor Plugins](plugins.md#monitor-plugins)
 - Alerts: [Alerts](alerts.md)
 
 
-## How It Works
+## Как это работает
 
-Every minute each satellite sends a fresh [ServerMonitorData](data.md#servermonitordata) snapshot to the primary conductor. For every monitor whose group scope matches the server:
+Каждую минуту каждый satellite отправляет свежий snapshot [ServerMonitorData](data.md#servermonitordata) на primary conductor. Для каждого монитора, чья group scope подходит серверу:
 
-1. xyOps evaluates the monitor's source expression against the current server monitor data sample.
-2. The value is type-cast using the monitor's data type and optional match regex.
-3. If the monitor is configured as a delta monitor, its rate is computed from the previous absolute value (and optionally divided by elapsed seconds).
-4. The value is inserted into the server's time-series for all resolutions.
+1. xyOps вычисляет выражение монитора относительно текущих данных ServerMonitorData.
+2. Значение приводится к типу данных монитора и опционально применяется match regex.
+3. Если монитор настроен как delta, вычисляется скорость от предыдущего абсолютного значения (при необходимости делится на прошедшие секунды).
+4. Значение записывается в time-series сервера для всех разрешений.
 
-Notes:
+Примечания:
 
-- Monitor expressions run against the live ServerMonitorData context only. They do not depend on other monitors.
-- Alerts evaluate immediately after monitors are computed, and can reference both absolute monitor values and computed deltas.
-- Group scoping allows a monitor to run only on specific server groups. Leave groups blank to apply to all.
-
-
-## Creating and Editing Monitors
-
-Go to Admin → Monitors.
-
-- **Title**: Display name for the graph.
-- **Display**: Toggle to show/hide graph in the UI without deleting it.
-- **Icon**: Optional Material Design Icon displayed next to the title.
-- **Server Groups**: Restrict evaluation to specific groups (optional).
-- **Data Expression**: An expression that extracts or computes a single numeric value from ServerMonitorData. See [Expressions](#expressions).
-- **Data Match**: Optional regular expression to extract a number from a string value. See [Data Match](#data-match).
-- **Data Type**: Controls parsing and display (integer, float, bytes, seconds, milliseconds).
-- **Delta Features**: For counter-style sources, compute a delta and optionally divide by elapsed time to get a rate per second; also supports a zero-minimum clamp.
-- **Min Vert Range**: Set a minimum Y-axis range (e.g., 100 for percentages).
-- **Data Suffix**: Optional unit shown in labels (e.g. %, /sec, ms).
-
-Tips:
-
-- Use the "Test..." button to evaluate your expression on a live server before saving.
-- Click the search icon to open the Server Data Explorer and browse live ServerMonitorData paths.
-- You can import/export monitors as JSON (see the stock examples below).
+- Выражения мониторов выполняются только на контексте ServerMonitorData. Они не зависят от других мониторов.
+- Алерты вычисляются сразу после мониторов и могут ссылаться на абсолютные значения и дельты.
+- Group scoping позволяет запускать монитор только на конкретных группах. Оставьте groups пустыми, чтобы применять ко всем.
 
 
-## Monitoring Data Flow
+## Создание и редактирование мониторов
 
-- **Sampling cadence**: Once per minute per server.
-- **Storage**: Samples are down-sampled into four systems: hourly, daily, monthly, yearly.
-- **Deltas**: For counter-style metrics (e.g., OS network bytes, disk bytes read/written), enable "Calc as Delta" and "Divide by Time" to graph rates per second.
-- **Alert context**: After monitors are computed, xyOps evaluates alert triggers against the same data.
+Откройте Admin -> Monitors.
+
+- **Title**: Название графика.
+- **Display**: Включить/выключить отображение графика в UI без удаления.
+- **Icon**: Опциональный Material Design Icon рядом с названием.
+- **Server Groups**: Ограничить вычисление конкретными группами (опционально).
+- **Data Expression**: Выражение, извлекающее/вычисляющее одно числовое значение из ServerMonitorData. См. [Expressions](#expressions).
+- **Data Match**: Опциональный regex для извлечения числа из строки. См. [Data Match](#data-match).
+- **Data Type**: Управляет парсингом и отображением (integer, float, bytes, seconds, milliseconds).
+- **Delta Features**: Для счетчиков вычислять дельту и, при необходимости, делить на время, чтобы получить скорость в сек.
+- **Min Vert Range**: Минимальный диапазон оси Y (например, 100 для процентов).
+- **Data Suffix**: Опциональная единица в подписях (например, %, /sec, ms).
+
+Советы:
+
+- Используйте кнопку "Test..." для проверки выражения на live сервере перед сохранением.
+- Нажмите значок поиска, чтобы открыть Server Data Explorer и просмотреть пути ServerMonitorData.
+- Можно импортировать/экспортировать мониторы как JSON (см. примеры ниже).
 
 
-## Expressions
+## Поток мониторинговых данных
 
-Monitor expressions are evaluated in [xyOps Expression Syntax](xyexp.md), using the current [ServerMonitorData](data.md#servermonitordata) object as context.  This uses JavaScript-style syntax with dot paths, array indexing, arithmetic and boolean operators.
+- **Sampling cadence**: раз в минуту на сервер.
+- **Storage**: выборки down-sampled в четыре системы: hourly, daily, monthly, yearly.
+- **Deltas**: для счетчиков (например, network bytes, disk bytes) включите "Calc as Delta" и "Divide by Time" для графика в сек.
+- **Alert context**: после мониторов xyOps вычисляет алерты на тех же данных.
 
-Examples:
 
-- Basic metric: `cpu.currentLoad` (CPU usage as a float percentage)
-- Array index: `load[0]` (1-minute load average)
-- Object path: `stats.network.conns` (current active connections)
-- Math/composition: `100 - memory.available / memory.total * 100` (memory used %)
-- Guarded math: `stats && stats.network ? stats.network.rx_bytes : 0` (coalesce missing to 0)
+## Выражения
 
-Guidelines:
+Выражения мониторов вычисляются в [xyOps Expression Syntax](xyexp.md), используя текущий объект [ServerMonitorData](data.md#servermonitordata) как контекст. Синтаксис похож на JavaScript: dot paths, индексы массивов, арифметика и логические операторы.
 
-- Expressions must resolve to a single numeric value before final casting.
-- The evaluation context is the [ServerMonitorData](data.md#servermonitordata) for the current minute. Do not reference `monitors.*` or `deltas.*` in monitor expressions.
-- For complex or custom metrics, consider a [Monitor Plugin](plugins.md#monitor-plugins) that can emit data into `commands`, and extract a number via expression (and optionally `data_match`).
+Примеры:
+
+- Базовая метрика: `cpu.currentLoad` (CPU usage в процентах)
+- Индекс массива: `load[0]` (1-минутный load average)
+- Object path: `stats.network.conns` (активные соединения)
+- Math/composition: `100 - memory.available / memory.total * 100` (процент используемой памяти)
+- Guarded math: `stats && stats.network ? stats.network.rx_bytes : 0` (если нет - 0)
+
+Рекомендации:
+
+- Выражение должно возвращать одно числовое значение перед финальным приведением типа.
+- Контекст вычислений — текущий ServerMonitorData. Не используйте `monitors.*` или `deltas.*` в выражениях мониторов.
+- Для сложных метрик используйте [Monitor Plugin](plugins.md#monitor-plugins), который выдает данные в `commands`, а затем извлекайте число выражением (и при необходимости `data_match`).
 
 ## Data Match
 
-If your expression yields a string and the number is embedded within it, set `Data Match` to a regular expression to extract exactly one numeric value. If the regex includes a capture group, the first group is used; otherwise the entire match is used.
+Если выражение возвращает строку и число внутри нее, используйте `Data Match` с regex, который извлечет ровно одно число. Если regex включает группу захвата, используется первая группа; иначе используется полное совпадение.
 
-Example (default "Open Files" monitor):
+Пример (дефолтный монитор "Open Files"):
 
 - Expression: `commands.open_files`
 - Data Match: `(\d+)`
-- Result: Extracts the first integer from a string like `"1056\t0\t9223372036854775807"`.
+- Result: извлекает первое целое число из строки вроде `"1056\t0\t9223372036854775807"`.
 
 
 ## Delta Monitors
 
-Some data sources are absolute counters that only ever increase, such as OS network byte totals or disk I/O byte counters. For these:
+Некоторые источники данных — абсолютные счетчики, которые только растут (например, сетевые байты или disk I/O байты). Для них:
 
-- **Calc as Delta**: Stores the change since the previous minute instead of the absolute counter.
-- **Divide by Time**: Divides the delta by elapsed seconds between samples to produce a per-second rate.
-- **Zero Minimum**: Clamp negative spikes to a specific minimum (commonly `0`) to avoid dips after reboots or counter resets.
+- **Calc as Delta**: сохраняет изменение с прошлого минуты вместо абсолютного счетчика.
+- **Divide by Time**: делит дельту на прошедшие секунды между выборками, чтобы получить скорость в сек.
+- **Zero Minimum**: ограничивает отрицательные пики минимальным значением (обычно `0`) после перезапуска или сброса счетчиков.
 
-Alerts can also reference delta values via the `deltas` object. See [Alert Expressions](alerts.md#alert-expressions).
+Алерты могут ссылаться на delta значения через объект `deltas`. См. [Alert Expressions](alerts.md#alert-expressions).
 
 
-## Default Monitors
+## Мониторы по умолчанию
 
-xyOps ships with a set of standard monitors. Here is what each tracks:
+xyOps поставляется с набором стандартных мониторов. Вот что отслеживает каждый:
 
-- **Load Average**: `load[0]` -- 1-minute load average (float).
-- **CPU Usage**: `cpu.currentLoad` -- CPU usage percentage (float), suffix `%`, min range `100`.
-- **Memory in Use**: `memory.used` -- Total memory in use (bytes).
-- **Memory Available**: `memory.available` -- Available memory (bytes).
-- **Network Connections**: `stats.network.conns` -- Active socket connections (integer).
-- **Disk Usage**: `mounts.root.use` -- Root filesystem usage percentage (float), suffix `%`, min range `100`.
-- **Disk Read**: `stats.fs.rx` -- Disk bytes read, as a delta divided by time (bytes/sec). Enable: Calc as Delta, Divide by Time, Zero Minimum.
-- **Disk Write**: `stats.fs.wx` -- Disk bytes written, as a delta divided by time (bytes/sec). Enable: Calc as Delta, Divide by Time, Zero Minimum.
-- **Disk I/O**: `stats.io.tIO` -- Total disk I/O ops per second (integer). Enable: Calc as Delta, Divide by Time, Zero Minimum.
-- **I/O Wait**: `cpu.totals.iowait` -- CPU I/O wait percentage (float, Linux only), suffix `%`, min range `100`.
-- **Open Files**: `commands.open_files` with `Data Match` `(\d+)` -- Number of open files (integer, Linux only).
-- **Network In**: `stats.network.rx_bytes` -- Network bytes in per second (bytes/sec). Enable: Calc as Delta, Divide by Time, Zero Minimum.
-- **Network Out**: `stats.network.tx_bytes` -- Network bytes out per second (bytes/sec). Enable: Calc as Delta, Divide by Time, Zero Minimum.
-- **Processes**: `processes.all` -- Total number of processes (integer).
-- **Active Jobs**: `jobs` -- Number of active xyOps jobs on the server (integer).
+- **Load Average**: `load[0]` -- 1-минутный load average (float).
+- **CPU Usage**: `cpu.currentLoad` -- процент CPU (float), суффикс `%`, min range `100`.
+- **Memory in Use**: `memory.used` -- используемая память (bytes).
+- **Memory Available**: `memory.available` -- доступная память (bytes).
+- **Network Connections**: `stats.network.conns` -- активные сокет соединения (integer).
+- **Disk Usage**: `mounts.root.use` -- процент использования root FS (float), суффикс `%`, min range `100`.
+- **Disk Read**: `stats.fs.rx` -- bytes read в сек (bytes/sec). Включить: Calc as Delta, Divide by Time, Zero Minimum.
+- **Disk Write**: `stats.fs.wx` -- bytes write в сек (bytes/sec). Включить: Calc as Delta, Divide by Time, Zero Minimum.
+- **Disk I/O**: `stats.io.tIO` -- total disk I/O ops в сек (integer). Включить: Calc as Delta, Divide by Time, Zero Minimum.
+- **I/O Wait**: `cpu.totals.iowait` -- процент I/O wait (float, только Linux), суффикс `%`, min range `100`.
+- **Open Files**: `commands.open_files` с `Data Match` `(\d+)` -- число открытых файлов (integer, только Linux).
+- **Network In**: `stats.network.rx_bytes` -- network bytes in в сек (bytes/sec). Включить: Calc as Delta, Divide by Time, Zero Minimum.
+- **Network Out**: `stats.network.tx_bytes` -- network bytes out в сек (bytes/sec). Включить: Calc as Delta, Divide by Time, Zero Minimum.
+- **Processes**: `processes.all` -- общее число процессов (integer).
+- **Active Jobs**: `jobs` -- число активных задач xyOps на сервере (integer).
 
-Use these as templates for your own monitors, or create more from scratch. You can also import/export monitors as JSON files.
+Используйте эти примеры как шаблон или создавайте свои. Можно импортировать/экспортировать мониторы как JSON.
 
 
 ## QuickMon
 
-QuickMon (Quick Monitors) are lightweight, predefined real-time monitors sampled every second on each server. They are meant for "right now" visibility and short-term trend lines on server and group pages.
+QuickMon (Quick Monitors) — легковесные real-time мониторы, которые берутся каждую секунду на каждом сервере. Они предназначены для "прямо сейчас" и коротких трендов на страницах серверов и групп.
 
 - **Presets**: CPU load/usage, memory used/available, disk read/write bytes/sec, network in/out bytes/sec.
-- **Retention**: The last 60 seconds per server is stored in memory.
-- **Display**: Real-time graphs and gauges on Server and Group pages. New samples stream live via websockets.
-- **Snapshots**: The most recent 60-second series is embedded into all server and group snapshots.
-- **Config**: Definitions live in `config.json` under [quick_monitors](config.md#quick_monitors). Each preset includes `id`, `source` path (from the per-second agent data), `type` (integer/float/bytes), and optional delta/time options mirroring monitor behavior.
+- **Retention**: последние 60 секунд на сервер хранятся в памяти.
+- **Display**: realtime графики и gauges на страницах Server и Group. Новые выборки стримятся через websockets.
+- **Snapshots**: самая свежая 60-секундная серия встраивается в server и group snapshots.
+- **Config**: определения находятся в `config.json` в разделе [quick_monitors](config.md#quick_monitors). Каждый preset включает `id`, `source` (путь из агентских данных), `type` (integer/float/bytes) и опциональные delta/time опции как у обычных мониторов.
 
-QuickMon complements minute-level monitors: use QuickMon for immediate visibility, and standard monitors for historical analysis and alerting.
+QuickMon дополняет минутные мониторы: используйте QuickMon для оперативной видимости, а стандартные мониторы для исторического анализа и алертинга.
 
 
-## Examples and Recipes
+## Примеры и рецепты
 
 - **Track Specific Process Memory**
-  - Expression: `processes.list[.command == 'ffmpeg'].memRss` *(exact name match)*
+  - Expression: `processes.list[.command == 'ffmpeg'].memRss` *(точное совпадение имени)*
   - Expression: `find( processes.list, 'command', 'ffmpeg' ).memRss` *(substring match)*
   - Type: `bytes`
 - **Memory Used %**
@@ -155,4 +155,4 @@ QuickMon complements minute-level monitors: use QuickMon for immediate visibilit
   - Or alternatively: `stats.network.states.listen`
   - Type: `integer`.
 
-If your expression returns a string (e.g., a custom command output), use "Data Match" to extract the number. For advanced metrics, write a [Monitor Plugin](plugins.md#monitor-plugins) that emits structured data, then point a monitor expression at it.
+Если ваше выражение возвращает строку (например, вывод кастомной команды), используйте "Data Match" для извлечения числа. Для продвинутых метрик пишите [Monitor Plugin](plugins.md#monitor-plugins) и отдавайте структурированные данные, затем направляйте на них выражение.

@@ -1,105 +1,105 @@
-# Users and Roles
+# Пользователи и роли
 
-## Overview
+## Обзор
 
-This document explains how user accounts, roles, and permissions work in xyOps. The platform includes account management (creation, login, sessions, password reset) and extends it with roles, resource restrictions, security logging, avatars, and admin tooling.
+Этот документ объясняет, как работают учетные записи, роли и права в xyOps. Платформа включает управление аккаунтами (создание, вход, сессии, сброс пароля) и расширяет это ролями, ограничениями ресурсов, логированием безопасности, аватарами и админ-инструментами.
 
-- Core account system: built-in authentication, session management, and password workflows.
-- Extensions: roles and effective privileges, category/group restrictions, user security log, "Logout All Sessions", avatars, and rich UI preferences.
-- Admins manage users and roles in the Admin UI; all changes are enforced by the backend.
+- Базовая система аккаунтов: встроенная аутентификация, управление сессиями и парольные потоки.
+- Расширения: роли и эффективные привилегии, ограничения категорий/групп, security log пользователя, "Logout All Sessions", аватары и расширенные UI предпочтения.
+- Админы управляют пользователями и ролями в Admin UI; все изменения применяются на backend.
 
-See also:
+См. также:
 
-- [User](data.md#user) and [Role](data.md#role) object definitions.
-- [Privilege List](privileges.md)
+- Определения объектов [User](data.md#user) и [Role](data.md#role).
+- [Список привилегий](privileges.md)
 - [SSO Integration](sso.md)
 
-## User Profile
+## Профиль пользователя
 
-Each user represents one human account. The profile combines identity, authentication, permissions, and UI preferences. For the full JSON schema, see [User](data.md#user).
+Каждый пользователь представляет один человеческий аккаунт. Профиль объединяет идентичность, аутентификацию, права и UI предпочтения. Полную JSON схему см. в [User](data.md#user).
 
-- **Identity**: `username` (unique), `full_name` (display name), `email` (contact).
-- **Status**: `active` (true/false for active/suspended). Suspended users cannot log in.
-- **Authentication**: `password` (bcrypt hash), `salt` (per-user). Plaintext passwords are never stored.
-- **Roles**: `roles` array of role IDs; see Roles below.
-- **Privileges**: `privileges` object (keys grant capabilities). See [Privileges](privileges.md).
-- **Resource limits**: `categories` and `groups` arrays optionally restrict access to event categories and server groups.
-- **Preferences**: UI/locale options including `language`, `region`, `num_format`, `hour_cycle`, `timezone`, `color_acc`, `privacy_mode`, `effects`, `contrast`, `motion`, `volume`, and saved `searches`.
-- **Avatar**: Optional profile image. Upload/replace in the UI.
+- **Identity**: `username` (уникален), `full_name` (отображаемое имя), `email` (контакт).
+- **Status**: `active` (true/false для активен/заморожен). Замороженные пользователи не могут входить.
+- **Authentication**: `password` (bcrypt hash), `salt` (per-user). Пароли в открытом виде не хранятся.
+- **Roles**: массив `roles` с ID ролей; см. Roles ниже.
+- **Privileges**: объект `privileges` (ключи дают права). См. [Privileges](privileges.md).
+- **Resource limits**: массивы `categories` и `groups` ограничивают доступ к категориям событий и группам серверов.
+- **Preferences**: UI/locale опции, включая `language`, `region`, `num_format`, `hour_cycle`, `timezone`, `color_acc`, `privacy_mode`, `effects`, `contrast`, `motion`, `volume` и сохраненные `searches`.
+- **Avatar**: опциональное изображение профиля. Загружается/заменяется в UI.
 
-Notes:
+Примечания:
 
-- The special privilege `admin` grants full access to all current and future capabilities, and bypasses category/group restrictions.
-- xyOps may set internal flags for SSO-managed accounts (e.g., `remote`, `sync`); see [SSO](sso.md) for details.
+- Специальная привилегия `admin` дает полный доступ ко всем текущим и будущим возможностям и обходит ограничения категорий/групп.
+- xyOps может ставить внутренние флаги для SSO-аккаунтов (например, `remote`, `sync`); см. [SSO](sso.md).
 
-## Roles
+## Роли
 
-A role bundles a set of privileges and optional resource restrictions. Assign roles to users to simplify permission management. For the full JSON schema, see [Role](data.md#role).
+Роль объединяет набор привилегий и опциональные ограничения ресурсов. Назначайте роли пользователям, чтобы упростить управление правами. Полную JSON схему см. в [Role](data.md#role).
 
-- **Privileges**: A role's `privileges` object contributes privileges to assigned users.
-- **Category restrictions**: `categories` can limit access to specific event categories.
-- **Group restrictions**: `groups` can limit access to specific server groups.
-- **Enabled flag**: Only enabled roles contribute to a user's effective permissions.
+- **Privileges**: объект `privileges` роли добавляет права назначенным пользователям.
+- **Category restrictions**: `categories` ограничивают доступ к конкретным категориям событий.
+- **Group restrictions**: `groups` ограничивают доступ к конкретным группам серверов.
+- **Enabled flag**: только включенные роли добавляют права пользователю.
 
-Admins can create, edit, enable/disable, and delete roles in the Admin UI. When roles change, user sockets are updated so active sessions reflect new permissions right away.
+Админы могут создавать, редактировать, включать/выключать и удалять роли в Admin UI. При изменении ролей сокеты пользователей обновляются, и активные сессии сразу получают новые права.
 
-## Effective Permissions
+## Эффективные права
 
-xyOps computes a user's effective authorization by combining direct assignments with role grants.  Privileges are additive when merged with assigned roles.
+xyOps вычисляет эффективную авторизацию пользователя, объединяя прямые назначения и права из ролей. Привилегии складываются при слиянии с назначенными ролями.
 
-- Privilege union: Account and role privileges are merged.
-- Category and group limits: If not assigned, user has access to "all" categories or groups.
-- Admin override: If `admin` is true, directly or inherited by role, the user can perform any action and is not limited by category/group restrictions.
+- Объединение привилегий: привилегии аккаунта и ролей объединяются.
+- Лимиты категорий и групп: если не заданы, у пользователя доступ ко "всем" категориям или группам.
+- Admin override: если `admin` есть напрямую или через роль, пользователь может выполнять любое действие и не ограничен категориями/группами.
 
-How enforcement works:
+Как применяется контроль:
 
-- API checks: The backend enforces privileges on every call, and resource checks for categories/groups/targets.
-- UI filtering: Lists and controls in the UI respect effective permissions and resource limits; inaccessible items are hidden or blocked.
+- Проверки API: backend проверяет привилегии на каждом вызове и проверяет доступ к категориям/группам/целям.
+- Фильтрация UI: списки и контролы в UI учитывают эффективные права и ограничения ресурсов; недоступные элементы скрываются или блокируются.
 
-For the complete list of privilege IDs the system recognizes, see [Privileges](privileges.md). The `admin` privilege is special and implies all others.
+Полный список privilege IDs см. в [Privileges](privileges.md). Привилегия `admin` особая и включает все остальные.
 
-## Resource Restrictions
+## Ограничения ресурсов
 
-Users can be limited to specific event categories and/or server groups:
+Пользователей можно ограничить конкретными категориями событий и/или группами серверов:
 
-- Categories: If a user/role defines any `categories`, the user can only see and operate on events in those categories. With none defined, all categories are allowed (unless otherwise prohibited by privileges).
-- Groups: If a user/role defines any `groups`, job targets must intersect those groups. With none defined, all groups are allowed (subject to privileges). Target checks cover groups; individual server checks are intentionally not granular.
-- Admin bypass: Administrators are not limited by category/group restrictions.
+- Категории: если у пользователя/роли задан `categories`, пользователь видит и управляет событиями только в этих категориях. Если `categories` не задан, разрешены все категории (если не запрещено правами).
+- Группы: если у пользователя/роли задан `groups`, цели задач должны пересекаться с этими группами. Если `groups` не задан, разрешены все группы (в рамках прав). Проверка идет по группам; на уровне отдельных серверов гранулярности нет.
+- Admin bypass: администраторы не ограничены категориями/группами.
 
-Typical scenarios:
+Типовые сценарии:
 
-- Department scoping: Assign users to roles that permit only the "Dev" or "Ops" categories.
-- Environment separation: Restrict specific users to the "Staging" group but not "Production".
+- Разделение по отделам: назначьте роли, разрешающие только категории "Dev" или "Ops".
+- Разделение окружений: ограничьте конкретных пользователей группой "Staging", но не "Production".
 
-## Sessions and Authentication
+## Сессии и аутентификация
 
-xyOps handles account creation, login, session management, and password reset, and also adds activity logging and related features.
+xyOps управляет созданием аккаунтов, входом, сессиями и сбросом пароля, а также ведет лог активности.
 
-- Expiration: Sessions expire per the [User.session_expire_days](config.md#user-session_expire_days) configuration setting.
-- Lockouts: Multiple failed logins per hour trigger a lockout requiring password reset (configurable). Admins can "Reset Lockouts" on a user.
-- Password management: Users can change their password (must provide current password). Forgot/reset flows are supported via email templates.
-- Single Sign-On: xyOps supports trusted-header SSO via a proxy (e.g., OAuth2-Proxy), can auto-assign roles/privileges based on IdP groups, and can redirect on logout. See [SSO](sso.md).
+- Срок жизни: сессии истекают согласно настройке [User.session_expire_days](config.md#user-session_expire_days).
+- Блокировки: несколько неудачных логинов в час приводят к блокировке с требованием сброса пароля (настраивается). Админы могут "Reset Lockouts" для пользователя.
+- Управление паролями: пользователи могут менять пароль (нужно указать текущий). Есть потоки "забыли пароль" и "сброс" через email шаблоны.
+- Single Sign-On: xyOps поддерживает SSO через trusted headers (например, OAuth2-Proxy), может автоназначать роли/права по группам IdP и редиректить при logout. См. [SSO](sso.md).
 
 ## Security Log
 
-xyOps records account-related activity in a per-user security log and a system-wide activity log.
+xyOps записывает активности аккаунтов в security log пользователя и в системный activity log.
 
-- User security log: Includes actions like login, profile updates, password changes, notices/warnings, and IP/user-agent metadata. Viewable in the UI under Security Log".
-- System activity log: A broader audit log for all system actions (admin-facing).
-- Parsed user agents: The UI shows friendly user agent strings when available.
+- User security log: включает вход, обновления профиля, смену пароля, уведомления/предупреждения и метаданные IP/user-agent. Доступен в UI в разделе Security Log.
+- System activity log: расширенный аудит лог для всех действий системы (для админов).
+- Parsed user agents: UI показывает человекочитаемые строки user agent при наличии.
 
 Logout All Sessions:
 
-- Users can invalidate all their other sessions after entering their current password. The current session remains active.
-- Admins can force a "Logout All Sessions" for any user. This also sends a summary email if sessions were terminated.
+- Пользователь может завершить все остальные сессии после ввода текущего пароля. Текущая сессия остается активной.
+- Админы могут принудительно выполнить "Logout All Sessions" для любого пользователя. Также отправляется summary email при завершении сессий.
 
-## Admin Tasks
+## Админские задачи
 
-Administrators can perform the following actions from the Admin UI or equivalent APIs:
+Администраторы могут выполнять следующие действия из Admin UI или через API:
 
-- **Create users**: Set username, display name, email, initial password, privileges/roles; optionally send welcome email.
-- **Edit users**: Update profile, change password, adjust privileges/roles, assign category/group restrictions, toggle active/suspended.
-- **Unlock accounts**: Reset lockouts and clear throttles if an account was locked due to failed logins.
-- **Delete users**: Removes the account and deletes the user's security log; active sockets are closed.
-- **Force logout**: Enqueue a background job to terminate all other sessions for a user.
-- **Manage roles**: Create/update roles with privileges and category/group limits; enable/disable roles.
+- **Create users**: задать username, display name, email, initial password, privileges/roles; опционально отправить welcome email.
+- **Edit users**: обновить профиль, сменить пароль, настроить privileges/roles, назначить ограничения категорий/групп, переключить active/suspended.
+- **Unlock accounts**: сбросить блокировки и throttles, если аккаунт заблокирован из-за failed logins.
+- **Delete users**: удалить аккаунт и security log пользователя; активные сокеты закрываются.
+- **Force logout**: поставить background job на завершение всех остальных сессий пользователя.
+- **Manage roles**: создать/обновить роли с привилегиями и лимитами категорий/групп; включать/выключать роли.

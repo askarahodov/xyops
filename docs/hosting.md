@@ -1,16 +1,16 @@
-# Self-Hosting
+# Самостоятельное размещение
 
-## Overview
+## Обзор
 
-This guide covers self-hosting xyOps on your own infrastructure.  However, please note that for live production installs, it is dangerous to go alone.  While we provide all necessary documentation here, we strongly recommend our [Enterprise Plan](https://xyops.io/pricing). This gives you access to our white-glove onboarding service, where our team will guide you through every step, validate your configuration, and ensure your integration is both secure and reliable.  This also gets you priority ticket support, and live chat support from a xyOps engineer.
+Это руководство описывает, как развернуть xyOps в собственной инфраструктуре. Однако для боевых установок опасно идти в одиночку. Хотя здесь есть вся необходимая документация, мы настоятельно рекомендуем [Enterprise Plan](https://xyops.io/pricing). Он дает доступ к сервису white-glove onboarding, где наша команда проведет вас по всем шагам, проверит конфигурацию и убедится, что интеграция безопасна и надежна. Также вы получите приоритетную поддержку по тикетам и живой чат с инженером xyOps.
 
-## Prerequisites
+## Предварительные требования
 
-It is really important to understand that wherever you decide to run xyOps, that server (or container) needs to be **addressable on your network by its hostname**.  This is how your worker servers will connect to xyOps, so they need a fixed hostname that will resolve to an IP that they can reach from wherever they are.  With Docker you should set the **container hostname** to something that resolves and can be reached on your network.
+Важно понимать, что где бы вы ни запускали xyOps, этот сервер (или контейнер) должен быть **доступен в вашей сети по hostname**. Так рабочие серверы будут подключаться к xyOps, поэтому нужен фиксированный hostname, который резолвится в IP, доступный вашим серверам. В Docker задайте **hostname контейнера** так, чтобы он резолвился и был достижим в вашей сети.
 
-## Quick-Start
+## Быстрый старт
 
-To start quickly and just get xyOps up and running to test it out, you can use the following Docker command:
+Чтобы быстро поднять xyOps для теста, используйте следующую команду Docker:
 
 ```sh
 docker run \
@@ -28,7 +28,7 @@ docker run \
 	ghcr.io/pixlcore/xyops:latest
 ```
 
-Here it is as a docker compose file, along with an additional bind mount for the configuration directory:
+Ниже то же в виде docker compose файла, с дополнительным bind mount для директории конфигурации:
 
 ```yaml
 services:
@@ -46,7 +46,7 @@ services:
 
     volumes:
       - xy-data:/opt/xyops/data
-	  - /local/path/to/xyops-conf:/opt/xyops/conf
+      - /local/path/to/xyops-conf:/opt/xyops/conf
       - /var/run/docker.sock:/var/run/docker.sock
 
     ports:
@@ -57,50 +57,50 @@ volumes:
   xy-data:
 ```
 
-Please change `/local/path/to/xyops-conf` to a suitable location for the xyOps configuration to live on the host machine (so you can make changes easily).
+Замените `/local/path/to/xyops-conf` на подходящую директорию на хосте для конфигурации xyOps (чтобы было удобно править).
 
-Then hit http://localhost:5522/ in your browser for HTTP, or https://localhost:5523/ for HTTPS (note that this will have a self-signed cert -- see [TLS](#tls) below).  A default administrator account will be created with username `admin` and password `admin`.  This will create a Docker volume (`xy-data`) to persist the xyOps database, which by default is a hybrid of a SQLite DB and the filesystem itself for file storage.
+Затем откройте http://localhost:5522/ для HTTP или https://localhost:5523/ для HTTPS (обратите внимание, сертификат будет самоподписанный -- см. [TLS](#tls) ниже). Будет создан аккаунт администратора по умолчанию с логином `admin` и паролем `admin`. Также будет создан Docker том (`xy-data`) для сохранения базы данных xyOps, которая по умолчанию является гибридом SQLite и файловой системы для хранения файлов.
 
-A few notes:
+Несколько замечаний:
 
-- **Important:** Please change the sample `xyops01` hostname to something that actually resolves and is addressable on your network.  Without this, many features will not work properly.
-- In this case xyOps will have a self-signed cert for TLS, which the worker will accept by default.  See [TLS](#tls) for more details.
-- Change the `TZ` environment variable to your local timezone, for proper midnight log rotation and daily stat resets.
-- The `XYOPS_xysat_local` environment variable causes xyOps to launch [xySat](#satellite) in the background, in the same container.  This is so you can start running jobs right away -- it is great for testing and home labs, but not recommended for production setups.
-- If you plan on using the container long term, please make sure to [rotate the secret key](#secret-key-rotation).
-- The `/var/run/docker.sock` bind is optional, and allows xyOps to launch its own containers (i.e. for the [Docker Plugin](plugins.md#docker-plugin), and the [Plugin Marketplace](marketplace.md)).
+- **Важно:** замените пример `xyops01` на hostname, который реально резолвится и доступен в вашей сети. Иначе многие функции не будут работать.
+- В этом случае xyOps будет использовать самоподписанный TLS сертификат, который worker принимает по умолчанию. См. [TLS](#tls) ниже.
+- Измените переменную окружения `TZ` на вашу локальную таймзону, чтобы лог-ротация в полночь и дневные сбросы статистики выполнялись корректно.
+- Переменная `XYOPS_xysat_local` заставляет xyOps запускать [xySat](#satellite) в фоне в том же контейнере. Это удобно для тестов и домашних лабораторий, но не рекомендуется для продакшна.
+- Если планируете использовать контейнер долго, обязательно [проверните секретный ключ](#secret-key-rotation).
+- Привязка `/var/run/docker.sock` опциональна и позволяет xyOps запускать собственные контейнеры (например, для [Docker Plugin](plugins.md#docker-plugin) и [Plugin Marketplace](marketplace.md)).
 
-Note that in order to add worker servers, the container needs to be *addressable on your network* by its hostname.  Typically this is done by adding the hostname to your local DNS, or using a `/etc/hosts` file.  See [Adding Servers](servers.md#adding-servers) for more details.
+Чтобы добавлять worker-серверы, контейнер должен быть *доступен в вашей сети* по hostname. Обычно это достигается добавлением hostname в локальный DNS или через `/etc/hosts`. См. [Adding Servers](servers.md#adding-servers) для подробностей.
 
-### Configuration
+### Конфигурация
 
-The xyOps main configuration file is located at `/opt/xyops/conf/config.json`, but there are other useful files in the `/opt/xyops/conf` directory as well.  For e.g. if any configuration properties are updated via the UI, they are written to an `/opt/xyops/conf/overrides.json` file.  If you intend to use the Docker container long term, it is best to map the entire `/opt/xyops/conf` directory.  You can do this as a volume, or bind mount it to a host directory (recommended):
+Основной конфиг xyOps находится в `/opt/xyops/conf/config.json`, но в `/opt/xyops/conf` есть и другие полезные файлы. Например, если значения меняются через UI, они записываются в `/opt/xyops/conf/overrides.json`. Если вы планируете использовать Docker контейнер долго, лучше смонтировать всю директорию `/opt/xyops/conf` как volume или bind mount (рекомендуется):
 
 ```
 -v /local/path/to/xyops-conf:/opt/xyops/conf
 ```
 
-xyOps will automatically copy over all default configuration files on first launch.
+xyOps автоматически скопирует все дефолтные конфиги при первом запуске.
 
-See the [Configuration Guide](config.md) for full details on how to customize the `config.json` file.
+См. [Configuration Guide](config.md) для подробностей настройки `config.json`.
 
-## Manual Install
+## Ручная установка
 
-This section covers manually installing xyOps on a server (outside of Docker).
+Этот раздел описывает ручную установку xyOps на сервере (вне Docker).
 
-Please note that the xyOps conductor currently only works on POSIX-compliant operating systems, which basically means Unix/Linux and macOS.  You'll also need to have [Node.js](https://nodejs.org/en/download/) pre-installed on your server.  Please note that we **strongly suggest that you install the LTS version of Node.js**.  While xyOps should work on the "current" release channel, LTS is more stable and more widely tested.  See [Node.js Releases](https://nodejs.org/en/about/releases/) for details.
+Обратите внимание, что conductor сейчас работает только на POSIX-совместимых ОС, то есть Unix/Linux и macOS. Также вам нужен [Node.js](https://nodejs.org/en/download/) на сервере. Мы **настойчиво рекомендуем ставить LTS версию Node.js**. xyOps может работать и на "current", но LTS стабильнее и лучше протестирована. См. [Node.js Releases](https://nodejs.org/en/about/releases/).
 
-xyOps also requires NPM to be preinstalled.  Now, this is typically bundled with and automatically installed with Node.js, but if you install Node.js by hand, you may have to install NPM yourself.  You will likely also need compiler tools (i.e. `apt-get install build-essential python3-setuptools` on Ubuntu).
+xyOps также требует NPM. Обычно он идет в комплекте с Node.js, но при ручной установке Node.js вам может понадобиться установить NPM отдельно. Вероятно, также понадобятся инструменты компиляции (например, `apt-get install build-essential python3-setuptools` на Ubuntu).
 
-Once you have Node.js and NPM installed, type this as root:
+Когда Node.js и NPM установлены, выполните (от root):
 
 ```sh
 curl -s https://raw.githubusercontent.com/pixlcore/xyops/main/bin/install.js | node
 ```
 
-This will install the latest stable release of xyOps and all of its dependencies under: `/opt/xyops/`
+Это установит последнюю стабильную версию xyOps и все зависимости в `/opt/xyops/`.
 
-If you'd rather install it manually (or install as a non-root user), here are the raw commands:
+Если вы хотите установить вручную (или как не-root пользователь), используйте следующие команды:
 
 ```sh
 mkdir -p /opt/xyops && cd /opt/xyops
@@ -110,9 +110,9 @@ node bin/build.js dist
 bin/control.sh start
 ```
 
-Replace `v1.0.0` with the desired xyOps version from the [official release list](https://github.com/pixlcore/xyops/releases), or `main` for the head revision (unstable).
+Замените `v1.0.0` на желаемую версию из [официального списка релизов](https://github.com/pixlcore/xyops/releases), или `main` для head-ревизии (нестабильно).
 
-If you would like xyOps to automatically start itself on server reboot, issue this command:
+Если вы хотите, чтобы xyOps автоматически стартовал при перезагрузке, выполните:
 
 ```sh
 cd /opt/xyops
@@ -121,15 +121,15 @@ npm run boot
 
 ### Command Line
 
-See our [Command Line Guide](cli.md) for controlling the xyOps service via command-line.
+См. [Command Line Guide](cli.md) для управления сервисом через командную строку.
 
-### Adding Conductors Manually
+### Добавление conductors вручную
 
-When you manually install xyOps, it creates a cluster of one, and promotes itself to primary.  To add backup conductors, follow these instructions.
+При ручной установке xyOps создает кластер из одного узла и делает себя primary. Чтобы добавить резервные conductors, следуйте инструкциям.
 
-First, for multi-conductor setups, **you must have an external storage backend**, such as NFS, S3, or S3-compatible (MinIO, etc.).  See [Storage Engines](https://github.com/jhuckaby/pixl-server-storage#engines) for details.
+Во-первых, для multi-conductor установки **нужен внешний storage backend**, например NFS, S3 или S3-совместимый (MinIO и т.п.). См. [Storage Engines](https://github.com/jhuckaby/pixl-server-storage#engines) для деталей.
 
-Once you have external storage setup and working, stop the xyOps service, and edit the `/opt/xyops/conf/masters.json` file:
+После настройки внешнего хранилища остановите сервис xyOps и отредактируйте `/opt/xyops/conf/masters.json`:
 
 ```json
 {
@@ -139,9 +139,9 @@ Once you have external storage setup and working, stop the xyOps service, and ed
 }
 ```
 
-Add the new server hostname to the `masters` array.  Remember, both servers need to be able to reach each other via their hostnames.
+Добавьте hostname нового сервера в массив `masters`. Помните, оба сервера должны видеть друг друга по hostname.
 
-Then, install the software onto the new server, and copy over the following files before starting the service:
+Затем установите ПО на новом сервере и перед запуском сервиса скопируйте следующие файлы:
 
 ```
 /opt/xyops/conf/config.json
@@ -149,15 +149,15 @@ Then, install the software onto the new server, and copy over the following file
 /opt/xyops/conf/masters.json
 ```
 
-Then finally, start the service on both servers.  They should self-negotiate and one will be promoted to primary after 10 seconds (whichever hostname sorts first alphabetically).
+Наконец, запустите сервис на обоих серверах. Они самостоятельно договорятся, и один будет повышен до primary через 10 секунд (какой hostname идет первым в алфавитном порядке).
 
-Note that conductor server hostnames **cannot change**.  If they do, you will need to update the `/opt/xyops/conf/masters.json` file on all servers and restart everything.
+Обратите внимание: hostname conductor-сервера **нельзя менять**. Если это произошло, нужно обновить `/opt/xyops/conf/masters.json` на всех серверах и перезапустить все.
 
-For fully transparent auto-failover using a single user-facing hostname, see [Multi-Conductor with Nginx](#multi-conductor-with-nginx) below.
+Для полностью прозрачного auto-failover с единым пользовательским hostname см. [Multi-Conductor with Nginx](#multi-conductor-with-nginx) ниже.
 
-### Uninstall
+### Удаление
 
-To uninstall xyOps, simply stop the service and delete the `/opt/xyops` directory.
+Чтобы удалить xyOps, остановите сервис и удалите директорию `/opt/xyops`:
 
 ```sh
 cd /opt/xyops
@@ -167,79 +167,81 @@ rm -rf /opt/xyops
 cd -
 ```
 
-Make sure you [decommission your servers](servers.md#decommissioning-servers) first.
+Сначала убедитесь, что вы [деактивировали сервера](servers.md#decommissioning-servers).
 
-## Environment Variables
+## Переменные окружения
 
-xyOps supports a special environment variable syntax, which can specify command-line options as well as override any configuration settings.  The variable name syntax is `XYOPS_key` where `key` is one of several command-line options (see table below) or a JSON configuration property path.  These can come in handy for automating installations, and using container systems.  
+xyOps поддерживает специальный синтаксис переменных окружения, который может задавать параметры командной строки и переопределять конфиг. Синтаксис: `XYOPS_key`, где `key` - это один из параметров командной строки (см. таблицу ниже) или путь JSON свойства в конфиге. Это удобно для автоматизации установок и контейнеров.
 
-For overriding configuration properties by environment variable, you can specify any top-level JSON key from `config.json`, or a *path* to a nested property using double-underscore (`__`) as a path separator.  For boolean properties, you can use `true` or `false` strings, and xyOps will convert them.  Here is an example of some of the possibilities available:
+Для переопределения конфиг-значений через переменные окружения можно указать любой верхнеуровневый JSON ключ из `config.json` или *путь* к вложенному свойству, используя двойной underscore (`__`) как разделитель. Для булевых свойств используйте строки `true` или `false`, xyOps их преобразует. Пример доступных вариантов:
 
 | Variable | Sample Value | Description |
 |----------|--------------|-------------|
-| `XYOPS_foreground` | `true` | Run xyOps in the foreground (no background daemon fork). |
-| `XYOPS_echo` | `true` | Echo the event log to the console (STDOUT), use in conjunction with `XYOPS_foreground`. |
-| `XYOPS_color` | `true` | Echo the event log with color-coded columns, use in conjunction with `XYOPS_echo`. |
-| `XYOPS_base_app_url` | `http://xyops.yourcompany.com` | Override the [base_app_url](config.md#base_app_url) configuration property. |
-| `XYOPS_email_from` | `xyops@yourcompany.com` | Override the [email_from](config.md#email_from) configuration property. |
-| `XYOPS_WebServer__port` | `80` | Override the `port` property *inside* the [WebServer](config.md#webserver) object. |
-| `XYOPS_WebServer__https_port` | `443` | Override the `https_port` property *inside* the [WebServer](config.md#webserver) object. |
-| `XYOPS_Storage__Filesystem__base_dir` | `/data/xyops` | Override the `base_dir` property *inside* the [Filesystem](config.md#storage-filesystem) object *inside* the [Storage](config.md#storage) object. |
+| `XYOPS_foreground` | `true` | Запуск xyOps в foreground (без фонового демона). |
+| `XYOPS_echo` | `true` | Печатать event log в консоль (STDOUT), используйте вместе с `XYOPS_foreground`. |
+| `XYOPS_color` | `true` | Цветной вывод event log, используйте вместе с `XYOPS_echo`. |
+| `XYOPS_base_app_url` | `http://xyops.yourcompany.com` | Переопределить свойство [base_app_url](config.md#base_app_url). |
+| `XYOPS_email_from` | `xyops@yourcompany.com` | Переопределить свойство [email_from](config.md#email_from). |
+| `XYOPS_WebServer__port` | `80` | Переопределить `port` *внутри* объекта [WebServer](config.md#webserver). |
+| `XYOPS_WebServer__https_port` | `443` | Переопределить `https_port` *внутри* объекта [WebServer](config.md#webserver). |
+| `XYOPS_Storage__Filesystem__base_dir` | `/data/xyops` | Переопределить `base_dir` *внутри* объекта [Filesystem](config.md#storage-filesystem) *внутри* объекта [Storage](config.md#storage). |
 
-Almost every [configuration property](config.md) can be overridden using this environment variable syntax.  The only exceptions are things like arrays, e.g. [log_columns](config.md#log_columns).
+Почти каждое [свойство конфигурации](config.md) можно переопределить через эти переменные. Исключения - массивы, например [log_columns](config.md#log_columns).
 
-## Daily Backups
+## Ежедневные бэкапы
 
-Here is how you can generate daily backups of critical xyOps data, regardless of your backend storage engine.  First, create an [API Key](api.md#api-keys) and grant it full administrator privileges (this is required to use the [admin_export_data](api.md#admin_export_data) API).  You can then request a backup using a [curl](https://curl.se/) command like this:
+Вот как генерировать ежедневные бэкапы критичных данных xyOps независимо от storage backend. Сначала создайте [API Key](api.md#api-keys) и дайте ему права администратора (это нужно для [admin_export_data](api.md#admin_export_data)). Затем запросите бэкап с помощью [curl](https://curl.se/):
 
 ```sh
 curl -X POST "https://xyops.yourcompany.com/api/app/admin_export_data" \
 	-H "X-API-Key: YOUR_API_KEY_HERE" -H "Content-Type: application/json" \
-	-d '{"lists":"all",indexes:["tickets"]}' -O -J
+	-d '{"lists":"all","indexes":["tickets"]}' -O -J
 ```
 
-This will save the backup as a `.txt.gz` file in the current directory named using this filename pattern:
+Бэкап будет сохранен как `.txt.gz` файл в текущей директории с шаблоном имени:
 
 ```
 xyops-data-export-YYYY-MM-DD-UNIQUEID.txt.gz
 ```
 
-Please note that this example will only export **critical** data, and is not a full backup (notably absent is job history, alert history, snapshot history, server history, and activity log).  To backup *everything*, change the JSON in the curl request to: `{"lists":"all","indexes":"all","extras":"all"}`.  Note that this can take quite a while and produce a very large file depending on your xyOps database size.  To limit what exactly gets included in the backup, consult the [admin_export_data](api.md#admin_export_data) API docs.
+Обратите внимание: этот пример экспортирует только **критичные** данные и не является полным бэкапом (не включены история задач, история алертов, история снимков, история серверов и журнал активности). Чтобы экспортировать *все*, измените JSON на: `{"lists":"all","indexes":"all","extras":"all"}`. Это может занять время и создать большой файл в зависимости от размера базы. Чтобы ограничить состав бэкапа, см. документацию [admin_export_data](api.md#admin_export_data).
 
+<a id="tls"></a>
 ## TLS
 
-The xyOps built-in web server ([pixl-server-web](https://github.com/jhuckaby/pixl-server-web)) supports TLS.  Please read the following guide for setup instructions:
+Встроенный веб-сервер xyOps ([pixl-server-web](https://github.com/jhuckaby/pixl-server-web)) поддерживает TLS. См. руководство:
 
 [Let's Encrypt / ACME TLS Certificates](https://github.com/jhuckaby/pixl-server-web#lets-encrypt--acme-tls-certificates)
 
-Alternatively, you can setup a proxy to sit in front of xyOps and handle TLS for you (see next section).
+В качестве альтернативы можно поставить прокси перед xyOps и обрабатывать TLS там (см. следующий раздел).
 
-## Multi-Conductor with Nginx
+<a id="multi-conductor-with-nginx"></a>
+## Multi-Conductor с Nginx
 
-For a load balanced multi-conductor setup with Nginx w/TLS, please read this section.  This is a complex setup, and requires advanced knowledge of all the components used.  Let me recommend our [Enterprise Plan](https://xyops.io/pricing) here, as we can set all this up for you.  Now, the way this configuration works is as follows:
+Для балансируемой multi-conductor установки с Nginx и TLS прочитайте этот раздел. Это сложная конфигурация и требует глубокого знания всех компонентов. Здесь снова рекомендуем [Enterprise Plan](https://xyops.io/pricing), мы можем настроить все за вас. Далее принцип работы:
 
-- [Nginx](https://nginx.org/) sits in front, and handles TLS termination, as well as routing requests to various backends.
-- Nginx handles xyOps multi-conductor using an embedded [Health Check Daemon](https://github.com/pixlcore/xyops-healthcheck) which runs in the same container.
-	- The health check keeps track of which conductor server is primary, and dynamically reconfigures and hot-reloads Nginx as needed.
-	- We maintain our own custom Nginx docker image for this (shown below), or you can [build your own from source](https://github.com/pixlcore/xyops-nginx/blob/main/Dockerfile).
+- [Nginx](https://nginx.org/) стоит спереди и выполняет TLS termination, а также маршрутизирует запросы на разные бэкенды.
+- Nginx управляет multi-conductor xyOps через встроенный [Health Check Daemon](https://github.com/pixlcore/xyops-healthcheck), который запускается в том же контейнере.
+	- Health check отслеживает, какой conductor является primary, и динамически перестраивает и hot-reload'ит Nginx.
+	- Мы поддерживаем собственный Docker образ Nginx (ниже), либо вы можете [собрать свой](https://github.com/pixlcore/xyops-nginx/blob/main/Dockerfile).
 
-A few prerequisites for this setup:
+Несколько требований для этой схемы:
 
-- For multi-conductor setups, **you must have an external storage backend**, such as NFS, S3, or S3-compatible (MinIO, etc.).  See [Storage Engines](https://github.com/jhuckaby/pixl-server-storage#engines) for details.
-- You will need a custom domain configured and TLS certs created and ready to attach.
-- You have your xyOps configuration file customized and ready to go ([config.json](https://github.com/pixlcore/xyops/blob/main/sample_conf/config.json)) (see below).
+- Для multi-conductor **нужен внешний storage backend** (NFS, S3, S3-совместимый MinIO и т.п.). См. [Storage Engines](https://github.com/jhuckaby/pixl-server-storage#engines).
+- Нужен пользовательский домен и заранее подготовленные TLS сертификаты.
+- У вас готова конфигурация xyOps ([config.json](https://github.com/pixlcore/xyops/blob/main/sample_conf/config.json)) (см. ниже).
 
-For the examples below, we'll be using the following domain placeholders:
+В примерах ниже используем такие плейсхолдеры доменов:
 
-- `xyops.yourcompany.com` - User-facing domain which should route to Nginx / SSO.
-- `xyops01.yourcompany.com` - Internal domain for conductor server #1.
-- `xyops02.yourcompany.com` - Internal domain for conductor server #2.
+- `xyops.yourcompany.com` - пользовательский домен, который должен вести на Nginx / SSO.
+- `xyops01.yourcompany.com` - внутренний домен conductor #1.
+- `xyops02.yourcompany.com` - внутренний домен conductor #2.
 
-The reason why the conductor servers each need their own unique (internal) domain name is because of how the multi-conductor system works.  Each conductor server needs to be individually addressable, and reachable by all of your worker servers in your org.  Worker servers don't know or care about Nginx -- they contact conductors directly, and have their own auto-failover system.  Also, worker servers use a persistent WebSocket connection, and can send a large amount of traffic, depending on how many worker servers you have and how many jobs you run.  For these reasons, it's better to have worker servers connect the conductors directly, especially at production scale.
+Conductor-серверы должны иметь уникальные внутренние домены, потому что система multi-conductor требует, чтобы каждый conductor был адресуем и доступен всем вашим worker-серверам. Worker-серверы не знают про Nginx и подключаются к conductors напрямую, со своим механизмом авто-failover. Кроме того, worker-серверы используют постоянные WebSocket соединения и могут создавать большой трафик. Поэтому в продакшне лучше, чтобы worker-серверы подключались напрямую к conductors.
 
-That being said, you *can* configure your worker servers to connect through the Nginx front door if you want.  This can be useful if you have worker servers in another network or out in the wild, but it is not recommended for most setups.  To do this, please see [Overriding The Connect URL](hosting.md#overriding-the-connect-url) in our self-hosting guide.
+Тем не менее, вы *можете* настроить worker-серверы на подключение через Nginx, если нужно. Это полезно, когда серверы находятся в другой сети или вне периметра, но обычно не рекомендуется. Для этого см. [Overriding The Connect URL](hosting.md#overriding-the-connect-url) в нашем руководстве.
 
-Here is a docker command for running Nginx:
+Вот команда для запуска Nginx:
 
 ```sh
 docker run \
@@ -254,7 +256,7 @@ docker run \
 	ghcr.io/pixlcore/xyops-nginx:latest
 ```
 
-Here it is as a docker compose file:
+И то же в docker compose:
 
 ```yaml
 services:
@@ -271,12 +273,12 @@ services:
       - "443:443"
 ```
 
-Let's talk about the Nginx setup.  We are pulling in our own Docker image here ([xyops-nginx](https://github.com/pixlcore/xyops-nginx)).  This is a wrapper around the official Nginx docker image, but it includes our [xyOps Health Check](https://github.com/pixlcore/xyops-healthcheck) daemon.  The health check monitors which conductor server is currently primary, and dynamically reconfigures Nginx on-the-fly as needed (so Nginx always routes to the current primary server only).  The image also comes with a fully preconfigured Nginx.  To use this image you will need to provide:
+Поговорим про настройку Nginx. Мы используем собственный Docker образ ([xyops-nginx](https://github.com/pixlcore/xyops-nginx)), который основан на официальном образе Nginx, но включает демона [xyOps Health Check](https://github.com/pixlcore/xyops-healthcheck). Health check отслеживает текущий primary conductor и динамически перенастраивает Nginx на лету (чтобы Nginx всегда маршрутизировал только к primary). Образ также включает полностью преднастроенный Nginx. Чтобы использовать этот образ, вам нужно предоставить:
 
-- Your TLS certificate files, named `tls.crt` and `tls.key`, which are bound to `/etc/tls.crt` and `/etc/tls.key`, respectively.
-- The list of xyOps conductor server domain names, as a CSV list in the `XYOPS_masters` environment variable (used by health check).
+- Ваши TLS сертификаты `tls.crt` и `tls.key`, которые монтируются в `/etc/tls.crt` и `/etc/tls.key` соответственно.
+- Список доменов conductors в виде CSV в переменной `XYOPS_masters` (используется health check).
 
-Once you have Nginx running, we can fire up the xyOps backend.  This is documented separately as you'll usually want to run these on separate servers.  Here is the multi-conductor configuration as a single Docker run command:
+Когда Nginx запущен, можно поднимать backend xyOps. Обычно это делается на отдельных серверах. Ниже multi-conductor конфигурация в виде одного Docker run:
 
 ```sh
 docker run \
@@ -294,7 +296,7 @@ docker run \
 	ghcr.io/pixlcore/xyops:latest
 ```
 
-And here it is as a docker compose file:
+И то же в docker compose:
 
 ```yaml
 services:
@@ -313,28 +315,29 @@ services:
       - "5523:5523"
 ```
 
-For additional conductor servers you can simply duplicate the command and change the hostname.
+Для дополнительных conductor-серверов можно просто дублировать команду и менять hostname.
 
-A few things to note here:
+Несколько важных моментов:
 
-- We're using our official xyOps Docker image, but you can always [build your own from source](https://github.com/pixlcore/xyops/blob/main/Dockerfile).
-- All conductor server hostnames need to be listed in the `XYOPS_masters` environment variable, comma-separated.
-- All conductor servers need to be able to route to each other via their hostnames, so they can self-negotiate and hold elections.
-- The timezone (`TZ`) should be set to your company's main timezone, so things like midnight log rotation and daily stat resets work as expected.
-- The `/var/run/docker.sock` bind allows xyOps to launch its own containers (i.e. for the [Plugin Marketplace](marketplace.md)).
-- The `/local/path/to/xyops-conf` path should be changed to a location on the host where you want to store the xyOps configuration directory.
-	- xyOps will automatically populate this directory on first container launch.
-	- See the [xyOps Configuration Guide](config.md) for details on how to customize the `config.json` file in this directory.
+- Мы используем официальный образ xyOps, но вы можете [собрать свой](https://github.com/pixlcore/xyops/blob/main/Dockerfile).
+- Все hostname conductors должны быть перечислены в переменной `XYOPS_masters` через запятую.
+- Все conductors должны быть доступны друг другу по hostname, чтобы они могли проводить выборы.
+- Таймзона (`TZ`) должна быть установлена на основную таймзону компании, чтобы корректно работали лог-ротация и дневные сбросы статистики.
+- Привязка `/var/run/docker.sock` позволяет xyOps запускать собственные контейнеры (например, для [Plugin Marketplace](marketplace.md)).
+- Путь `/local/path/to/xyops-conf` нужно заменить на директорию на хосте, где вы хотите хранить конфигурацию xyOps.
+	- xyOps автоматически заполнит эту директорию при первом запуске контейнера.
+	- См. [xyOps Configuration Guide](config.md) для настройки `config.json`.
 
+<a id="satellite"></a>
 ## Satellite
 
-**xyOps Satellite ([xySat](https://github.com/pixlcore/xysat))** is a companion to the xyOps system.  It is both a job runner, and a data collector for server monitoring and alerting.  xySat is designed to be installed on *all* of your servers, so it is lean, mean, and has zero dependencies.
+**xyOps Satellite ([xySat](https://github.com/pixlcore/xysat))** - это спутник xyOps. Он одновременно является job runner'ом и сборщиком данных для мониторинга и алертов. xySat должен быть установлен *на всех ваших серверах*, он легкий и не имеет зависимостей.
 
-For instructions on how to install xySat, see [Adding Servers](servers.md#adding-servers).
+Инструкции по установке xySat см. в [Adding Servers](servers.md#adding-servers).
 
-### Configuration
+### Конфигурация
 
-xySat is configured automatically via the xyOps conductor server.  The [satellite.config](config.md#satellite-config) object is automatically sent to each server after it connects and authenticates, so you can keep a conductor version of the xySat configuration which is auto-synced to all servers.  Here is the default config:
+xySat конфигурируется автоматически через conductor. Объект [satellite.config](config.md#satellite-config) отправляется на каждый сервер после подключения и аутентификации, так что вы можете держать конфиг xySat на стороне conductor, и он будет синхронизирован. Вот конфиг по умолчанию:
 
 ```json
 { 
@@ -355,44 +358,45 @@ xySat is configured automatically via the xyOps conductor server.  The [satellit
 }
 ```
 
-Here are descriptions of the configuration properties:
+Описание свойств конфигурации:
 
 | Property Name | Type | Description |
 |---------------|------|-------------|
-| `port` | Number | Specifies which port the xyOps conductor server will be listening on (default is `5522` for ws:// and `5523` for wss://). |
-| `secure` | Boolean | Set to `true` to use secure WebSocket (wss://) and HTTPS connections. |
-| `socket_opts` | Object | Options to pass to the WebSocket connection (see [WebSocket](https://github.com/websockets/ws/blob/master/doc/ws.md#class-websocket)). |
-| `pid_file` | String | Location of the PID file to ensure two satellites don't run simultaneously. |
-| `log_dir` | String | Location of the log directory, relative to the xySat base dir (`/opt/xyops/satellite`). |
-| `log_filename` | String | This string is the filename pattern used by the core logger (default: `[component].log`); supports log column placeholders like `[component]`. |
-| `log_crashes` | Boolean | This boolean enables capturing uncaught exceptions and crashes in the logger subsystem (default: `true`). |
-| `log_archive_path` | String | This string sets the nightly log archive path pattern (default: `logs/archives/[filename]-[yyyy]-[mm]-[dd].log.gz`). |
-| `log_archive_keep` | String | How many days to keep log archives before auto-deleting the oldest ones. |
-| `temp_dir` | String | Location of temp directory, relative to the base dir (`/opt/xyops/satellite`). |
-| `debug_level` | Number | This number sets the verbosity level for the logger (default: `5`; 1 = quiet, 10 = very verbose). |
-| `child_kill_timeout` | Number | Number of seconds to wait after sending a SIGTERM to follow-up with a SIGKILL. |
-| `monitoring_enabled` | Boolean | Enable or disable the monitoring subsystem (i.e. send monitoring metrics every minute). |
-| `quickmon_enabled` | Boolean | Enable or disable the quick monitors, which send lightweight metrics every second. |
+| `port` | Number | Указывает порт, на котором conductor будет слушать (по умолчанию `5522` для ws:// и `5523` для wss://). |
+| `secure` | Boolean | Установите `true` для безопасного WebSocket (wss://) и HTTPS. |
+| `socket_opts` | Object | Опции для WebSocket соединения (см. [WebSocket](https://github.com/websockets/ws/blob/master/doc/ws.md#class-websocket)). |
+| `pid_file` | String | Путь к PID файлу, чтобы гарантировать, что два satellites не запущены одновременно. |
+| `log_dir` | String | Путь к директории логов относительно базы xySat (`/opt/xyops/satellite`). |
+| `log_filename` | String | Шаблон имени файла логов (по умолчанию `[component].log`); поддерживает плейсхолдеры лог-колонок. |
+| `log_crashes` | Boolean | Включает логирование необработанных исключений и крэшей (по умолчанию `true`). |
+| `log_archive_path` | String | Шаблон пути ночного архива логов (по умолчанию `logs/archives/[filename]-[yyyy]-[mm]-[dd].log.gz`). |
+| `log_archive_keep` | String | Сколько дней хранить архивы логов до авто-удаления старых. |
+| `temp_dir` | String | Путь к временной директории относительно базы (`/opt/xyops/satellite`). |
+| `debug_level` | Number | Уровень подробности логов (по умолчанию `5`; 1 = тихо, 10 = очень подробно). |
+| `child_kill_timeout` | Number | Сколько секунд ждать после SIGTERM перед SIGKILL. |
+| `monitoring_enabled` | Boolean | Включить или выключить подсистему мониторинга (метрики каждую минуту). |
+| `quickmon_enabled` | Boolean | Включить или выключить быстрые мониторы, которые отправляют метрики каждую секунду. |
 
+<a id="overriding-the-connect-url"></a>
 #### Overriding The Connect URL
 
-When xySat is first installed, it is provided an array of hosts to connect to, which becomes a `hosts` array in the xySat config file on each server.  When xySat starts up, it connects to a *random host* from this array, and figures out which conductor is primary, and reconnects to that host.  If the conductor cluster changes, a new `hosts` array is automatically distributed to all servers by the current conductor.
+При первом установке xySat получает массив хостов для подключения, который становится `hosts` в конфиге на каждом сервере. При старте xySat подключается к *случайному хосту* из массива, определяет primary conductor и переподключается к нему. Если кластер изменяется, новый `hosts` массив автоматически распространяется на все сервера текущим primary.
 
-In certain situations you may need to have xySat connect to a specific conductor host, instead of the default conductor list.  For e.g. you may have servers "out in the wild" and they need to connect through a proxy, or some other kind of complex network topology.  Either way, you can override the usual array of hosts that xySat connects to, and specify a static value instead.
+В некоторых случаях нужно подключать xySat к конкретному conductor, а не к списку. Например, серверы могут находиться "снаружи" и должны подключаться через прокси или в сложной сетевой топологии. В таком случае можно заменить массив `hosts` статическим значением.
 
-To do this, add a `host` property into the xySat config as a top-level JSON property, on each server that requires it.  The xySat config file is located at:
+Для этого добавьте свойство `host` в конфиг xySat как верхнеуровневое JSON поле на каждом сервере. Файл конфигурации xySat находится здесь:
 
 ```
 /opt/xyops/satellite/config.json
 ```
 
-Note that you should **not** add a `host` property into the [satellite.config](config.md#satellite-config) object on the conductor server, unless you want **all** of your servers to connect to the static host.
+Не добавляйте `host` в объект [satellite.config](config.md#satellite-config) на conductor, если не хотите, чтобы **все** серверы подключались к одному статическому host.
 
-When both `hosts` and `host` exist in the config file, `host` takes precedence.
+Когда в конфиге есть и `hosts`, и `host`, приоритет у `host`.
 
-## Proxy Servers
+## Прокси-серверы
 
-To send all outbound requests through a proxy (for e.g. web hooks), simply set one or more of the [de-facto standard environment variables](https://curl.se/docs/manpage.html#ENVIRONMENT) used for this purpose:
+Чтобы отправлять все исходящие запросы через прокси (например, web hooks), просто задайте одну или несколько стандартных переменных окружения:
 
 ```
 HTTPS_PROXY
@@ -401,21 +405,21 @@ ALL_PROXY
 NO_PROXY
 ```
 
-xyOps will detect these environment variables and automatically configure proxy routing for all outbound requests.  The environment variable names may be upper or lower-case.  The proxy format should be a fully-qualified URL with port number.  To set a single proxy server for handling both HTTP and HTTPS requests, the simplest way is to just set `ALL_PROXY` (usually specified via a plain HTTP URL with port).  Example:
+xyOps обнаружит эти переменные и автоматически настроит прокси для всех исходящих запросов. Имена переменных могут быть в верхнем или нижнем регистре. Формат прокси - полностью квалифицированный URL с портом. Чтобы задать один прокси для HTTP и HTTPS, проще всего использовать `ALL_PROXY` (обычно обычный HTTP URL с портом). Пример:
 
 ```
 ALL_PROXY=http://company-proxy-server.com:8080
 ```
 
-Use the `NO_PROXY` environment variable to specify a comma-separated domain whitelist.  Requests to any of the domains on this list will bypass the proxy and be sent directly.  Example:
+Используйте `NO_PROXY` для списка доменов, которые должны обходить прокси. Пример:
 
 ```
 NO_PROXY=direct.example.com
 ```
 
-Please note that for proxying HTTPS (SSL) requests, unless you have pre-configured your machines to trust your proxy's local SSL cert, you will have to set the "SSL Cert Bypass" option in your web hooks.
+Обратите внимание: для проксирования HTTPS (SSL) запросов, если ваши машины не доверяют локальному SSL сертификату прокси, вам нужно включить опцию "SSL Cert Bypass" в web hooks.
 
-The types of proxies supported are:
+Поддерживаемые типы прокси:
 
 | Protocol | Example |
 |----------|---------|
@@ -426,13 +430,14 @@ The types of proxies supported are:
 | `socks4` | `socks4://some-socks-proxy.com:9050` |
 | `pac-*` | `pac+http://www.example.com/proxy.pac` |
 
-Make sure to set the environment variables across your server fleet, so things like the [HTTP Request Plugin](plugins.md#http-request-plugin) will also adhere.
+Убедитесь, что переменные окружения заданы на всех серверах, чтобы, например, [HTTP Request Plugin](plugins.md#http-request-plugin) также использовал прокси.
 
-## Air-Gapped Mode
+<a id="air-gapped-mode"></a>
+## Режим Air-Gapped
 
-xyOps supports air-gapped installs, which prevent it from making unauthorized outbound connections beyond a specified IP range.  You can configure which IP ranges it is allowed to connect to, via whitelist and/or blacklist.  The usual setup is to allow local LAN requests so servers can communicate with each other in your infra.
+xyOps поддерживает air-gapped установки, которые предотвращают несанкционированные исходящие подключения за пределы заданных IP диапазонов. Вы можете настроить список разрешенных и/или запрещенных диапазонов. Обычно разрешают локальные запросы внутри LAN, чтобы серверы могли общаться в своей инфраструктуре.
 
-To configure air-gapped mode, use the [airgap](config.md#airgap) section in the main config file.  Example:
+Для настройки используйте раздел [airgap](config.md#airgap) в основном конфиге. Пример:
 
 ```json
 "airgap": {
@@ -442,106 +447,108 @@ To configure air-gapped mode, use the [airgap](config.md#airgap) section in the 
 }
 ```
 
-Set the `enabled` property to `true` to enable air-gapped mode, and set the `outbound_whitelist` and/or `outbound_blacklist` arrays to IP addresses or [CIDR blocks](https://en.wikipedia.org/wiki/Classless_Inter-Domain_Routing).  The default whitelist includes all IPs in the [private range](https://en.wikipedia.org/wiki/Private_network).
+Установите `enabled` в `true`, чтобы включить режим, и задайте `outbound_whitelist` и/или `outbound_blacklist` как IP адреса или [CIDR blocks](https://en.wikipedia.org/wiki/Classless_Inter-Domain_Routing). В whitelist по умолчанию входят все частные диапазоны.
 
-The air-gapped rules apply to both xyOps itself, and automatically propagate to all connected worker servers, to govern things like the [HTTP Plugin](plugins.md#http-request-plugin).  However, it is important to point out that they do **not** govern your own Plugin code, your own shell scripts, nor marketplace Plugins.
+Правила air-gapped применяются как к xyOps, так и автоматически распространяются на все worker-серверы, чтобы управлять, например, [HTTP Plugin](plugins.md#http-request-plugin). Однако **они не ограничивают** ваш собственный код плагинов, ваши shell скрипты и marketplace плагины.
 
-For handling air-gapped software upgrades safely, please contact [xyOps Support](mailto:support@pixlcore.com).  As part of the enterprise plan we can send you digitally signed, encrypted packages with instructions on how to install them.
+Для безопасных апгрейдов в air-gapped режиме свяжитесь с [xyOps Support](mailto:support@pixlcore.com). В рамках enterprise мы можем предоставить подписанные и зашифрованные пакеты с инструкциями.
 
-All xyOps documentation is available offline inside the xyOps app.
+Вся документация xyOps доступна офлайн внутри приложения.
 
-### Air-Gapped Satellite Installs
+<a id="air-gapped-satellite-installs"></a>
+### Air-Gapped установки Satellite
 
-xyOps supports fully air-gapped server installs and upgrades.  Here is how it works:
+xyOps поддерживает полностью air-gapped установку и обновления серверов. Вот как это работает:
 
-1. As part of your [enterprise plan](https://xyops.io/pricing), request a signed xySat software package from us.
-2. In your xyOps instance, create a [Storage Bucket](buckets.md) and note the Bucket ID.
-3. Upload the files you received into the bucket.  The filenames will be in this format: `satellite-OS-ARCH.tar.gz`.
-4. Edit your conductor config file, and set the `satellite.bucket` property to the Bucket ID.
-5. Install or upgrade your servers as per usual.
-6. xyOps will use the xySat install packages from the bucket, and not request anything over the internet.
+1. В рамках [enterprise plan](https://xyops.io/pricing) запросите подписанный пакет xySat у нас.
+2. В вашем xyOps создайте [Storage Bucket](buckets.md) и запомните Bucket ID.
+3. Загрузите полученные файлы в bucket. Имена файлов будут в формате: `satellite-OS-ARCH.tar.gz`.
+4. Отредактируйте конфиг conductor и задайте свойство `satellite.bucket` как Bucket ID.
+5. Установите или обновите серверы как обычно.
+6. xyOps будет использовать пакеты установки xySat из bucket и не будет обращаться в интернет.
 
-For Docker containers, make sure that your local Docker has our images stored locally, so they aren't pulled from the repository.  Our official containers are available at the following locations:
+Для Docker контейнеров убедитесь, что ваши локальные образы уже сохранены, чтобы их не приходилось тянуть из репозитория. Наши официальные контейнеры доступны здесь:
 
 - **xyOps**: https://github.com/pixlcore/xyops/pkgs/container/xyops
 - **xySat**: https://github.com/pixlcore/xysat/pkgs/container/xysat
 
-## Secret Key Rotation
+<a id="secret-key-rotation"></a>
+## Ротация секретного ключа
 
-xyOps uses a single secret key on every conductor server. This key encrypts stored secrets, signs temporary UI tokens, and issues authentication tokens for worker servers (xySat). Rotating this key is fully automated and performed from the UI.
+xyOps использует единый секретный ключ на каждом conductor. Он шифрует сохраненные секреты, подписывает временные UI токены и выдает токены аутентификации для worker-серверов (xySat). Ротация ключа полностью автоматизирована и запускается из UI.
 
-### Overview
+### Обзор
 
-- **Secure generation**: A new cryptographically secure key is generated by the primary conductor and is never transmitted in plaintext.
-- **Orchestrated rotation**: The scheduler is paused, queued jobs are flushed, and active jobs are aborted before rotation proceeds.
-- **Seamless re-encryption**: All stored secrets are re-encrypted with the new key.
-- **Re-authentication**: All connected xySat servers are re-authenticated and issued new auth tokens automatically.
-- **Peer distribution**: The new key is distributed to all conductor peers (backup conductors) encrypted using the prior key.
-- **Persistent config**: The new key is written to `/opt/xyops/conf/overrides.json`. The base `config.json` is not modified by design (often mounted read-only in Docker).
-- **Not impacted**: Existing user sessions and API keys remain valid and are not affected by key rotation.
+- **Безопасная генерация**: новый криптографически стойкий ключ генерируется на primary conductor и никогда не передается в открытом виде.
+- **Оркестрированная ротация**: планировщик ставится на паузу, очередь очищается, активные задачи прерываются перед продолжением.
+- **Бесшовное пере-шифрование**: все сохраненные секреты пере-шифровываются новым ключом.
+- **Пере-аутентификация**: все подключенные xySat серверы пере-аутентифицируются и получают новые auth токены автоматически.
+- **Распределение между peers**: новый ключ распределяется всем backup conductors, зашифрованный предыдущим ключом.
+- **Сохранение конфигурации**: новый ключ записывается в `/opt/xyops/conf/overrides.json`. Базовый `config.json` намеренно не изменяется (часто монтируется read-only в Docker).
+- **Не влияет**: существующие пользовательские сессии и API ключи остаются действительными.
 
-### Pre-Checks
+### Проверки перед запуском
 
-Before starting a rotation, ensure that all conductors and all worker servers are online and healthy:
+Перед началом убедитесь, что все conductors и worker-серверы онлайн и здоровы:
 
-- Verify that every conductor is reachable and participating in the cluster.
-- Verify that all worker servers show as online in the Servers list.
+- Убедитесь, что каждый conductor доступен и участвует в кластере.
+- Убедитесь, что все worker-серверы отображаются online в списке Servers.
 
-If a node is offline during rotation, it will not receive updates automatically. See [Offline Recovery](#offline-recovery) below.
+Если узел был offline во время ротации, он не получит обновления автоматически. См. [Offline Recovery](#offline-recovery) ниже.
 
-### Rotation Process
+### Процесс ротации
 
-1. Click on the "System" link in the Admin section in the sidebar, and start Key Rotation.
-2. The system pauses the scheduler, flushes queued jobs, and aborts active jobs.
-3. A new key is generated and used to re-encrypt all secrets.
-4. Connected worker servers are issued new auth tokens.
-5. The new key is securely distributed to all conductor peers.
-6. The key is persisted to `/opt/xyops/conf/overrides.json` on each conductor.
-7. The schedule remains paused until you resume it (click the "Paused" icon in the header).
+1. Нажмите "System" в Admin секции боковой панели и запустите Key Rotation.
+2. Система ставит планировщик на паузу, очищает очередь и прерывает активные задачи.
+3. Генерируется новый ключ и используется для перешифрования всех секретов.
+4. Подключенные worker-серверы получают новые auth токены.
+5. Новый ключ безопасно распределяется на все conductor peers.
+6. Ключ сохраняется в `/opt/xyops/conf/overrides.json` на каждом conductor.
+7. Планировщик остается на паузе, пока вы его не возобновите (клик по значку "Paused" в шапке).
 
-No manual edits or restarts are required when all nodes are online.
+Когда все узлы online, ручные правки и перезапуски не требуются.
 
-### Offline Recovery
+### Восстановление offline узлов
 
-If a server or conductor was offline during the rotation window, you will need to perform the appropriate recovery action.
+Если сервер или conductor был offline во время ротации, потребуется ручное восстановление.
 
-#### Re-authenticate an Offline Worker Server
+#### Пере-аутентификация offline worker-сервера
 
-If a worker server missed the rotation, you can recover it by deriving a new auth token manually.
+Если worker не получил ротацию, можно восстановить его, вычислив новый auth токен вручную.
 
-What you need:
+Что нужно:
 
-- The current secret key from the primary conductor. This is only available on-disk via SSH to the conductor: `/opt/xyops/conf/overrides.json` (`secret_key`). It is not retrievable via API.
-- The offline server's alphanumeric ID (e.g. `smf4j79snhe`). You can find this in the UI on the server history page, or on the server itself in `/opt/xyops/satellite/config.json`.
+- Текущий секретный ключ с primary conductor. Он доступен только на диске через SSH: `/opt/xyops/conf/overrides.json` (`secret_key`). Через API его получить нельзя.
+- Алфавитно-цифровой ID offline сервера (например, `smf4j79snhe`). Его можно найти в UI на странице истории сервера или на самом сервере в `/opt/xyops/satellite/config.json`.
 
-Compute the SHA-256 of the concatenation: `SERVER_ID + SECRET_KEY`, and use the hex digest as the new auth token. Example:
+Вычислите SHA-256 от конкатенации: `SERVER_ID + SECRET_KEY`, и используйте hex digest как новый auth токен. Пример:
 
 ```sh
 ## OpenSSL
 printf "%s" "SERVER_IDSECRET_KEY" | openssl dgst -sha256 -r | awk '{print $1}'
 ```
 
-Then edit the satellite config on the worker:
+Затем отредактируйте конфиг satellite на worker:
 
 ```
 /opt/xyops/satellite/config.json
 ```
 
-Set the `auth_token` property to the computed SHA-256 hex string. Save the file -- the satellite will auto-reload and attempt to reconnect within ~30 seconds. Check the satellite logs for troubleshooting.
+Установите `auth_token` в вычисленную SHA-256 строку. Сохраните файл - satellite автоматически перечитает его и попробует переподключиться в течение ~30 секунд. Проверяйте логи satellite для диагностики.
 
-#### Update an Offline Conductor
+#### Обновление offline conductor
 
-If a conductor was offline during rotation, SSH to it and update the key by hand:
+Если conductor был offline во время ротации, подключитесь по SSH и обновите ключ вручную:
 
-1) Open `/opt/xyops/conf/overrides.json` on the offline conductor.
-2) Set the `secret_key` property to the new key from the primary conductor. If the file lacks `secret_key` (e.g. first rotation), add it.
-3) Save the file and restart the conductor service if needed.
+1) Откройте `/opt/xyops/conf/overrides.json` на offline conductor.
+2) Установите `secret_key` в новое значение с primary conductor. Если поля `secret_key` нет (например, первая ротация), добавьте его.
+3) Сохраните файл и при необходимости перезапустите conductor.
 
-After the update, the conductor will rejoin the cluster with the correct key.
+После обновления conductor вернется в кластер с корректным ключом.
 
-### Best Practices
+### Лучшие практики
 
-- Schedule rotations during a maintenance window to tolerate job aborts.
-- Confirm node health beforehand to avoid manual recovery steps.
-- Store the current key securely and restrict SSH access to conductors.
-- Rotate periodically as part of your security program (see [Security Checklist](scaling.md#security-checklist)).
+- Планируйте ротацию в окно обслуживания, чтобы допустить прерывание задач.
+- Перед ротацией проверяйте здоровье узлов, чтобы избежать ручного восстановления.
+- Храните текущий ключ в безопасности и ограничьте SSH доступ к conductors.
+- Проводите ротацию регулярно как часть программы безопасности (см. [Security Checklist](scaling.md#security-checklist)).

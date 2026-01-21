@@ -1,45 +1,88 @@
-# Repository Workflow
+# Рабочий процесс репозитория
 
-This document describes the standard workflow for working in this repo.
+Этот документ описывает стандартный рабочий процесс для работы в этом репозитории.
 
-## Branching
+## Ветвление
 
-- main: stable releases only (protected)
-- develop: integration branch for ongoing work
-- feat/*: new features
-- fix/*: bug fixes
-- chore/*: maintenance and tooling
-- hotfix/*: urgent fixes branched from main
+- main: только стабильные релизы (защищена)
+- develop: интеграционная ветка для текущей работы
+- feat/*: новые функции
+- fix/*: исправления ошибок
+- chore/*: обслуживание и инструменты
+- hotfix/*: срочные исправления, ветвятся от main
 
-## Commits and Releases
+## Коммиты и релизы
 
-- One logical change per commit.
-- Use short, descriptive commit messages.
-- Tag releases as vX.Y.Z.
+- Один логический change на коммит.
+- Используйте короткие, информативные сообщения коммитов.
+- Теги релизов — `vX.Y.Z`.
 
-## Pull Requests and Reviews
+## Pull Requests и ревью
 
-- All changes go through PRs.
-- Include a concise description and a quick checklist:
-  - Tests run (or explain why not)
-  - Config changes documented
-  - Migrations or data changes noted
-- Require at least 1 reviewer.
-- No direct pushes to main.
+- Все изменения проходят через PR.
+- Добавляйте краткое описание и чек-лист:
 
-## CI Expectations
+   - Тесты запущены (или объясните, почему нет)
+   - Изменения конфигурации задокументированы
+   - Миграции или изменения данных отмечены
 
-- Lint, tests, and build run on every PR.
-- Blocking checks must pass before merge.
-- Release tags produce build artifacts.
+- Требуется минимум 1 ревьюер.
+- Прямые пуши в main запрещены.
 
-## Configs and Secrets
+## Ожидания от CI
 
-- Keep config templates in sample_conf/.
-- Keep secrets out of the repo (use env vars or secret storage).
+- Линтер, тесты и сборка запускаются на каждом PR.
+- Блокирующие проверки должны быть зелеными до слияния.
+- Теги релизов формируют артефакты сборки.
 
-## Documentation
+## Конфиги и секреты
 
-- README: quick start only.
-- Detailed docs live in docs/.
-- Update CHANGELOG.md for user-facing changes.
+- Храните шаблоны конфигурации в `sample_conf/`.
+- Не храните секреты в репозитории (используйте переменные окружения или хранилище секретов).
+
+## Документация
+
+- README: только быстрый старт.
+- Подробная документация находится в `docs/`.
+- Обновляйте `CHANGELOG.md` для изменений, видимых пользователю.
+
+## AI Agent & Code Quality
+
+При разработке новых функций обязательно:
+
+### Используйте документацию для AI agents
+- Прочитайте [`.github/copilot-instructions.md`](../.github/copilot-instructions.md) перед началом
+- Используйте шаблоны из [`docs/QUICK_REFERENCE_AI.md`](QUICK_REFERENCE_AI.md):
+  - Для API endpoints: используйте **API Endpoint Checklist**
+  - Для workflow nodes: используйте **Workflow Node Checklist**
+  - Для storage запросов: используйте **Storage Query Checklist**
+
+### Critical issues, которые нужно избежать
+Изучите [`docs/AI_AGENT_ANALYSIS.md`](AI_AGENT_ANALYSIS.md) особенно:
+- Job State Duality (activeJobs vs jobDetails)
+- Workflow State Hierarchy (3 nested levels)
+- Server Selection TOCTOU (race condition)
+- Common mistakes checklist
+
+### Pre-commit validation
+Перед `git commit`, используйте checklist:
+```
+☐ Job state пишется в jobDetails, не activeJobs
+☐ loadSession() есть в каждом API endpoint
+☐ Нет fs.readFileSync() в plugins
+☐ Storage keys нормализованы (normalizeKey)
+☐ JEXL expressions имеют safe property access
+☐ Tests проходят (npm test)
+☐ CHANGELOG.md обновлён
+```
+
+Полный checklist в [`docs/QUICK_REFERENCE_AI.md#before-committing-code`](QUICK_REFERENCE_AI.md#before-committing-code)
+
+### Для code reviewers
+Проверяйте PR по этому списку:
+- ✅ Job state separation правильный (jobDetails vs activeJobs)
+- ✅ Storage keys нормализованы
+- ✅ Нет blocking I/O
+- ✅ loadSession() используется в API
+- ✅ Tests добавлены
+- ✅ CHANGELOG обновлён

@@ -1,103 +1,103 @@
-# Command Line
+# Командная строка
 
-## Overview
+## Обзор
 
-Here are all the xyOps services available to you on the command line.  Most of these are accessed via the following shell script:
+Все доступные сервисы xyOps в командной строке. Большинство вызываются через следующий shell-скрипт:
 
 ```
 /opt/xyops/bin/control.sh [COMMAND]
 ```
 
-Here are all the accepted commands:
+Список команд:
 
 | Command | Description |
 |---------|-------------|
-| `start` | Starts xyOps in daemon mode. See [Starting and Stopping](CommandLine.md#starting-and-stopping). |
-| `stop` | Stops the xyOps daemon and waits for exit. See [Starting and Stopping](CommandLine.md#starting-and-stopping). |
-| `restart` | Calls `stop`, then `start`, in sequence. See [Starting and Stopping](CommandLine.md#starting-and-stopping).  |
-| `status` | Checks whether xyOps is currently running. See [Starting and Stopping](CommandLine.md#starting-and-stopping).  |
-| `admin` | Creates new emergency admin account (specify user / pass). See [Recover Admin Access](CommandLine.md#recover-admin-access). |
-| `grant` | Manually grant a privilege to a user: `bin/control.sh grant USERNAME PRIVILEGE_ID`. |
-| `revoke` | Manually revoke a privilege from a user: `bin/control.sh revoke USERNAME PRIVILEGE_ID`. |
-| `upgrade` | Upgrades xyOps to the latest stable (or specify version). See [Upgrading xyOps](CommandLine.md#upgrading-xyops). |
-| `version` | Outputs the current xyOps package version and exits. |
-| `help` | Displays a list of available commands and exits. |
+| `start` | Запускает xyOps в режиме демона. См. [Starting and Stopping](CommandLine.md#starting-and-stopping). |
+| `stop` | Останавливает демона xyOps и ждет завершения. См. [Starting and Stopping](CommandLine.md#starting-and-stopping). |
+| `restart` | Выполняет `stop`, затем `start`. См. [Starting and Stopping](CommandLine.md#starting-and-stopping). |
+| `status` | Проверяет, запущен ли xyOps. См. [Starting and Stopping](CommandLine.md#starting-and-stopping). |
+| `admin` | Создает аварийный admin аккаунт (укажите user/pass). См. [Recover Admin Access](CommandLine.md#recover-admin-access). |
+| `grant` | Вручную выдать привилегию пользователю: `bin/control.sh grant USERNAME PRIVILEGE_ID`. |
+| `revoke` | Вручную отозвать привилегию у пользователя: `bin/control.sh revoke USERNAME PRIVILEGE_ID`. |
+| `upgrade` | Обновляет xyOps до последней стабильной версии (или указать версию). См. [Upgrading xyOps](CommandLine.md#upgrading-xyops). |
+| `version` | Выводит текущую версию пакета xyOps и завершает работу. |
+| `help` | Показывает список доступных команд и завершает работу. |
 
-## Starting and Stopping
+## Запуск и остановка
 
-To start the service, use the `start` command:
+Чтобы запустить сервис, используйте `start`:
 
 ```
 /opt/xyops/bin/control.sh start
 ```
 
-And to stop it, the `stop` command:
+Чтобы остановить, используйте `stop`:
 
 ```
 /opt/xyops/bin/control.sh stop
 ```
 
-You can also issue a quick stop + start with the `restart` command:
+Быстрый stop + start через `restart`:
 
 ```
 /opt/xyops/bin/control.sh restart
 ```
 
-The `status` command will tell you if the service is running or not:
+Команда `status` покажет, запущен ли сервис:
 
 ```
 /opt/xyops/bin/control.sh status
 ```
 
-## Recover Admin Access
+## Восстановление админ-доступа
 
-Lost access to your admin account?  You can create a new temporary administrator account on the command-line.  Just execute this command on your primary server:
+Потеряли доступ к admin аккаунту? Можно создать временного администратора в командной строке. Выполните команду на primary сервере:
 
 ```
 /opt/xyops/bin/control.sh admin USERNAME PASSWORD
 ```
 
-Replace `USERNAME` with the desired username, and `PASSWORD` with the desired password for the new account.  Note that the new user will not show up in the main list of users in the UI.  But you will be able to login using the provided credentials.  This is more of an emergency operation, just to allow you to get back into the system.  *This is not a good way to create permanent users*.  Once you are logged back in, you should consider creating another account from the UI, then deleting the emergency admin account.
+Замените `USERNAME` на нужный логин, а `PASSWORD` на пароль нового аккаунта. Новый пользователь не появится в основном списке пользователей в UI, но вы сможете войти с этими учетными данными. Это аварийная операция для восстановления доступа. *Это не лучший способ создавать постоянных пользователей*. После входа лучше создать полноценный аккаунт через UI и удалить аварийного администратора.
 
-Note that this trick does **not** work with [SSO](sso.md).  It only applies to setups that use the built-in user management system.
+Этот трюк **не работает** с [SSO](sso.md). Он применим только для установок с встроенной системой управления пользователями.
 
-## Server Startup
+## Автозапуск сервера
 
-To register xyOps as a background daemon startup service (so it automatically start on server reboot), type this:
+Чтобы зарегистрировать xyOps как сервис автозапуска (старт при перезагрузке), выполните:
 
 ```sh
 cd /opt/xyops
 npm run boot
 ```
 
-This is done via the [pixl-boot](https://github.com/jhuckaby/pixl-boot) module, and it supports [Systemd](https://en.wikipedia.org/wiki/Systemd) if available, falling back to [Sysv Init](https://en.wikipedia.org/wiki/Init#SysV-style) or [launchd](https://support.apple.com/guide/terminal/script-management-with-launchd-apdc6c1077b-5d5d-4d35-9c19-60f2397b2369/mac) on macOS.
+Используется модуль [pixl-boot](https://github.com/jhuckaby/pixl-boot), который поддерживает [Systemd](https://en.wikipedia.org/wiki/Systemd) при наличии, иначе [Sysv Init](https://en.wikipedia.org/wiki/Init#SysV-style) или [launchd](https://support.apple.com/guide/terminal/script-management-with-launchd-apdc6c1077b-5d5d-4d35-9c19-60f2397b2369/mac) на macOS.
 
-If you change your mind or want to uninstall xyOps, you can deregister the startup service with this command:
+Если передумали или хотите удалить xyOps, можно снять автозапуск так:
 
 ```sh
 cd /opt/xyops
 npm run unboot
 ```
 
-**Important Note:** When xyOps starts on server boot, it typically does not have a proper user environment, namely a `PATH` environment variable.  So if your scripts rely on binary executables in non-standard locations, you may have to restore your custom `PATH` and other variables inside your scripts by redeclaring them.
+**Важно:** При старте xyOps вместе с системой часто нет полного окружения пользователя, в частности переменной `PATH`. Если ваши скрипты зависят от бинарников в нестандартных местах, вам нужно восстановить `PATH` и другие переменные внутри скриптов, повторно их задав.
 
-## Upgrading xyOps
+## Обновление xyOps
 
-To upgrade xyOps, you can use the built-in `upgrade` command:
+Для обновления используйте команду `upgrade`:
 
 ```
 /opt/xyops/bin/control.sh upgrade
 ```
 
-This will upgrade the app and all dependencies to the latest stable release, if a new one is available.  It will not affect your data storage, users, or configuration settings.  All those will be preserved and imported to the new version.  For multi-server clusters, you'll need to repeat this command on each server.
+Она обновит приложение и зависимости до последней стабильной версии (если доступна). Данные, пользователи и конфигурация не затрагиваются — они сохраняются и импортируются в новую версию. В кластерах повторите команду на каждом сервере.
 
-Alternately, you can specify the exact version you want to upgrade (or downgrade) to:
+Можно указать конкретную версию для обновления (или отката):
 
 ```
 /opt/xyops/bin/control.sh upgrade 1.0.4
 ```
 
-If you upgrade to the `HEAD` version, this will grab the very latest from GitHub.  Note that this is primarily for developers or beta-testers, and is likely going to contain bugs.  Use at your own risk:
+Если обновиться до `HEAD`, будет взята самая свежая версия из GitHub. Это предназначено для разработчиков и бета-тестеров и может содержать баги. Используйте на свой риск:
 
 ```
 /opt/xyops/bin/control.sh upgrade HEAD
@@ -105,26 +105,26 @@ If you upgrade to the `HEAD` version, this will grab the very latest from GitHub
 
 ## Database CLI
 
-xyOps comes with a simple DB CLI from which you can execute raw commands.  The responses are always in JSON format.  This is mainly used for debugging and troubleshooting.  The command is located here:
+xyOps поставляется с простой DB CLI, где можно выполнять raw команды. Ответы всегда в JSON. Это в основном для отладки. Команда находится здесь:
 
 ```
 /opt/xyops/bin/db-cli.js COMMAND INDEX ARG1, ARG2, ...
 ```
 
-To perform a search query on a specific database:
+Поиск в конкретной базе:
 
 ```sh
 /opt/xyops/bin/db-cli.js search tickets "status:open"
 ```
 
-To fetch a single record from a database:
+Получение одной записи:
 
 ```sh
 /opt/xyops/bin/db-cli.js get alerts "amg6sl6z0cc"
 ```
 
-This is a low-level developer tool, and requires advanced knowledge of the database system in xyOps.  To learn more, see:
+Это низкоуровневый инструмент, требует продвинутых знаний о БД xyOps. Подробнее:
 
-- The `/opt/xyops/internal/unbase.json` file, which describes all the database tables in xyOps.
-- The [Unbase](https://github.com/jhuckaby/pixl-server-unbase) database system which powers xyOps.
-- The [query syntax](https://github.com/jhuckaby/pixl-server-storage/blob/master/docs/Indexer.md#simple-queries) documentation.
+- Файл `/opt/xyops/internal/unbase.json`, где описаны таблицы БД xyOps.
+- Система [Unbase](https://github.com/jhuckaby/pixl-server-unbase), на которой построен xyOps.
+- Документация по синтаксису запросов [query syntax](https://github.com/jhuckaby/pixl-server-storage/blob/master/docs/Indexer.md#simple-queries).

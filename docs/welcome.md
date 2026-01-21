@@ -1,81 +1,81 @@
-# Welcome to xyOps!
+# Добро пожаловать в xyOps!
 
-xyOps is a job scheduler, workflow automation engine, and server monitoring platform. It lets you run jobs on your servers, orchestrate them visually with workflows, collect metrics, trigger runs on schedules or intervals, and react with actions and limits. Everything is available in the web UI and via the REST API.
+xyOps - это планировщик задач, движок автоматизации рабочих процессов и платформа мониторинга серверов. Он позволяет запускать задачи на ваших серверах, визуально оркестрировать их с помощью workflows, собирать метрики, запускать по расписанию или интервалам и реагировать с помощью actions и limits. Все доступно в веб-интерфейсе и через REST API.
 
-This guide is shown on first sign-in to help you take your first steps, and introduce some core concepts.  You can always get back to it later by clicking on "Documentation" in the sidebar, then "Welcome to xyOps".
-
-
-## Step 1: Add a Server
-
-Before you can run anything, add at least one server. Servers run the lightweight xySat agent and execute jobs sent by xyOps. You can add servers for Docker, Linux, macOS, or Windows hosts.
-
-Add a server from the UI:
-
-1. Open the Servers page and click "Add Server".
-2. Optionally set a label, icon, and groups, or leave defaults.
-3. Copy the one-line install command for your OS and run it on the target host.
-4. The server appears in the UI, starts streaming metrics, and is ready to run jobs.
-
-For automated provisioning, you can bootstrap servers with an API key during first boot. See [Servers](servers.md).
+Это руководство показывается при первом входе, чтобы помочь сделать первые шаги и познакомить с базовыми концепциями. Вернуться к нему можно в любое время, нажав "Documentation" в боковой панели, затем "Welcome to xyOps".
 
 
-## Core Concepts: Events and Workflows
+## Шаг 1: Добавьте сервер
 
-- **Events**: An event defines what to run (a plugin plus parameters), where to run it (servers or groups), when to run (triggers), and how to control and react (limits and actions). Each time an event runs it launches a job. See [Events](events.md).
-- **Workflows**: A workflow is a visual graph that chains jobs with control flow. A workflow run becomes a parent job that launches sub-jobs on its nodes. You can fan out, join, repeat, multiplex across servers, and attach limits/actions per node. See [Workflows](workflows.md).
+Прежде чем что-либо запускать, добавьте хотя бы один сервер. Серверы запускают легковесный агент xySat и выполняют задачи, отправленные xyOps. Вы можете добавлять Docker, Linux, macOS или Windows хосты.
 
-You can keep most automation as simple events. Use workflows when you need orchestration, branching, or parallelism.
+Добавьте сервер через UI:
 
+1. Откройте страницу Servers и нажмите "Add Server".
+2. При желании задайте метку, иконку и группы или оставьте значения по умолчанию.
+3. Скопируйте однострочную команду установки для вашей ОС и выполните ее на целевом хосте.
+4. Сервер появится в UI, начнет стримить метрики и будет готов запускать задачи.
 
-## Triggers: When Jobs Run
-
-Triggers control when events and workflows are allowed to run. Common cases:
-
-- **Manual**: Allow a user or API to launch on demand.
-- **Schedule**: Specify hours/minutes/days like cron, with optional timezones.
-- **Interval**: Run every N seconds starting from a timestamp.
-- **Single Shot**: Run once at an exact time.
-- **Plugin**: Custom trigger logic provided by a plugin.
-- **Range and Blackout**: Permit or block launches between specific time ranges.
-- **Options**: Catch-Up (replay missed schedules), Delay (defer launch), Precision (second-level scheduling).
-
-Events list triggers in the editor. Workflows show triggers as nodes in the graph and you connect them to entry nodes. See [Triggers](triggers.md).
+Для автоматизированного провижининга можно передать API ключ при первом запуске. См. [Servers](servers.md).
 
 
-## Plugins: What Runs
+## Основные понятия: Events и Workflows
 
-Event Plugins are the code that runs your jobs. Built-in options include:
+- **Events**: событие определяет что запускать (плагин плюс параметры), где запускать (серверы или группы), когда запускать (triggers) и как управлять и реагировать (limits и actions). Каждый запуск события создает задачу (job). См. [Events](events.md).
+- **Workflows**: workflow - это визуальный граф, который связывает задачи управляющими связями. Запуск workflow становится родительской задачей, которая запускает подзадачи на узлах. Можно распараллеливать, объединять, повторять, мультиплексировать по серверам и задавать limits/actions на уровне узлов. См. [Workflows](workflows.md).
 
-- **Shell Plugin**: Run arbitrary shell scripts/commands.
-- **HTTP Request Plugin**: Call HTTP(S) endpoints.
-- **Docker Plugin**: Run scripts inside containers.
-- **Test Plugin**: Emit sample data/files for testing flows.
-
-You can write your own plugins in any language. Plugins read a JSON job context on STDIN and write JSON status updates to STDOUT. See [Plugins](plugins.md).
+Большинство автоматизаций можно оставить простыми events. Используйте workflows, когда нужна оркестрация, ветвления или параллелизм.
 
 
-## Actions and Limits
+## Triggers: когда запускаются задачи
 
-- **Limits**: Self-imposed constraints such as Max Run Time, Max Output Size, Max CPU/Memory, Max Concurrent Jobs, Max Queue, and Max Retries. Limits can apply tags, send notifications, take snapshots, and optionally abort jobs. Limits come from the event/workflow, the category, and universal defaults. See [Limits](limits.md).
-- **Actions**: Reactions to job outcomes (start, success, error, warning, critical, abort, or tag match) or to alert state changes. Action types include email, web hook, run job, ticket, snapshot, and more. Actions execute in parallel and deduplicate per target. See [Actions](actions.md).
+Triggers управляют тем, когда события и workflows разрешено запускать. Частые случаи:
+
+- **Manual**: запуск по требованию пользователем или через API.
+- **Schedule**: расписание часов/минут/дней как в cron, с опциональными таймзонами.
+- **Interval**: запуск каждые N секунд, начиная с заданного времени.
+- **Single Shot**: запуск один раз в точное время.
+- **Plugin**: кастомная логика триггера, предоставленная плагином.
+- **Range and Blackout**: разрешить или запретить запуски в указанных временных диапазонах.
+- **Options**: Catch-Up (догонять пропущенные расписания), Delay (отложить запуск), Precision (планирование с точностью до секунд).
+
+Events показывают triggers в редакторе. Workflows показывают triggers как узлы графа, которые соединяются с входными узлами. См. [Triggers](triggers.md).
+
+
+## Plugins: что запускается
+
+Event Plugins - это код, который выполняет ваши задачи. Встроенные варианты:
+
+- **Shell Plugin**: выполнение произвольных скриптов/команд shell.
+- **HTTP Request Plugin**: вызовы HTTP(S) endpoints.
+- **Docker Plugin**: запуск скриптов внутри контейнеров.
+- **Test Plugin**: генерация тестовых данных/файлов для проверки сценариев.
+
+Вы можете писать свои плагины на любом языке. Плагины читают JSON-контекст задачи из STDIN и пишут JSON-статусы в STDOUT. См. [Plugins](plugins.md).
+
+
+## Actions и Limits
+
+- **Limits**: самоограничения, такие как Max Run Time, Max Output Size, Max CPU/Memory, Max Concurrent Jobs, Max Queue и Max Retries. Limits могут применять теги, отправлять уведомления, делать снимки и при необходимости прерывать задачи. Limits наследуются из event/workflow, категории и глобальных значений. См. [Limits](limits.md).
+- **Actions**: реакции на результат задачи (start, success, error, warning, critical, abort или tag match) или на изменение состояния алертов. Типы actions включают email, web hook, run job, ticket, snapshot и другие. Actions выполняются параллельно и дедуплицируются по целям. См. [Actions](actions.md).
 
 
 ## Categories
 
-Categories help organize events and control defaults and visibility. A category can:
+Categories помогают организовать события и управлять умолчаниями и видимостью. Категория может:
 
-- Apply default actions and limits to events in the category.
-- Control access based on user roles and privileges.
-- Provide a clean way to group related automation for teams.
+- Применять дефолтные actions и limits к событиям в категории.
+- Контролировать доступ на основе ролей и привилегий пользователей.
+- Удобно группировать связанную автоматизацию для команд.
 
-You can start with a default category and refine later. See [Categories](categories.md).
+Можно начать с категории по умолчанию и позже уточнить структуру. См. [Categories](categories.md).
 
 
-## Try It: Your First Event
+## Попробуйте: ваше первое событие
 
-1. Go to Events → New Event.
-2. Enter a title and pick a category.
-3. Choose the Shell Plugin and paste a simple script, for example:
+1. Перейдите в Events -> New Event.
+2. Введите заголовок и выберите категорию.
+3. Выберите Shell Plugin и вставьте простой скрипт, например:
 
 ```sh
 #!/bin/sh
@@ -83,34 +83,34 @@ echo "Hello from xyOps"
 echo '{ "xy": 1, "code": 0 }'
 ```
 
-The final JSON line signals success to xyOps.
+Финальная JSON-строка сигнализирует об успехе для xyOps.
 
-4. Select one of your servers (or a group) as the target and keep the default selection algorithm.
-5. Add a Manual trigger and save the event.
-6. Click Run, watch logs stream live, and view the job’s result and metrics.
+4. Выберите один из ваших серверов (или группу) как цель и оставьте алгоритм выбора по умолчанию.
+5. Добавьте Manual trigger и сохраните событие.
+6. Нажмите Run, смотрите лог в реальном времени и откройте результат и метрики задачи.
 
-Next, try adding a Max Run Time limit and an email action on error. Re-run to see how actions and limits behave.
-
-
-## Try It: Your First Workflow
-
-1. Go to Workflows → New Workflow.
-2. Add a Trigger node (Manual) and connect it to an Event node referencing the event you just created.
-3. Optionally insert a Controller (e.g., Repeat or Multiplex) between the trigger and event to see parallelism.
-4. Attach a Limit node (e.g., Max Concurrent Jobs) to the event node’s bottom pole.
-5. Click Test Selection or Run, then inspect the parent workflow job and its sub-jobs.
-
-See [Workflows](workflows.md) for node types, controllers, and graph editing tools.
+Далее попробуйте добавить limit Max Run Time и email action при ошибке. Перезапустите, чтобы увидеть поведение actions и limits.
 
 
-## Where To Go Next
+## Попробуйте: ваш первый workflow
 
-- Add more servers and organize them with groups. See [Servers](servers.md) and [Groups](groups.md).
-- Create monitors and alerts for server metrics. See [Monitors](monitors.md) and [Alerts](alerts.md).
-- Reuse notifications with channels. See [Channels](channels.md).
-- Share data and files across jobs with buckets. See [Buckets](buckets.md).
-- Explore advanced scheduling, catch-up, ranges, and blackout windows. See [Triggers](triggers.md).
-- Package and share your own plugins. See [Plugins](plugins.md) and [Marketplace](marketplace.md).
-- Click the "Documentation" link in the sidebar for the full docs index.
+1. Перейдите в Workflows -> New Workflow.
+2. Добавьте узел Trigger (Manual) и соедините его с узлом Event, который ссылается на созданное событие.
+3. При желании вставьте Controller (например, Repeat или Multiplex) между trigger и event, чтобы увидеть параллелизм.
+4. Прикрепите узел Limit (например, Max Concurrent Jobs) к нижнему полю узла event.
+5. Нажмите Test Selection или Run, затем изучите родительскую задачу workflow и ее подзадачи.
 
-Have questions or feedback?  Check out our [Support Guide](support.md).
+См. [Workflows](workflows.md) для типов узлов, контроллеров и инструментов редактирования графа.
+
+
+## Куда двигаться дальше
+
+- Добавьте больше серверов и организуйте их через группы. См. [Servers](servers.md) и [Groups](groups.md).
+- Создавайте monitors и alerts для метрик серверов. См. [Monitors](monitors.md) и [Alerts](alerts.md).
+- Переиспользуйте уведомления через channels. См. [Channels](channels.md).
+- Делитесь данными и файлами между задачами через buckets. См. [Buckets](buckets.md).
+- Изучайте продвинутое планирование, catch-up, диапазоны и blackout окна. См. [Triggers](triggers.md).
+- Упаковывайте и публикуйте собственные плагины. См. [Plugins](plugins.md) и [Marketplace](marketplace.md).
+- Нажмите ссылку "Documentation" в боковой панели для полного указателя.
+
+Есть вопросы или обратная связь? См. наш [Support Guide](support.md).
