@@ -50,6 +50,8 @@ Then open http://localhost:5522 in your browser, and use username `admin` and pa
 
 Check out our docs here: **[xyOps Documentation Index](https://github.com/pixlcore/xyops/blob/main/docs/index.md)**
 
+Repo workflow guidelines: **[Repository Workflow](docs/repo-workflow.md)**
+
 Full documentation is also provided inside the xyOps app.  Just click the "Documentation" link in the sidebar.
 
 # Contributing
