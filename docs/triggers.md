@@ -50,7 +50,7 @@ Some combinations are restricted to keep scheduling unambiguous. These rules are
   - `interval` and `precision` are mutually exclusive.
   - `interval` and `delay` are mutually exclusive.
   - `precision` and `delay` are mutually exclusive.
-- Launching triggers: Only `manual`, `schedule`, `interval`, `single`, and `plugin` produce launches. Others act as modifiers or constraints.
+- Launching triggers: Only `manual`, `magic`, `webhook`, `schedule`, `interval`, `single`, and `plugin` produce launches. Others act as modifiers or constraints.
 - Range triggers are modifiers that only allow launches between a start and end date/time.
 - Blackout triggers are the inverse of ranges; they disallow launches between a start and end date/time.
 - You may add multiple ranges and blackouts.
@@ -200,6 +200,35 @@ Example:
   "enabled": true,
   "token": "592b38cb583c1d028dde1dc7ec69a4865c321dd2e4ce09f4700f286ec7f18021",
   "body": "Hello!  This is custom **markdown** content for the _landing page_!"
+}
+```
+
+### Webhook
+
+Webhook triggers are designed for server-to-server integrations.  They provide a single unique URL that can be called by external services (e.g. webhook providers).  The incoming request body is passed into the job input, rather than into the job parameters, so your event configuration remains stable while the payload is captured separately.
+
+This is an "on-demand" trigger, and thus it skips over modifiers like [Catch-Up](#catch-up), [Range](#range), [Blackout](#blackout), [Delay](#delay), [Precision](#precision) and [Plugin](#plugin).
+
+Trigger Parameters:
+
+| Name | Type | Required | Description |
+|------|------|----------|-------------|
+| `key` | String | Yes | Upon creation, the client supplies the plain text key, which is then hashed into a token on the server side.  The plain key is never stored. |
+| `token` | String | n/a | Upon creation, the `key` is hashed (using salted SHA-256) to produce a cryptographic token that is stored in this property. |
+
+Payload:
+
+- `job.input.data.payload`: Parsed request data (JSON body or query/POST params).
+- `job.input.data.headers`: HTTP headers from the request.
+- `job.input.data.query`: Query string parameters.
+
+Example:
+
+```json
+{
+  "type": "webhook",
+  "enabled": true,
+  "token": "e56386a2a07efb3c5df1a1a9d7a0c0b9b2a8c3c90f8a0d9f0a3e7e0f2aa1b4d0"
 }
 ```
 

@@ -1288,6 +1288,25 @@ Example response:
 
 In addition to the [Standard Response Format](#standard-response-format), this will include an `id` property containing the newly created [Job.id](data.md#job-id), and a special "stream token" in a property named `stream`.  This token can be provided to the [stream_job](#stream_job) API to stream job updates via [Server-sent events](https://developer.mozilla.org/en-US/docs/Web/API/Server-sent_events).
 
+### webhook
+
+```
+POST /api/app/webhook/v1/TOKEN
+```
+
+Trigger an event using a webhook URL.  This API does not require a user session or API key -- the authentication is built into the URL.  The incoming request body is captured in `job.input.data.payload`, along with request headers, query string, method and IPs.  Event and plugin parameters are taken from the event configuration (not from the request payload).
+
+See [Webhook Trigger](triggers.md#webhook) for more details.
+
+Example response:
+
+```json
+{
+    "code": 0,
+    "id": "jabc123def"
+}
+```
+
 ### form
 
 ```

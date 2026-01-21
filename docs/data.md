@@ -2902,6 +2902,8 @@ Each trigger has a `type` property which describes its behavior.  The different 
 | Type ID | Title | Description |
 |---------|-------|-------------|
 | `manual` | **Manual Run** | Allow the event to be executed manually (in the UI or API). |
+| `magic` | **Magic Link** | Generate a unique URL to run the event via a web request (optional landing page). |
+| `webhook` | **Webhook** | Generate a unique URL for server-to-server webhooks; payload is captured in job input. |
 | `schedule` | **Schedule** | Set a repeating schedule to run the event (hourly, daily, etc.).  See [Schedule Rules](#schedule-rules) below. |
 | `interval` | **Interval** | Run the event on a repeating interval, given a starting date/time.  See [Intervals](#intervals) below. |
 | `single` | **Single Shot** | Set a single future exact date/time to run.  Requires an additional `epoch` property, set to the [Unix timestamp](https://en.wikipedia.org/wiki/Unix_time) at which to run. |

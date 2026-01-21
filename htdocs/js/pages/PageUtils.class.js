@@ -4972,6 +4972,13 @@ Page.PageUtils = class PageUtils extends Page.Base {
 				short_desc = "Magic Link";
 			break;
 			
+			case 'webhook':
+				nice_icon = '<i class="mdi mdi-gesture-tap-button"></i>';
+				nice_type = 'On-Demand';
+				nice_desc = '<i class="mdi mdi-webhook">&nbsp;</i>Webhook';
+				short_desc = "Webhook";
+			break;
+			
 			case 'catchup':
 				nice_icon = '<i class="mdi mdi-cog-outline"></i>';
 				nice_type = alt_type = 'Option';

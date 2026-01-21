@@ -1564,6 +1564,9 @@ Page.Base = class Base extends Page {
 		else if (job.source.match(/magic/i)) {
 			return '<i class="mdi mdi-link-variant">&nbsp;</i>Magic Link';
 		}
+		else if (job.source.match(/webhook/i)) {
+			return '<i class="mdi mdi-webhook">&nbsp;</i>Webhook';
+		}
 		else return '(Unknown)';
 	}
 	

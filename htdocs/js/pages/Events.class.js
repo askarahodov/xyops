@@ -160,6 +160,7 @@ Page.Events = class Events extends Page.PageUtils {
 								['', 'Any Trigger'], 
 								{ id: 'manual', title: 'Manual', icon: 'run-fast' },
 								{ id: 'magic', title: 'Magic Link', icon: 'link-variant' },
+								{ id: 'webhook', title: 'Webhook', icon: 'webhook' },
 								{ id: 'schedule', title: 'Schedule', icon: 'update' },
 								{ id: 'single', title: "Single Shot", icon: 'alarm-check' },
 								{ id: 'interval', title: "Interval", icon: 'timer-sand' },
@@ -2868,12 +2869,13 @@ Page.Events = class Events extends Page.PageUtils {
 		return [].concat(
 			this.event.triggers.filter( function(row) { return row.type == 'manual'; } ),
 			this.event.triggers.filter( function(row) { return row.type == 'magic'; } ),
+			this.event.triggers.filter( function(row) { return row.type == 'webhook'; } ),
 			this.event.triggers.filter( function(row) { return row.type == 'schedule'; } ),
 			this.event.triggers.filter( function(row) { return row.type == 'single'; } ),
 			this.event.triggers.filter( function(row) { return row.type == 'interval'; } ),
 			this.event.triggers.filter( function(row) { return row.type == 'continuous'; } ),
 			this.event.triggers.filter( function(row) { return row.type == 'plugin'; } ),
-			this.event.triggers.filter( function(row) { return !(row.type || '').match(/^(schedule|continuous|interval|single|manual|magic|plugin)$/); } )
+			this.event.triggers.filter( function(row) { return !(row.type || '').match(/^(schedule|continuous|interval|single|manual|magic|webhook|plugin)$/); } )
 		);
 	}
 	
@@ -3210,6 +3212,40 @@ Page.Events = class Events extends Page.PageUtils {
 			caption: 'Optionally provide custom content for the landing page, using [GitHub Flavored Markdown](https://guides.github.com/features/mastering-markdown/).'
 		});
 		
+		// webhook
+		html += this.getFormRow({
+			id: 'd_et_webhook_desc',
+			label: 'Description:',
+			content: 'Webhook allows you to trigger the event from an external service using a unique URL.  The incoming request data is passed into the job input.'
+		});
+		if ((trigger.type == 'webhook') && trigger.token) {
+			// existing token, just pass the hash through
+			html += this.getFormRow({
+				id: 'd_et_webhook_token',
+				label: 'Webhook URL:',
+				content: this.getFormText({
+					id: 'fe_et_webhook_token',
+					value: trigger.token,
+					style: 'display:none'
+				}) + `(Link cannot be retrieved)`,
+				caption: 'Webhook links are only shown once at creation time.  If you have lost the link, delete and recreate the webhook trigger.'
+			});
+		}
+		else {
+			// new token, create plain key for copying
+			html += this.getFormRow({
+				id: 'd_et_webhook_token',
+				label: 'Webhook URL:',
+				content: this.getFormText({
+					id: 'fe_et_webhook_token',
+					value: get_unique_id(64),
+					style: 'display:none',
+					'data-plainkey': '1'
+				}) + `<div class="button small secondary" onClick="$P().copyWebhookLink()"><i class="mdi mdi-link-variant-plus">&nbsp;</i>Copy Webhook URL</div>`,
+				caption: 'Click the button above to copy the webhook URL to your clipboard.  The link is only provided once, so make sure to grab it now.'
+			});
+		}
+		
 		// catch-up
 		html += this.getFormRow({
 			id: 'd_et_catchup_desc',
@@ -3479,6 +3515,12 @@ Page.Events = class Events extends Page.PageUtils {
 					trigger.body = $('#fe_et_magic_body').val();
 				break;
 				
+				case 'webhook':
+					// webhook trigger
+					if ($('#fe_et_webhook_token').data('plainkey')) trigger.key = $('#fe_et_webhook_token').val();
+					else trigger.token = $('#fe_et_webhook_token').val();
+				break;
+				
 				case 'catchup':
 					// time machine
 					if ($('#fe_et_time_machine').val()) {
@@ -3641,6 +3683,11 @@ Page.Events = class Events extends Page.PageUtils {
 					$('#d_et_magic_body').show();
 				break;
 				
+				case 'webhook':
+					$('#d_et_webhook_desc').show();
+					$('#d_et_webhook_token').show();
+				break;
+				
 				case 'catchup':
 					$('#d_et_catchup_desc').show();
 					$('#d_et_time_machine').show();
@@ -3722,6 +3769,12 @@ Page.Events = class Events extends Page.PageUtils {
 		// copy link to magic landing page
 		copyToClipboard( config.base_app_url + '/api/app/form/v1/' + $('#fe_et_magic_token').val() );
 		app.showMessage('info', "The landing page link was copied to your clipboard.");
+	}
+	
+	copyWebhookLink() {
+		// copy webhook URL
+		copyToClipboard( config.base_app_url + '/api/app/webhook/v1/' + $('#fe_et_webhook_token').val() );
+		app.showMessage('info', "The webhook URL was copied to your clipboard.");
 	}
 	
 	editMagicBody() {
