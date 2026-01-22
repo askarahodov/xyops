@@ -1,5 +1,16 @@
 # xyOps Changelog
 
+## Version v0.9.35
+
+> January 21, 2026
+
+- Feature: Add Bitbucket integration plugin for issue tracking sync and webhook handling
+- Feature: Add Rancher integration plugin for container orchestration and deployment management
+- Feature: Implement pre-commit validation system with git hooks and CI integration
+- Docs: Add comprehensive integration plugin documentation with API endpoints and examples
+- Improvement: Enhance API validation and error handling across integration plugins
+
+
 ## Version v0.9.34
 
 > January 20, 2026
